@@ -27,7 +27,7 @@
 <h3 align="center">ScratchCPP GUI</h3>
 
   <p align="center">
-    A Qt-based library which uses **libscratchcpp** and **QNanoPainter** to render running Scratch projects.
+    A Qt-based library which uses libscratchcpp and QNanoPainter to render running Scratch projects.
     <br />
     <!-- TODO: Add link to documentation: <a href="https://github.com/scratchcpp/scratchcpp-gui"><strong>Explore the docs »</strong></a>
     <br /> -->
