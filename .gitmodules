@@ -1,0 +1,3 @@
+[submodule "libscratchcpp"]
+	path = libscratchcpp
+	url = https://github.com/scratchcpp/libscratchcpp
