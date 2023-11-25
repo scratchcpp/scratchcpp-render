@@ -36,15 +36,33 @@ void RenderedTarget::loadProperties()
         m_visible = sprite->visible();
 
         if (m_visible) {
+            // Direction
+            switch (sprite->rotationStyle()) {
+                case Sprite::RotationStyle::AllAround:
+                    m_rotation = sprite->direction() - 90;
+                    m_newMirrorHorizontally = false;
+
+                    break;
+
+                case Sprite::RotationStyle::LeftRight: {
+                    m_rotation = 0;
+                    m_newMirrorHorizontally = (sprite->direction() < 0);
+
+                    break;
+                }
+
+                case Sprite::RotationStyle::DoNotRotate:
+                    m_rotation = 0;
+                    m_newMirrorHorizontally = false;
+                    break;
+            }
+
             // Coordinates
             double size = sprite->size() / 100;
-            m_x = m_engine->stageWidth() / 2 + sprite->x() - m_costume->rotationCenterX() * size / 2;
+            m_x = m_engine->stageWidth() / 2 + sprite->x() - m_costume->rotationCenterX() * size / 2 * (m_newMirrorHorizontally ? -1 : 1);
             m_y = m_engine->stageHeight() / 2 - sprite->y() - m_costume->rotationCenterY() * size / 2;
             m_originX = m_costume->rotationCenterX() * size / 2.0;
             m_originY = m_costume->rotationCenterY() * size / 2.0;
-
-            // Direction
-            m_rotation = sprite->direction() - 90;
 
             // Layer
             m_z = sprite->layerOrder();
@@ -101,6 +119,11 @@ void RenderedTarget::updateProperties()
         setZ(m_z);
         setRotation(m_rotation);
         setTransformOriginPoint(QPointF(m_originX, m_originY));
+
+        if (m_newMirrorHorizontally != m_mirrorHorizontally) {
+            m_mirrorHorizontally = m_newMirrorHorizontally;
+            emit mirrorHorizontallyChanged();
+        }
 
         if (m_imageChanged) {
             update();
@@ -198,4 +221,9 @@ QBuffer *RenderedTarget::bitmapBuffer()
 const QString &RenderedTarget::bitmapUniqueKey() const
 {
     return m_bitmapUniqueKey;
+}
+
+bool RenderedTarget::mirrorHorizontally() const
+{
+    return m_mirrorHorizontally;
 }
