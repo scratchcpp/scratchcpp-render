@@ -30,6 +30,7 @@ class RenderedTarget : public QNanoQuickItem
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine WRITE setEngine NOTIFY engineChanged)
         Q_PROPERTY(StageModel *stageModel READ stageModel WRITE setStageModel NOTIFY stageModelChanged)
         Q_PROPERTY(SpriteModel *spriteModel READ spriteModel WRITE setSpriteModel NOTIFY spriteModelChanged)
+        Q_PROPERTY(bool mirrorHorizontally READ mirrorHorizontally NOTIFY mirrorHorizontallyChanged)
 
     public:
         RenderedTarget(QNanoQuickItem *parent = nullptr);
@@ -54,10 +55,14 @@ class RenderedTarget : public QNanoQuickItem
         QBuffer *bitmapBuffer();
         const QString &bitmapUniqueKey() const;
 
+        bool mirrorHorizontally() const;
+
     signals:
         void engineChanged();
         void stageModelChanged();
         void spriteModelChanged();
+
+        void mirrorHorizontallyChanged();
 
     protected:
         QNanoQuickItemPainter *createItemPainter() const override;
@@ -81,6 +86,8 @@ class RenderedTarget : public QNanoQuickItem
         double m_y = 0;
         double m_z = 0;
         double m_rotation = 0;
+        bool m_mirrorHorizontally = false;
+        bool m_newMirrorHorizontally = false;
         double m_originX = 0;
         double m_originY = 0;
 };

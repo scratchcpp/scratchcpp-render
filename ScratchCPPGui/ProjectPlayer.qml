@@ -41,6 +41,7 @@ ProjectScene {
             id: target
             engine: loader.engine
             spriteModel: modelData
+            transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
             Component.onCompleted: modelData.renderedTarget = this
         }
     }
