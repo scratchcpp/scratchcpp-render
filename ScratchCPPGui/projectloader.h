@@ -24,6 +24,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(StageModel *stage READ stage NOTIFY stageChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
         Q_PROPERTY(double fps READ fps WRITE setFps NOTIFY fpsChanged)
+        Q_PROPERTY(bool turboMode READ turboMode WRITE setTurboMode NOTIFY turboModeChanged)
 
     public:
         explicit ProjectLoader(QObject *parent = nullptr);
@@ -49,6 +50,9 @@ class ProjectLoader : public QObject
         double fps() const;
         void setFps(double newFps);
 
+        bool turboMode() const;
+        void setTurboMode(bool newTurboMode);
+
     signals:
         void fileNameChanged();
         void loadedChanged();
@@ -56,6 +60,8 @@ class ProjectLoader : public QObject
         void stageChanged();
         void spritesChanged();
         void fpsChanged();
+
+        void turboModeChanged();
 
     protected:
         void timerEvent(QTimerEvent *event) override;
@@ -73,6 +79,7 @@ class ProjectLoader : public QObject
         QList<SpriteModel *> m_sprites;
         QFuture<void> m_eventLoop;
         double m_fps = 30;
+        bool m_turboMode = false;
 };
 
 } // namespace scratchcppgui

@@ -59,16 +59,25 @@ void ProjectLoader::setFileName(const QString &newFileName)
     m_loaded = m_project.load();
     m_engine = m_project.engine().get();
 
-    m_engine->setFps(m_fps);
-
-    auto handler = std::bind(&ProjectLoader::emitTick, this);
-    m_engine->setRedrawHandler(std::function<void()>(handler));
-
     // Delete old sprites
     for (SpriteModel *sprite : m_sprites)
         sprite->deleteLater();
 
     m_sprites.clear();
+
+    if (!m_engine) {
+        emit fileNameChanged();
+        emit loadedChanged();
+        emit engineChanged();
+        emit spritesChanged();
+        return;
+    }
+
+    m_engine->setFps(m_fps);
+    m_engine->setTurboModeEnabled(m_turboMode);
+
+    auto handler = std::bind(&ProjectLoader::emitTick, this);
+    m_engine->setRedrawHandler(std::function<void()>(handler));
 
     // Load targets
     const auto &targets = m_engine->targets();
@@ -180,4 +189,22 @@ void ProjectLoader::setFps(double newFps)
         m_engine->setFps(m_fps);
 
     emit fpsChanged();
+}
+
+bool ProjectLoader::turboMode() const
+{
+    return m_turboMode;
+}
+
+void ProjectLoader::setTurboMode(bool newTurboMode)
+{
+    if (m_turboMode == newTurboMode)
+        return;
+
+    m_turboMode = newTurboMode;
+
+    if (m_engine)
+        m_engine->setTurboModeEnabled(m_turboMode);
+
+    emit turboModeChanged();
 }

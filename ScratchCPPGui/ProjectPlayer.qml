@@ -8,6 +8,7 @@ ProjectScene {
     property int stageWidth: 480
     property int stageHeight: 360
     property alias fps: loader.fps
+    property alias turboMode: loader.turboMode
 
     id: root
     width: stageWidth
