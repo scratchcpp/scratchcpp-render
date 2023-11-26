@@ -25,13 +25,13 @@ ProjectScene {
         onStageModelChanged: stageModel.renderedTarget = this
     }
 
-	function start() {
-		loader.start();
-	}
+    function start() {
+        loader.start();
+    }
 
-	function stop() {
-		loader.stop();
-	}
+    function stop() {
+        loader.stop();
+    }
 
     Repeater {
         id: sprites
