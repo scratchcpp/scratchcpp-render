@@ -58,6 +58,9 @@ void ProjectLoader::setFileName(const QString &newFileName)
     m_project.setFileName(m_fileName.toStdString());
     m_loaded = m_project.load();
     m_engine = m_project.engine().get();
+
+    m_engine->setFps(m_fps);
+
     auto handler = std::bind(&ProjectLoader::emitTick, this);
     m_engine->setRedrawHandler(std::function<void()>(handler));
 
@@ -159,4 +162,22 @@ void ProjectLoader::emitTick()
         if (renderedTarget)
             renderedTarget->loadProperties();
     }
+}
+
+double ProjectLoader::fps() const
+{
+    return m_fps;
+}
+
+void ProjectLoader::setFps(double newFps)
+{
+    if (qFuzzyCompare(m_fps, newFps))
+        return;
+
+    m_fps = newFps;
+
+    if (m_engine)
+        m_engine->setFps(m_fps);
+
+    emit fpsChanged();
 }

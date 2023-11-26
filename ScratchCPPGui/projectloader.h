@@ -23,6 +23,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine NOTIFY engineChanged)
         Q_PROPERTY(StageModel *stage READ stage NOTIFY stageChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
+        Q_PROPERTY(double fps READ fps WRITE setFps NOTIFY fpsChanged)
 
     public:
         explicit ProjectLoader(QObject *parent = nullptr);
@@ -45,12 +46,16 @@ class ProjectLoader : public QObject
         unsigned int frameFinished() const;
         void setFrameFinished(unsigned int newFrameFinished);
 
+        double fps() const;
+        void setFps(double newFps);
+
     signals:
         void fileNameChanged();
         void loadedChanged();
         void engineChanged();
         void stageChanged();
         void spritesChanged();
+        void fpsChanged();
 
     protected:
         void timerEvent(QTimerEvent *event) override;
@@ -67,6 +72,7 @@ class ProjectLoader : public QObject
         StageModel m_stage;
         QList<SpriteModel *> m_sprites;
         QFuture<void> m_eventLoop;
+        double m_fps = 30;
 };
 
 } // namespace scratchcppgui

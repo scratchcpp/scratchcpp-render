@@ -7,6 +7,7 @@ ProjectScene {
     property string fileName
     property int stageWidth: 480
     property int stageHeight: 360
+    property alias fps: loader.fps
 
     id: root
     width: stageWidth
