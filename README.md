@@ -122,7 +122,7 @@ Button {
 ## Roadmap
 
 - [x] JPEG and PNG rendering
-- [ ] Everything related to displaying sprites (position, rotation, size, etc.)
+- [x] Everything related to displaying sprites (position, rotation, size, etc.)
 - [ ] Loading projects in another thread
 - [ ] API for engine properties (FPS, turbo mode, etc.)
 - [ ] Loading projects from URL
