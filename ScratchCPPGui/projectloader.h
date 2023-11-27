@@ -19,7 +19,7 @@ class ProjectLoader : public QObject
         Q_OBJECT
         QML_ELEMENT
         Q_PROPERTY(QString fileName READ fileName WRITE setFileName NOTIFY fileNameChanged)
-        Q_PROPERTY(bool loaded READ loaded NOTIFY loadedChanged)
+        Q_PROPERTY(bool loadStatus READ loadStatus NOTIFY loadStatusChanged)
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine NOTIFY engineChanged)
         Q_PROPERTY(StageModel *stage READ stage NOTIFY stageChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
@@ -37,7 +37,7 @@ class ProjectLoader : public QObject
         const QString &fileName() const;
         void setFileName(const QString &newFileName);
 
-        bool loaded() const;
+        bool loadStatus() const;
 
         libscratchcpp::IEngine *engine() const;
 
@@ -71,7 +71,8 @@ class ProjectLoader : public QObject
 
     signals:
         void fileNameChanged();
-        void loadedChanged();
+        void loadStatusChanged();
+        void loadingFinished();
         void engineChanged();
         void stageChanged();
         void spritesChanged();
@@ -86,14 +87,18 @@ class ProjectLoader : public QObject
         void timerEvent(QTimerEvent *event) override;
 
     private:
+        static void callLoad(ProjectLoader *loader);
+        void load();
         void initTimer();
         void emitTick();
 
         int m_timerId = -1;
         QString m_fileName;
+        QFuture<void> m_loadThread;
         libscratchcpp::Project m_project;
         libscratchcpp::IEngine *m_engine = nullptr;
-        bool m_loaded = false;
+        QMutex m_engineMutex;
+        bool m_loadStatus = false;
         StageModel m_stage;
         QList<SpriteModel *> m_sprites;
         QFuture<void> m_eventLoop;
