@@ -23,6 +23,12 @@ class ProjectLoader : public QObject
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine NOTIFY engineChanged)
         Q_PROPERTY(StageModel *stage READ stage NOTIFY stageChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
+        Q_PROPERTY(double fps READ fps WRITE setFps NOTIFY fpsChanged)
+        Q_PROPERTY(bool turboMode READ turboMode WRITE setTurboMode NOTIFY turboModeChanged)
+        Q_PROPERTY(unsigned int stageWidth READ stageWidth WRITE setStageWidth NOTIFY stageWidthChanged)
+        Q_PROPERTY(unsigned int stageHeight READ stageHeight WRITE setStageHeight NOTIFY stageHeightChanged)
+        Q_PROPERTY(int cloneLimit READ cloneLimit WRITE setCloneLimit NOTIFY cloneLimitChanged)
+        Q_PROPERTY(bool spriteFencing READ spriteFencing WRITE setSpriteFencing NOTIFY spriteFencingChanged)
 
     public:
         explicit ProjectLoader(QObject *parent = nullptr);
@@ -45,12 +51,36 @@ class ProjectLoader : public QObject
         unsigned int frameFinished() const;
         void setFrameFinished(unsigned int newFrameFinished);
 
+        double fps() const;
+        void setFps(double newFps);
+
+        bool turboMode() const;
+        void setTurboMode(bool newTurboMode);
+
+        unsigned int stageWidth() const;
+        void setStageWidth(unsigned int newStageWidth);
+
+        unsigned int stageHeight() const;
+        void setStageHeight(unsigned int newStageHeight);
+
+        int cloneLimit() const;
+        void setCloneLimit(int newCloneLimit);
+
+        bool spriteFencing() const;
+        void setSpriteFencing(bool newSpriteFencing);
+
     signals:
         void fileNameChanged();
         void loadedChanged();
         void engineChanged();
         void stageChanged();
         void spritesChanged();
+        void fpsChanged();
+        void turboModeChanged();
+        void stageWidthChanged();
+        void stageHeightChanged();
+        void cloneLimitChanged();
+        void spriteFencingChanged();
 
     protected:
         void timerEvent(QTimerEvent *event) override;
@@ -67,6 +97,12 @@ class ProjectLoader : public QObject
         StageModel m_stage;
         QList<SpriteModel *> m_sprites;
         QFuture<void> m_eventLoop;
+        double m_fps = 30;
+        bool m_turboMode = false;
+        unsigned int m_stageWidth;
+        unsigned int m_stageHeight;
+        int m_cloneLimit;
+        bool m_spriteFencing;
 };
 
 } // namespace scratchcppgui

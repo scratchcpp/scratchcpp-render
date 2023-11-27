@@ -58,14 +58,30 @@ void ProjectLoader::setFileName(const QString &newFileName)
     m_project.setFileName(m_fileName.toStdString());
     m_loaded = m_project.load();
     m_engine = m_project.engine().get();
-    auto handler = std::bind(&ProjectLoader::emitTick, this);
-    m_engine->setRedrawHandler(std::function<void()>(handler));
 
     // Delete old sprites
     for (SpriteModel *sprite : m_sprites)
         sprite->deleteLater();
 
     m_sprites.clear();
+
+    if (!m_engine) {
+        emit fileNameChanged();
+        emit loadedChanged();
+        emit engineChanged();
+        emit spritesChanged();
+        return;
+    }
+
+    m_engine->setFps(m_fps);
+    m_engine->setTurboModeEnabled(m_turboMode);
+    m_engine->setStageWidth(m_stageWidth);
+    m_engine->setStageHeight(m_stageHeight);
+    m_engine->setCloneLimit(m_cloneLimit);
+    m_engine->setSpriteFencingEnabled(m_spriteFencing);
+
+    auto handler = std::bind(&ProjectLoader::emitTick, this);
+    m_engine->setRedrawHandler(std::function<void()>(handler));
 
     // Load targets
     const auto &targets = m_engine->targets();
@@ -159,4 +175,112 @@ void ProjectLoader::emitTick()
         if (renderedTarget)
             renderedTarget->loadProperties();
     }
+}
+
+double ProjectLoader::fps() const
+{
+    return m_fps;
+}
+
+void ProjectLoader::setFps(double newFps)
+{
+    if (qFuzzyCompare(m_fps, newFps))
+        return;
+
+    m_fps = newFps;
+
+    if (m_engine)
+        m_engine->setFps(m_fps);
+
+    emit fpsChanged();
+}
+
+bool ProjectLoader::turboMode() const
+{
+    return m_turboMode;
+}
+
+void ProjectLoader::setTurboMode(bool newTurboMode)
+{
+    if (m_turboMode == newTurboMode)
+        return;
+
+    m_turboMode = newTurboMode;
+
+    if (m_engine)
+        m_engine->setTurboModeEnabled(m_turboMode);
+
+    emit turboModeChanged();
+}
+
+unsigned int ProjectLoader::stageWidth() const
+{
+    return m_stageWidth;
+}
+
+void ProjectLoader::setStageWidth(unsigned int newStageWidth)
+{
+    if (m_stageWidth == newStageWidth)
+        return;
+
+    m_stageWidth = newStageWidth;
+
+    if (m_engine)
+        m_engine->setStageWidth(m_stageWidth);
+
+    emit stageWidthChanged();
+}
+
+unsigned int ProjectLoader::stageHeight() const
+{
+    return m_stageHeight;
+}
+
+void ProjectLoader::setStageHeight(unsigned int newStageHeight)
+{
+    if (m_stageHeight == newStageHeight)
+        return;
+
+    m_stageHeight = newStageHeight;
+
+    if (m_engine)
+        m_engine->setStageHeight(m_stageHeight);
+
+    emit stageHeightChanged();
+}
+
+int ProjectLoader::cloneLimit() const
+{
+    return m_cloneLimit;
+}
+
+void ProjectLoader::setCloneLimit(int newCloneLimit)
+{
+    if (m_cloneLimit == newCloneLimit)
+        return;
+
+    m_cloneLimit = newCloneLimit;
+
+    if (m_engine)
+        m_engine->setCloneLimit(m_cloneLimit);
+
+    emit cloneLimitChanged();
+}
+
+bool ProjectLoader::spriteFencing() const
+{
+    return m_spriteFencing;
+}
+
+void ProjectLoader::setSpriteFencing(bool newSpriteFencing)
+{
+    if (m_spriteFencing == newSpriteFencing)
+        return;
+
+    m_spriteFencing = newSpriteFencing;
+
+    if (m_engine)
+        m_engine->setSpriteFencingEnabled(m_spriteFencing);
+
+    emit spriteFencingChanged();
 }
