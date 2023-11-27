@@ -75,6 +75,8 @@ void ProjectLoader::setFileName(const QString &newFileName)
 
     m_engine->setFps(m_fps);
     m_engine->setTurboModeEnabled(m_turboMode);
+    m_engine->setStageWidth(m_stageWidth);
+    m_engine->setStageHeight(m_stageHeight);
 
     auto handler = std::bind(&ProjectLoader::emitTick, this);
     m_engine->setRedrawHandler(std::function<void()>(handler));
@@ -207,4 +209,40 @@ void ProjectLoader::setTurboMode(bool newTurboMode)
         m_engine->setTurboModeEnabled(m_turboMode);
 
     emit turboModeChanged();
+}
+
+unsigned int ProjectLoader::stageWidth() const
+{
+    return m_stageWidth;
+}
+
+void ProjectLoader::setStageWidth(unsigned int newStageWidth)
+{
+    if (m_stageWidth == newStageWidth)
+        return;
+
+    m_stageWidth = newStageWidth;
+
+    if (m_engine)
+        m_engine->setStageWidth(m_stageWidth);
+
+    emit stageWidthChanged();
+}
+
+unsigned int ProjectLoader::stageHeight() const
+{
+    return m_stageHeight;
+}
+
+void ProjectLoader::setStageHeight(unsigned int newStageHeight)
+{
+    if (m_stageHeight == newStageHeight)
+        return;
+
+    m_stageHeight = newStageHeight;
+
+    if (m_engine)
+        m_engine->setStageHeight(m_stageHeight);
+
+    emit stageHeightChanged();
 }
