@@ -7,6 +7,7 @@ ProjectScene {
     property string fileName
     property alias fps: loader.fps
     property alias turboMode: loader.turboMode
+	property alias cloneLimit: loader.cloneLimit
 
     id: root
 	clip: true

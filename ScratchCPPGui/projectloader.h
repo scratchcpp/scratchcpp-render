@@ -27,6 +27,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(bool turboMode READ turboMode WRITE setTurboMode NOTIFY turboModeChanged)
         Q_PROPERTY(unsigned int stageWidth READ stageWidth WRITE setStageWidth NOTIFY stageWidthChanged)
         Q_PROPERTY(unsigned int stageHeight READ stageHeight WRITE setStageHeight NOTIFY stageHeightChanged)
+        Q_PROPERTY(int cloneLimit READ cloneLimit WRITE setCloneLimit NOTIFY cloneLimitChanged)
 
     public:
         explicit ProjectLoader(QObject *parent = nullptr);
@@ -61,6 +62,9 @@ class ProjectLoader : public QObject
         unsigned int stageHeight() const;
         void setStageHeight(unsigned int newStageHeight);
 
+        int cloneLimit() const;
+        void setCloneLimit(int newCloneLimit);
+
     signals:
         void fileNameChanged();
         void loadedChanged();
@@ -71,6 +75,7 @@ class ProjectLoader : public QObject
         void turboModeChanged();
         void stageWidthChanged();
         void stageHeightChanged();
+        void cloneLimitChanged();
 
     protected:
         void timerEvent(QTimerEvent *event) override;
@@ -91,6 +96,7 @@ class ProjectLoader : public QObject
         bool m_turboMode = false;
         unsigned int m_stageWidth;
         unsigned int m_stageHeight;
+        int m_cloneLimit;
 };
 
 } // namespace scratchcppgui

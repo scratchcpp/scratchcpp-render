@@ -77,6 +77,7 @@ void ProjectLoader::setFileName(const QString &newFileName)
     m_engine->setTurboModeEnabled(m_turboMode);
     m_engine->setStageWidth(m_stageWidth);
     m_engine->setStageHeight(m_stageHeight);
+    m_engine->setCloneLimit(m_cloneLimit);
 
     auto handler = std::bind(&ProjectLoader::emitTick, this);
     m_engine->setRedrawHandler(std::function<void()>(handler));
@@ -245,4 +246,22 @@ void ProjectLoader::setStageHeight(unsigned int newStageHeight)
         m_engine->setStageHeight(m_stageHeight);
 
     emit stageHeightChanged();
+}
+
+int ProjectLoader::cloneLimit() const
+{
+    return m_cloneLimit;
+}
+
+void ProjectLoader::setCloneLimit(int newCloneLimit)
+{
+    if (m_cloneLimit == newCloneLimit)
+        return;
+
+    m_cloneLimit = newCloneLimit;
+
+    if (m_engine)
+        m_engine->setCloneLimit(m_cloneLimit);
+
+    emit cloneLimitChanged();
 }
