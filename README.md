@@ -102,7 +102,7 @@ Window {
     ProjectPlayer {
         id: player
         fileName: "/path/to/project.sb3"
-        Component.onCompleted: start()
+        onLoaded: start()
     }
 }
 ```
