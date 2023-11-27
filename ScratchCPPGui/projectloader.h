@@ -99,10 +99,10 @@ class ProjectLoader : public QObject
         QFuture<void> m_eventLoop;
         double m_fps = 30;
         bool m_turboMode = false;
-        unsigned int m_stageWidth;
-        unsigned int m_stageHeight;
-        int m_cloneLimit;
-        bool m_spriteFencing;
+        unsigned int m_stageWidth = 480;
+        unsigned int m_stageHeight = 360;
+        int m_cloneLimit = 300;
+        bool m_spriteFencing = true;
 };
 
 } // namespace scratchcppgui
