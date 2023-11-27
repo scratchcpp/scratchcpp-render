@@ -78,6 +78,7 @@ void ProjectLoader::setFileName(const QString &newFileName)
     m_engine->setStageWidth(m_stageWidth);
     m_engine->setStageHeight(m_stageHeight);
     m_engine->setCloneLimit(m_cloneLimit);
+    m_engine->setSpriteFencingEnabled(m_spriteFencing);
 
     auto handler = std::bind(&ProjectLoader::emitTick, this);
     m_engine->setRedrawHandler(std::function<void()>(handler));
@@ -264,4 +265,22 @@ void ProjectLoader::setCloneLimit(int newCloneLimit)
         m_engine->setCloneLimit(m_cloneLimit);
 
     emit cloneLimitChanged();
+}
+
+bool ProjectLoader::spriteFencing() const
+{
+    return m_spriteFencing;
+}
+
+void ProjectLoader::setSpriteFencing(bool newSpriteFencing)
+{
+    if (m_spriteFencing == newSpriteFencing)
+        return;
+
+    m_spriteFencing = newSpriteFencing;
+
+    if (m_engine)
+        m_engine->setSpriteFencingEnabled(m_spriteFencing);
+
+    emit spriteFencingChanged();
 }

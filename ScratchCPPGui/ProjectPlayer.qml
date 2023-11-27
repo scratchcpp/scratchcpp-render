@@ -8,6 +8,7 @@ ProjectScene {
     property alias fps: loader.fps
     property alias turboMode: loader.turboMode
 	property alias cloneLimit: loader.cloneLimit
+	property alias spriteFencing: loader.spriteFencing
 
     id: root
 	clip: true

@@ -28,6 +28,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(unsigned int stageWidth READ stageWidth WRITE setStageWidth NOTIFY stageWidthChanged)
         Q_PROPERTY(unsigned int stageHeight READ stageHeight WRITE setStageHeight NOTIFY stageHeightChanged)
         Q_PROPERTY(int cloneLimit READ cloneLimit WRITE setCloneLimit NOTIFY cloneLimitChanged)
+        Q_PROPERTY(bool spriteFencing READ spriteFencing WRITE setSpriteFencing NOTIFY spriteFencingChanged)
 
     public:
         explicit ProjectLoader(QObject *parent = nullptr);
@@ -65,6 +66,9 @@ class ProjectLoader : public QObject
         int cloneLimit() const;
         void setCloneLimit(int newCloneLimit);
 
+        bool spriteFencing() const;
+        void setSpriteFencing(bool newSpriteFencing);
+
     signals:
         void fileNameChanged();
         void loadedChanged();
@@ -76,6 +80,7 @@ class ProjectLoader : public QObject
         void stageWidthChanged();
         void stageHeightChanged();
         void cloneLimitChanged();
+        void spriteFencingChanged();
 
     protected:
         void timerEvent(QTimerEvent *event) override;
@@ -97,6 +102,7 @@ class ProjectLoader : public QObject
         unsigned int m_stageWidth;
         unsigned int m_stageHeight;
         int m_cloneLimit;
+        bool m_spriteFencing;
 };
 
 } // namespace scratchcppgui
