@@ -19,6 +19,7 @@ TargetPainter::~TargetPainter()
 
 void TargetPainter::paint(QNanoPainter *painter)
 {
+    m_target->lockCostume();
     unsigned char *svgBitmap = m_target->svgBitmap();
     double width = m_target->width();
     double height = m_target->height();
@@ -43,6 +44,8 @@ void TargetPainter::paint(QNanoPainter *painter)
         QNanoImage image = QNanoImage::fromCache(painter, m_target->bitmapBuffer(), m_target->bitmapUniqueKey());
         painter->drawImage(image, 0, 0, width, height);
     }
+
+    m_target->unlockCostume();
 }
 
 void TargetPainter::synchronize(QNanoQuickItem *item)

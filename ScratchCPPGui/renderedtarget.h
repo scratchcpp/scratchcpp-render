@@ -55,6 +55,9 @@ class RenderedTarget : public QNanoQuickItem
         QBuffer *bitmapBuffer();
         const QString &bitmapUniqueKey() const;
 
+        void lockCostume();
+        void unlockCostume();
+
         bool mirrorHorizontally() const;
 
     signals:
@@ -77,6 +80,7 @@ class RenderedTarget : public QNanoQuickItem
         unsigned char *m_svgBitmap = nullptr;
         QBuffer m_bitmapBuffer;
         QString m_bitmapUniqueKey;
+        QMutex m_costumeMutex;
         QMutex mutex;
         bool m_imageChanged = false;
         bool m_visible = true;

@@ -82,6 +82,7 @@ void RenderedTarget::loadCostume(Costume *costume)
     if (!costume)
         return;
 
+    m_costumeMutex.lock();
     Target *target = scratchTarget();
     m_costume = costume;
     m_imageChanged = true;
@@ -104,6 +105,8 @@ void RenderedTarget::loadCostume(Costume *costume)
         QSize size = reader.size();
         calculateSize(target, size.width(), size.height());
     }
+
+    m_costumeMutex.unlock();
 }
 
 void RenderedTarget::updateProperties()
@@ -221,6 +224,16 @@ QBuffer *RenderedTarget::bitmapBuffer()
 const QString &RenderedTarget::bitmapUniqueKey() const
 {
     return m_bitmapUniqueKey;
+}
+
+void RenderedTarget::lockCostume()
+{
+    m_costumeMutex.lock();
+}
+
+void RenderedTarget::unlockCostume()
+{
+    m_costumeMutex.unlock();
 }
 
 bool RenderedTarget::mirrorHorizontally() const
