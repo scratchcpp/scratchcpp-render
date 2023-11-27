@@ -31,10 +31,16 @@ ProjectLoader::ProjectLoader(QObject *parent) :
 
 ProjectLoader::~ProjectLoader()
 {
+    if (m_loadThread.isRunning())
+        m_loadThread.waitForFinished();
+
     if (m_engine) {
         m_engine->stopEventLoop();
         m_eventLoop.waitForFinished();
     }
+
+    for (SpriteModel *sprite : m_sprites)
+        sprite->deleteLater();
 }
 
 const QString &ProjectLoader::fileName() const
@@ -44,6 +50,9 @@ const QString &ProjectLoader::fileName() const
 
 void ProjectLoader::setFileName(const QString &newFileName)
 {
+    if (m_loadThread.isRunning())
+        m_loadThread.waitForFinished();
+
     if (m_fileName == newFileName)
         return;
 
@@ -56,7 +65,96 @@ void ProjectLoader::setFileName(const QString &newFileName)
 
     m_project.setScratchVersion(ScratchVersion::Scratch3);
     m_project.setFileName(m_fileName.toStdString());
-    m_loaded = m_project.load();
+    m_loadStatus = false;
+    emit loadStatusChanged();
+    emit fileNameChanged();
+
+    m_loadThread = QtConcurrent::run(&callLoad, this);
+}
+
+bool ProjectLoader::loadStatus() const
+{
+    if (m_loadThread.isRunning())
+        return false;
+
+    return m_loadStatus;
+}
+
+IEngine *ProjectLoader::engine() const
+{
+    if (m_loadThread.isRunning())
+        return nullptr;
+
+    return m_engine;
+}
+
+StageModel *ProjectLoader::stage()
+{
+    if (m_loadThread.isRunning())
+        m_loadThread.waitForFinished();
+
+    return &m_stage;
+}
+
+QQmlListProperty<SpriteModel> ProjectLoader::sprites()
+{
+    if (m_loadThread.isRunning())
+        m_loadThread.waitForFinished();
+
+    return QQmlListProperty<SpriteModel>(this, &m_sprites);
+}
+
+void ProjectLoader::start()
+{
+    if (m_loadThread.isRunning())
+        m_loadThread.waitForFinished();
+
+    if (m_loadStatus) {
+        Q_ASSERT(m_engine);
+        m_engine->start();
+    }
+}
+
+void ProjectLoader::stop()
+{
+    if (m_loadThread.isRunning())
+        m_loadThread.waitForFinished();
+
+    if (m_loadStatus) {
+        Q_ASSERT(m_engine);
+        m_engine->stop();
+    }
+}
+
+void ProjectLoader::timerEvent(QTimerEvent *event)
+{
+    if (m_loadThread.isRunning())
+        return;
+
+    auto stageRenderedTarget = m_stage.renderedTarget();
+
+    if (stageRenderedTarget)
+        stageRenderedTarget->updateProperties();
+
+    for (auto sprite : m_sprites) {
+        auto renderedTarget = sprite->renderedTarget();
+
+        if (renderedTarget)
+            renderedTarget->updateProperties();
+    }
+
+    event->accept();
+}
+
+void ProjectLoader::callLoad(ProjectLoader *loader)
+{
+    loader->load();
+}
+
+void ProjectLoader::load()
+{
+    m_loadStatus = m_project.load();
+    m_engineMutex.lock();
     m_engine = m_project.engine().get();
 
     // Delete old sprites
@@ -67,7 +165,8 @@ void ProjectLoader::setFileName(const QString &newFileName)
 
     if (!m_engine) {
         emit fileNameChanged();
-        emit loadedChanged();
+        emit loadStatusChanged();
+        emit loadingFinished();
         emit engineChanged();
         emit spritesChanged();
         return;
@@ -90,7 +189,8 @@ void ProjectLoader::setFileName(const QString &newFileName)
         if (target->isStage())
             dynamic_cast<Stage *>(target.get())->setInterface(&m_stage);
         else {
-            SpriteModel *sprite = new SpriteModel(this);
+            SpriteModel *sprite = new SpriteModel;
+            sprite->moveToThread(qApp->thread());
             dynamic_cast<Sprite *>(target.get())->setInterface(sprite);
             m_sprites.push_back(sprite);
         }
@@ -99,59 +199,13 @@ void ProjectLoader::setFileName(const QString &newFileName)
     // Run event loop
     m_engine->setSpriteFencingEnabled(false);
     m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
+    m_engineMutex.unlock();
 
-    emit fileNameChanged();
-    emit loadedChanged();
+    emit loadStatusChanged();
+    emit loadingFinished();
     emit engineChanged();
     emit stageChanged();
     emit spritesChanged();
-}
-
-bool ProjectLoader::loaded() const
-{
-    return m_loaded;
-}
-
-IEngine *ProjectLoader::engine() const
-{
-    return m_engine;
-}
-
-StageModel *ProjectLoader::stage()
-{
-    return &m_stage;
-}
-
-QQmlListProperty<SpriteModel> ProjectLoader::sprites()
-{
-    return QQmlListProperty<SpriteModel>(this, &m_sprites);
-}
-
-void ProjectLoader::start()
-{
-    m_engine->start();
-}
-
-void ProjectLoader::stop()
-{
-    m_engine->stop();
-}
-
-void ProjectLoader::timerEvent(QTimerEvent *event)
-{
-    auto stageRenderedTarget = m_stage.renderedTarget();
-
-    if (stageRenderedTarget)
-        stageRenderedTarget->updateProperties();
-
-    for (auto sprite : m_sprites) {
-        auto renderedTarget = sprite->renderedTarget();
-
-        if (renderedTarget)
-            renderedTarget->updateProperties();
-    }
-
-    event->accept();
 }
 
 void ProjectLoader::initTimer()
@@ -164,6 +218,9 @@ void ProjectLoader::initTimer()
 
 void ProjectLoader::emitTick()
 {
+    if (m_loadThread.isRunning())
+        m_loadThread.waitForFinished();
+
     auto stageRenderedTarget = m_stage.renderedTarget();
 
     if (stageRenderedTarget)
@@ -188,10 +245,12 @@ void ProjectLoader::setFps(double newFps)
         return;
 
     m_fps = newFps;
+    m_engineMutex.lock();
 
     if (m_engine)
         m_engine->setFps(m_fps);
 
+    m_engineMutex.unlock();
     emit fpsChanged();
 }
 
@@ -206,10 +265,12 @@ void ProjectLoader::setTurboMode(bool newTurboMode)
         return;
 
     m_turboMode = newTurboMode;
+    m_engineMutex.lock();
 
     if (m_engine)
         m_engine->setTurboModeEnabled(m_turboMode);
 
+    m_engineMutex.unlock();
     emit turboModeChanged();
 }
 
@@ -224,10 +285,12 @@ void ProjectLoader::setStageWidth(unsigned int newStageWidth)
         return;
 
     m_stageWidth = newStageWidth;
+    m_engineMutex.lock();
 
     if (m_engine)
         m_engine->setStageWidth(m_stageWidth);
 
+    m_engineMutex.unlock();
     emit stageWidthChanged();
 }
 
@@ -242,10 +305,12 @@ void ProjectLoader::setStageHeight(unsigned int newStageHeight)
         return;
 
     m_stageHeight = newStageHeight;
+    m_engineMutex.lock();
 
     if (m_engine)
         m_engine->setStageHeight(m_stageHeight);
 
+    m_engineMutex.unlock();
     emit stageHeightChanged();
 }
 
@@ -260,10 +325,12 @@ void ProjectLoader::setCloneLimit(int newCloneLimit)
         return;
 
     m_cloneLimit = newCloneLimit;
+    m_engineMutex.lock();
 
     if (m_engine)
         m_engine->setCloneLimit(m_cloneLimit);
 
+    m_engineMutex.unlock();
     emit cloneLimitChanged();
 }
 
@@ -278,9 +345,11 @@ void ProjectLoader::setSpriteFencing(bool newSpriteFencing)
         return;
 
     m_spriteFencing = newSpriteFencing;
+    m_engineMutex.lock();
 
     if (m_engine)
         m_engine->setSpriteFencingEnabled(m_spriteFencing);
 
+    m_engineMutex.unlock();
     emit spriteFencingChanged();
 }

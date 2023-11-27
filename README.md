@@ -102,7 +102,7 @@ Window {
     ProjectPlayer {
         id: player
         fileName: "/path/to/project.sb3"
-        Component.onCompleted: start()
+        onLoaded: start()
     }
 }
 ```
@@ -123,7 +123,7 @@ Button {
 
 - [x] JPEG and PNG rendering
 - [x] Everything related to displaying sprites (position, rotation, size, etc.)
-- [ ] Loading projects in another thread
+- [x] Loading projects in another thread
 - [x] API for engine properties (FPS, turbo mode, etc.)
 - [ ] Loading projects from URL
 - [ ] SVG rendering

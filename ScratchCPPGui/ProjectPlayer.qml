@@ -9,6 +9,8 @@ ProjectScene {
     property alias turboMode: loader.turboMode
 	property alias cloneLimit: loader.cloneLimit
 	property alias spriteFencing: loader.spriteFencing
+    signal loaded()
+    signal failedToLoad()
 
     id: root
 	clip: true
@@ -18,6 +20,12 @@ ProjectScene {
         fileName: root.fileName
 		stageWidth: parent.width
 		stageHeight: parent.height
+        onLoadingFinished: {
+            if(loadStatus)
+                loaded();
+            else
+                failedToLoad();
+        }
     }
 
     RenderedTarget {
