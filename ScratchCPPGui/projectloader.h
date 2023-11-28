@@ -41,6 +41,7 @@ class ProjectLoader : public QObject
         bool loadStatus() const;
 
         libscratchcpp::IEngine *engine() const;
+        void setEngine(libscratchcpp::IEngine *engine);
 
         StageModel *stage();
 

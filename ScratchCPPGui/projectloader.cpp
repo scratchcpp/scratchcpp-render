@@ -34,7 +34,7 @@ ProjectLoader::~ProjectLoader()
     if (m_loadThread.isRunning())
         m_loadThread.waitForFinished();
 
-    if (m_engine) {
+    if (m_engine && m_eventLoopEnabled) {
         m_engine->stopEventLoop();
         m_eventLoop.waitForFinished();
     }
@@ -86,6 +86,12 @@ IEngine *ProjectLoader::engine() const
         return nullptr;
 
     return m_engine;
+}
+
+// NOTE: This should be only used for testing
+void ProjectLoader::setEngine(libscratchcpp::IEngine *engine)
+{
+    m_engine = engine;
 }
 
 StageModel *ProjectLoader::stage()
