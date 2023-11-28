@@ -258,11 +258,13 @@ void ProjectLoader::setFps(double newFps)
     if (qFuzzyCompare(m_fps, newFps))
         return;
 
-    m_fps = newFps;
     m_engineMutex.lock();
 
-    if (m_engine)
-        m_engine->setFps(m_fps);
+    if (m_engine) {
+        m_engine->setFps(newFps);
+        m_fps = m_engine->fps();
+    } else
+        m_fps = newFps;
 
     m_engineMutex.unlock();
     emit fpsChanged();
@@ -338,11 +340,13 @@ void ProjectLoader::setCloneLimit(int newCloneLimit)
     if (m_cloneLimit == newCloneLimit)
         return;
 
-    m_cloneLimit = newCloneLimit;
     m_engineMutex.lock();
 
-    if (m_engine)
-        m_engine->setCloneLimit(m_cloneLimit);
+    if (m_engine) {
+        m_engine->setCloneLimit(newCloneLimit);
+        m_cloneLimit = m_engine->cloneLimit();
+    } else
+        m_cloneLimit = newCloneLimit;
 
     m_engineMutex.unlock();
     emit cloneLimitChanged();
