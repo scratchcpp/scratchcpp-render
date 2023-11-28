@@ -9,6 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(SCRATCHCPPGUI_BUILD_UNIT_TESTS "Build unit tests" ON)
+
 include(build/FindQt.cmake)
 
 qt_standard_project_setup(REQUIRES 6.6)
@@ -26,3 +28,8 @@ target_link_libraries(libscratchcpp-gui PRIVATE scratchcpp)
 add_subdirectory(thirdparty/libqnanopainter)
 target_include_directories(libscratchcpp-gui PRIVATE thirdparty/libqnanopainter)
 target_link_libraries(libscratchcpp-gui PRIVATE qnanopainter)
+
+if (SCRATCHCPPGUI_BUILD_UNIT_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
