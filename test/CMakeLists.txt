@@ -16,3 +16,7 @@ include(GoogleTest)
 function(add_test TARGET)
     target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/ScratchCPPGui)
 endfunction()
+
+add_subdirectory(mocks)
+
+add_subdirectory(projectloader)
