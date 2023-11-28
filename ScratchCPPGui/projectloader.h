@@ -51,9 +51,6 @@ class ProjectLoader : public QObject
         Q_INVOKABLE void start();
         Q_INVOKABLE void stop();
 
-        unsigned int frameFinished() const;
-        void setFrameFinished(unsigned int newFrameFinished);
-
         double fps() const;
         void setFps(double newFps);
 
