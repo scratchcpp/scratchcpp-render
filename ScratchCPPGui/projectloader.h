@@ -45,6 +45,7 @@ class ProjectLoader : public QObject
         StageModel *stage();
 
         QQmlListProperty<SpriteModel> sprites();
+        const QList<SpriteModel *> &spriteList() const;
 
         Q_INVOKABLE void start();
         Q_INVOKABLE void stop();

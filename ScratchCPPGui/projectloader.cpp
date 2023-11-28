@@ -104,6 +104,11 @@ QQmlListProperty<SpriteModel> ProjectLoader::sprites()
     return QQmlListProperty<SpriteModel>(this, &m_sprites);
 }
 
+const QList<SpriteModel *> &ProjectLoader::spriteList() const
+{
+    return m_sprites;
+}
+
 void ProjectLoader::start()
 {
     if (m_loadThread.isRunning())
