@@ -198,7 +198,10 @@ void ProjectLoader::load()
 
     // Run event loop
     m_engine->setSpriteFencingEnabled(false);
-    m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
+
+    if (m_eventLoopEnabled)
+        m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
+
     m_engineMutex.unlock();
 
     emit loadStatusChanged();
@@ -352,4 +355,30 @@ void ProjectLoader::setSpriteFencing(bool newSpriteFencing)
 
     m_engineMutex.unlock();
     emit spriteFencingChanged();
+}
+
+bool ProjectLoader::eventLoopEnabled() const
+{
+    return m_eventLoopEnabled;
+}
+
+void ProjectLoader::setEventLoopEnabled(bool newEventLoopEnabled)
+{
+    if (m_eventLoopEnabled == newEventLoopEnabled)
+        return;
+
+    m_eventLoopEnabled = newEventLoopEnabled;
+    m_engineMutex.lock();
+
+    if (m_engine) {
+        if (m_eventLoopEnabled)
+            m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
+        else {
+            m_engine->stopEventLoop();
+            m_eventLoop.waitForFinished();
+        }
+    }
+
+    m_engineMutex.unlock();
+    emit eventLoopEnabledChanged();
 }
