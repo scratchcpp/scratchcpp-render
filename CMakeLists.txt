@@ -20,7 +20,7 @@ set(QML_IMPORT_PATH "${QML_IMPORT_PATH};${PROJECT_SOURCE_DIR}/src/qml" PARENT_SC
 
 target_compile_definitions(libscratchcpp-gui PRIVATE SCRATCHCPPGUI_LIBRARY)
 
-target_link_libraries(libscratchcpp-gui PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick)
+linkQt(libscratchcpp-gui)
 
 include(build/SetUpLibscratchcpp.cmake)
 target_link_libraries(libscratchcpp-gui PRIVATE scratchcpp)
