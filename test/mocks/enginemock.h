@@ -112,4 +112,4 @@ class EngineMock : public IEngine
         MOCK_METHOD(const ScriptMap &, scripts, (), (const, override));
 };
 
-} // namespace libscratchcpp
+} // namespace scratchcppgui
