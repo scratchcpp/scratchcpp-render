@@ -2,28 +2,21 @@
 
 #pragma once
 
-#include <scratchcpp/iimageformat.h>
-#include <scratchcpp/iengine.h>
 #include <qnanoquickitem.h>
-#include <qnanoimage.h>
 #include <QBuffer>
 #include <QMutex>
+
+#include "irenderedtarget.h"
 
 Q_MOC_INCLUDE("stagemodel.h");
 Q_MOC_INCLUDE("spritemodel.h");
 
-namespace libscratchcpp
-{
-class Costume;
-}
-
 namespace scratchcppgui
 {
 
-class StageModel;
-class SpriteModel;
-
-class RenderedTarget : public QNanoQuickItem
+class RenderedTarget
+    : public QNanoQuickItem
+    , public IRenderedTarget
 {
         Q_OBJECT
         QML_ELEMENT
@@ -36,29 +29,29 @@ class RenderedTarget : public QNanoQuickItem
         RenderedTarget(QNanoQuickItem *parent = nullptr);
         ~RenderedTarget();
 
-        Q_INVOKABLE void loadProperties();
-        void loadCostume(libscratchcpp::Costume *costume);
-        Q_INVOKABLE void updateProperties();
+        Q_INVOKABLE void loadProperties() override;
+        void loadCostume(libscratchcpp::Costume *costume) override;
+        Q_INVOKABLE void updateProperties() override;
 
-        libscratchcpp::IEngine *engine() const;
-        void setEngine(libscratchcpp::IEngine *newEngine);
+        libscratchcpp::IEngine *engine() const override;
+        void setEngine(libscratchcpp::IEngine *newEngine) override;
 
-        StageModel *stageModel() const;
-        void setStageModel(StageModel *newStageModel);
+        StageModel *stageModel() const override;
+        void setStageModel(StageModel *newStageModel) override;
 
-        SpriteModel *spriteModel() const;
-        void setSpriteModel(SpriteModel *newSpriteModel);
+        SpriteModel *spriteModel() const override;
+        void setSpriteModel(SpriteModel *newSpriteModel) override;
 
-        libscratchcpp::Target *scratchTarget() const;
+        libscratchcpp::Target *scratchTarget() const override;
 
-        unsigned char *svgBitmap() const;
-        QBuffer *bitmapBuffer();
-        const QString &bitmapUniqueKey() const;
+        unsigned char *svgBitmap() const override;
+        QBuffer *bitmapBuffer() override;
+        const QString &bitmapUniqueKey() const override;
 
-        void lockCostume();
-        void unlockCostume();
+        void lockCostume() override;
+        void unlockCostume() override;
 
-        bool mirrorHorizontally() const;
+        bool mirrorHorizontally() const override;
 
     signals:
         void engineChanged();

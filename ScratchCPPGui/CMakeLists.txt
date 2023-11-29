@@ -17,6 +17,7 @@ qt_add_qml_module(libscratchcpp-gui
 	stagemodel.h
 	spritemodel.cpp
 	spritemodel.h
+	irenderedtarget.h
         renderedtarget.cpp
         renderedtarget.h
 	targetpainter.cpp
