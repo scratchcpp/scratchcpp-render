@@ -15,8 +15,10 @@ include(GoogleTest)
 
 function(add_test TARGET)
     target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/ScratchCPPGui)
+    target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/libqnanopainter)
 endfunction()
 
 add_subdirectory(mocks)
 
 add_subdirectory(projectloader)
+add_subdirectory(renderedtarget)

@@ -104,6 +104,7 @@ void RenderedTarget::loadCostume(Costume *costume)
         QImageReader reader(&m_bitmapBuffer);
         QSize size = reader.size();
         calculateSize(target, size.width(), size.height());
+        m_bitmapBuffer.close();
     }
 
     m_costumeMutex.unlock();
