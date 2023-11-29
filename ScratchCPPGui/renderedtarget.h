@@ -44,6 +44,12 @@ class RenderedTarget
 
         libscratchcpp::Target *scratchTarget() const override;
 
+        double costumeWidth() const override;
+        void setCostumeWidth(double width) override;
+
+        double costumeHeight() const override;
+        void setCostumeHeight(double height) override;
+
         unsigned char *svgBitmap() const override;
         QBuffer *bitmapBuffer() override;
         const QString &bitmapUniqueKey() const override;

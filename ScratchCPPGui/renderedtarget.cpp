@@ -59,8 +59,8 @@ void RenderedTarget::loadProperties()
 
             // Coordinates
             double size = sprite->size() / 100;
-            m_x = m_engine->stageWidth() / 2 + sprite->x() - m_costume->rotationCenterX() * size / 2 * (m_newMirrorHorizontally ? -1 : 1);
-            m_y = m_engine->stageHeight() / 2 - sprite->y() - m_costume->rotationCenterY() * size / 2;
+            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * size / 2 * (m_newMirrorHorizontally ? -1 : 1);
+            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * size / 2;
             m_originX = m_costume->rotationCenterX() * size / 2.0;
             m_originY = m_costume->rotationCenterY() * size / 2.0;
 
@@ -70,8 +70,8 @@ void RenderedTarget::loadProperties()
 
         mutex.unlock();
     } else if (m_stageModel) {
-        m_x = m_engine->stageWidth() / 2 - m_costume->rotationCenterX() / 2;
-        m_y = m_engine->stageHeight() / 2 - m_costume->rotationCenterY() / 2;
+        m_x = static_cast<double>(m_engine->stageWidth()) / 2 - m_costume->rotationCenterX() / 2.0;
+        m_y = static_cast<double>(m_engine->stageHeight()) / 2 - m_costume->rotationCenterY() / 2.0;
         m_originX = m_costume->rotationCenterX() / 2.0;
         m_originY = m_costume->rotationCenterY() / 2.0;
     }
@@ -187,6 +187,30 @@ Target *RenderedTarget::scratchTarget() const
         return m_stageModel->stage();
     else
         return nullptr;
+}
+
+double RenderedTarget::costumeWidth() const
+{
+    return m_width;
+}
+
+void RenderedTarget::setCostumeWidth(double width)
+{
+    mutex.lock();
+    m_width = width;
+    mutex.unlock();
+}
+
+double RenderedTarget::costumeHeight() const
+{
+    return m_height;
+}
+
+void RenderedTarget::setCostumeHeight(double height)
+{
+    mutex.lock();
+    m_height = height;
+    mutex.unlock();
 }
 
 unsigned char *RenderedTarget::svgBitmap() const
