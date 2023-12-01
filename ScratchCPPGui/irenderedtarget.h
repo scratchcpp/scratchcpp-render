@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <QtMath>
+
 class QBuffer;
 class QString;
 
@@ -39,6 +41,12 @@ class IRenderedTarget
         virtual void setSpriteModel(SpriteModel *newSpriteModel) = 0;
 
         virtual libscratchcpp::Target *scratchTarget() const = 0;
+
+        virtual qreal width() const = 0;
+        virtual void setWidth(qreal width) = 0;
+
+        virtual qreal height() const = 0;
+        virtual void setHeight(qreal width) = 0;
 
         virtual double costumeWidth() const = 0;
         virtual void setCostumeWidth(double width) = 0;

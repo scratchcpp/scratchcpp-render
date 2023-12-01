@@ -190,6 +190,26 @@ Target *RenderedTarget::scratchTarget() const
         return nullptr;
 }
 
+qreal RenderedTarget::width() const
+{
+    return QNanoQuickItem::width();
+}
+
+void RenderedTarget::setWidth(qreal width)
+{
+    QNanoQuickItem::setWidth(width);
+}
+
+qreal RenderedTarget::height() const
+{
+    return QNanoQuickItem::height();
+}
+
+void RenderedTarget::setHeight(qreal height)
+{
+    QNanoQuickItem::setHeight(height);
+}
+
 double RenderedTarget::costumeWidth() const
 {
     return m_width;

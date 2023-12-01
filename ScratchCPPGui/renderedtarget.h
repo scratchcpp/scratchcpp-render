@@ -44,6 +44,12 @@ class RenderedTarget
 
         libscratchcpp::Target *scratchTarget() const override;
 
+        qreal width() const override;
+        void setWidth(qreal width) override;
+
+        qreal height() const override;
+        void setHeight(qreal height) override;
+
         double costumeWidth() const override;
         void setCostumeWidth(double width) override;
 

@@ -4,7 +4,7 @@
 #include <scratchcpp/costume.h>
 
 #include "targetpainter.h"
-#include "renderedtarget.h"
+#include "irenderedtarget.h"
 #include "spritemodel.h"
 
 using namespace scratchcppgui;
@@ -50,6 +50,6 @@ void TargetPainter::paint(QNanoPainter *painter)
 
 void TargetPainter::synchronize(QNanoQuickItem *item)
 {
-    m_target = dynamic_cast<RenderedTarget *>(item);
+    m_target = dynamic_cast<IRenderedTarget *>(item);
     Q_ASSERT(m_target);
 }
