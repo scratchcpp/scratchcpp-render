@@ -35,7 +35,7 @@ void TargetPainter::paint(QNanoPainter *painter)
             uchar alpha = svgBitmap[pixelIndex + 3];
 
             int x = i % static_cast<int>(width);
-            int y = i / static_cast<int>(height);
+            int y = i / static_cast<int>(width);
 
             painter->setFillStyle(QNanoColor(red, green, blue, alpha));
             painter->fillRect(x, y, 1, 1);
