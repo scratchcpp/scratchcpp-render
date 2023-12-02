@@ -14,9 +14,7 @@ Q_MOC_INCLUDE("spritemodel.h");
 namespace scratchcppgui
 {
 
-class RenderedTarget
-    : public QNanoQuickItem
-    , public IRenderedTarget
+class RenderedTarget : public IRenderedTarget
 {
         Q_OBJECT
         QML_ELEMENT

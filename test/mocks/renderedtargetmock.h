@@ -9,9 +9,7 @@ using namespace scratchcppgui;
 namespace scratchcppgui
 {
 
-class RenderedTargetMock
-    : public QNanoQuickItem
-    , public IRenderedTarget
+class RenderedTargetMock : public IRenderedTarget
 {
     public:
         MOCK_METHOD(void, loadProperties, (), (override));

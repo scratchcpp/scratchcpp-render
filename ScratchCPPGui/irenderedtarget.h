@@ -2,10 +2,9 @@
 
 #pragma once
 
-#include <QtMath>
+#include <qnanoquickitem.h>
 
 class QBuffer;
-class QString;
 
 namespace libscratchcpp
 {
@@ -22,9 +21,14 @@ namespace scratchcppgui
 class StageModel;
 class SpriteModel;
 
-class IRenderedTarget
+class IRenderedTarget : public QNanoQuickItem
 {
     public:
+        IRenderedTarget(QNanoQuickItem *parent = nullptr) :
+            QNanoQuickItem(parent)
+        {
+        }
+
         virtual ~IRenderedTarget() { }
 
         virtual void loadProperties() = 0;

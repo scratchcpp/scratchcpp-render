@@ -43,12 +43,12 @@ libscratchcpp::Stage *StageModel::stage() const
     return m_stage;
 }
 
-RenderedTarget *StageModel::renderedTarget() const
+IRenderedTarget *StageModel::renderedTarget() const
 {
     return m_renderedTarget;
 }
 
-void StageModel::setRenderedTarget(RenderedTarget *newRenderedTarget)
+void StageModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
 {
     if (m_renderedTarget == newRenderedTarget)
         return;

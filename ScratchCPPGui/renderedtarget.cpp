@@ -12,7 +12,7 @@ using namespace scratchcppgui;
 using namespace libscratchcpp;
 
 RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
-    QNanoQuickItem(parent)
+    IRenderedTarget(parent)
 {
 }
 
