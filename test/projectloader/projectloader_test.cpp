@@ -49,6 +49,13 @@ class ProjectLoaderTest : public testing::Test
         }
 };
 
+TEST_F(ProjectLoaderTest, Constructors)
+{
+    ProjectLoader loader1;
+    ProjectLoader loader2(&loader1);
+    ASSERT_EQ(loader2.parent(), &loader1);
+}
+
 TEST_F(ProjectLoaderTest, Load)
 {
     ProjectLoader loader;
