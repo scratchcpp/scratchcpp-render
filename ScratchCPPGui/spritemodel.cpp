@@ -62,12 +62,12 @@ libscratchcpp::Sprite *SpriteModel::sprite() const
     return m_sprite;
 }
 
-RenderedTarget *SpriteModel::renderedTarget() const
+IRenderedTarget *SpriteModel::renderedTarget() const
 {
     return m_renderedTarget;
 }
 
-void SpriteModel::setRenderedTarget(RenderedTarget *newRenderedTarget)
+void SpriteModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
 {
     if (m_renderedTarget == newRenderedTarget)
         return;
