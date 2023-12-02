@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y nlohmann-json3-dev libutfcpp-dev libgd-dev
+        sudo apt-get install -y nlohmann-json3-dev libutfcpp-dev libgd-dev xvfb libxcb-cursor0
       shell: bash
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
@@ -31,8 +31,8 @@ jobs:
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DSCRATCHCPPGUI_BUILD_UNIT_TESTS=ON
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j$(nproc --all)
+      run: xvfb-run cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -j$(nproc --all)
 
     - name: Run unit tests
-      run: ctest --test-dir build -V
+      run: xvfb-run ctest --test-dir build -V
 
