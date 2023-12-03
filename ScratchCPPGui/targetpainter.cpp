@@ -4,7 +4,7 @@
 #include <scratchcpp/costume.h>
 
 #include "targetpainter.h"
-#include "renderedtarget.h"
+#include "irenderedtarget.h"
 #include "spritemodel.h"
 
 using namespace scratchcppgui;
@@ -35,7 +35,7 @@ void TargetPainter::paint(QNanoPainter *painter)
             uchar alpha = svgBitmap[pixelIndex + 3];
 
             int x = i % static_cast<int>(width);
-            int y = i / static_cast<int>(height);
+            int y = i / static_cast<int>(width);
 
             painter->setFillStyle(QNanoColor(red, green, blue, alpha));
             painter->fillRect(x, y, 1, 1);
@@ -50,6 +50,6 @@ void TargetPainter::paint(QNanoPainter *painter)
 
 void TargetPainter::synchronize(QNanoQuickItem *item)
 {
-    m_target = dynamic_cast<RenderedTarget *>(item);
+    m_target = dynamic_cast<IRenderedTarget *>(item);
     Q_ASSERT(m_target);
 }

@@ -11,7 +11,7 @@ Q_MOC_INCLUDE("renderedtarget.h");
 namespace scratchcppgui
 {
 
-class RenderedTarget;
+class IRenderedTarget;
 
 class SpriteModel
     : public QObject
@@ -19,7 +19,7 @@ class SpriteModel
 {
         Q_OBJECT
         QML_ELEMENT
-        Q_PROPERTY(RenderedTarget *renderedTarget READ renderedTarget WRITE setRenderedTarget NOTIFY renderedTargetChanged)
+        Q_PROPERTY(IRenderedTarget *renderedTarget READ renderedTarget WRITE setRenderedTarget NOTIFY renderedTargetChanged)
 
     public:
         SpriteModel(QObject *parent = nullptr);
@@ -39,15 +39,15 @@ class SpriteModel
 
         libscratchcpp::Sprite *sprite() const;
 
-        RenderedTarget *renderedTarget() const;
-        void setRenderedTarget(RenderedTarget *newRenderedTarget);
+        IRenderedTarget *renderedTarget() const;
+        void setRenderedTarget(IRenderedTarget *newRenderedTarget);
 
     signals:
         void renderedTargetChanged();
 
     private:
         libscratchcpp::Sprite *m_sprite = nullptr;
-        RenderedTarget *m_renderedTarget = nullptr;
+        IRenderedTarget *m_renderedTarget = nullptr;
 };
 
 } // namespace scratchcppgui

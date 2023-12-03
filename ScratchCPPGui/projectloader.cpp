@@ -34,7 +34,7 @@ ProjectLoader::~ProjectLoader()
     if (m_loadThread.isRunning())
         m_loadThread.waitForFinished();
 
-    if (m_engine) {
+    if (m_engine && m_eventLoopEnabled) {
         m_engine->stopEventLoop();
         m_eventLoop.waitForFinished();
     }
@@ -88,6 +88,12 @@ IEngine *ProjectLoader::engine() const
     return m_engine;
 }
 
+// NOTE: This should be only used for testing
+void ProjectLoader::setEngine(libscratchcpp::IEngine *engine)
+{
+    m_engine = engine;
+}
+
 StageModel *ProjectLoader::stage()
 {
     if (m_loadThread.isRunning())
@@ -102,6 +108,11 @@ QQmlListProperty<SpriteModel> ProjectLoader::sprites()
         m_loadThread.waitForFinished();
 
     return QQmlListProperty<SpriteModel>(this, &m_sprites);
+}
+
+const QList<SpriteModel *> &ProjectLoader::spriteList() const
+{
+    return m_sprites;
 }
 
 void ProjectLoader::start()
@@ -198,7 +209,10 @@ void ProjectLoader::load()
 
     // Run event loop
     m_engine->setSpriteFencingEnabled(false);
-    m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
+
+    if (m_eventLoopEnabled)
+        m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
+
     m_engineMutex.unlock();
 
     emit loadStatusChanged();
@@ -244,11 +258,13 @@ void ProjectLoader::setFps(double newFps)
     if (qFuzzyCompare(m_fps, newFps))
         return;
 
-    m_fps = newFps;
     m_engineMutex.lock();
 
-    if (m_engine)
-        m_engine->setFps(m_fps);
+    if (m_engine) {
+        m_engine->setFps(newFps);
+        m_fps = m_engine->fps();
+    } else
+        m_fps = newFps;
 
     m_engineMutex.unlock();
     emit fpsChanged();
@@ -324,11 +340,13 @@ void ProjectLoader::setCloneLimit(int newCloneLimit)
     if (m_cloneLimit == newCloneLimit)
         return;
 
-    m_cloneLimit = newCloneLimit;
     m_engineMutex.lock();
 
-    if (m_engine)
-        m_engine->setCloneLimit(m_cloneLimit);
+    if (m_engine) {
+        m_engine->setCloneLimit(newCloneLimit);
+        m_cloneLimit = m_engine->cloneLimit();
+    } else
+        m_cloneLimit = newCloneLimit;
 
     m_engineMutex.unlock();
     emit cloneLimitChanged();
@@ -352,4 +370,30 @@ void ProjectLoader::setSpriteFencing(bool newSpriteFencing)
 
     m_engineMutex.unlock();
     emit spriteFencingChanged();
+}
+
+bool ProjectLoader::eventLoopEnabled() const
+{
+    return m_eventLoopEnabled;
+}
+
+void ProjectLoader::setEventLoopEnabled(bool newEventLoopEnabled)
+{
+    if (m_eventLoopEnabled == newEventLoopEnabled)
+        return;
+
+    m_eventLoopEnabled = newEventLoopEnabled;
+    m_engineMutex.lock();
+
+    if (m_engine) {
+        if (m_eventLoopEnabled)
+            m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
+        else {
+            m_engine->stopEventLoop();
+            m_eventLoop.waitForFinished();
+        }
+    }
+
+    m_engineMutex.unlock();
+    emit eventLoopEnabledChanged();
 }

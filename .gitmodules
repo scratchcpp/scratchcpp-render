@@ -1,3 +1,6 @@
 [submodule "libscratchcpp"]
 	path = libscratchcpp
 	url = https://github.com/scratchcpp/libscratchcpp
+[submodule "thirdparty/googletest"]
+	path = thirdparty/googletest
+	url = https://github.com/google/googletest

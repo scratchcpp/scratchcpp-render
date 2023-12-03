@@ -3,10 +3,11 @@
 #pragma once
 
 #include <qnanoquickitempainter.h>
+
 namespace scratchcppgui
 {
 
-class RenderedTarget;
+class IRenderedTarget;
 
 class TargetPainter : public QNanoQuickItemPainter
 {
@@ -18,7 +19,7 @@ class TargetPainter : public QNanoQuickItemPainter
         void synchronize(QNanoQuickItem *item) override;
 
     private:
-        RenderedTarget *m_target = nullptr;
+        IRenderedTarget *m_target = nullptr;
 };
 
 } // namespace scratchcppgui

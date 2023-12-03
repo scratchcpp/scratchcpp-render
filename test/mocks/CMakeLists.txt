@@ -1,0 +1,2 @@
+add_library(scratchcppgui_mocks INTERFACE)
+target_include_directories(scratchcppgui_mocks INTERFACE .)
