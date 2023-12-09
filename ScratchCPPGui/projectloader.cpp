@@ -20,6 +20,18 @@ void runEventLoop(IEngine *engine)
 ProjectLoader::ProjectLoader(QObject *parent) :
     QObject(parent)
 {
+    m_project.setDownloadProgressCallback([this](unsigned int finished, unsigned int all) {
+        if (finished != m_downloadedAssets) {
+            m_downloadedAssets = finished;
+            emit downloadedAssetsChanged();
+        }
+
+        if (all != m_assetCount) {
+            m_assetCount = all;
+            emit assetCountChanged();
+        }
+    });
+
     initTimer();
 
     // Update refresh rate when primary screen changes
@@ -66,6 +78,13 @@ void ProjectLoader::setFileName(const QString &newFileName)
     m_project.setScratchVersion(ScratchVersion::Scratch3);
     m_project.setFileName(m_fileName.toStdString());
     m_loadStatus = false;
+
+    // TODO: Do not set these to 0 after libscratchcpp starts doing it itself
+    m_downloadedAssets = 0;
+    m_assetCount = 0;
+    emit downloadedAssetsChanged();
+    emit assetCountChanged();
+
     emit loadStatusChanged();
     emit fileNameChanged();
 
@@ -396,4 +415,14 @@ void ProjectLoader::setEventLoopEnabled(bool newEventLoopEnabled)
 
     m_engineMutex.unlock();
     emit eventLoopEnabledChanged();
+}
+
+unsigned int ProjectLoader::downloadedAssets() const
+{
+    return m_downloadedAssets;
+}
+
+unsigned int ProjectLoader::assetCount() const
+{
+    return m_assetCount;
 }
