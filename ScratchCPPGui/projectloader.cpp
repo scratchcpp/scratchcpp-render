@@ -43,6 +43,8 @@ ProjectLoader::ProjectLoader(QObject *parent) :
 
 ProjectLoader::~ProjectLoader()
 {
+    m_stopLoading = true;
+
     if (m_loadThread.isRunning())
         m_loadThread.waitForFinished();
 
@@ -88,6 +90,7 @@ void ProjectLoader::setFileName(const QString &newFileName)
     emit loadStatusChanged();
     emit fileNameChanged();
 
+    m_stopLoading = false;
     m_loadThread = QtConcurrent::run(&callLoad, this);
 }
 
@@ -193,7 +196,8 @@ void ProjectLoader::load()
 
     m_sprites.clear();
 
-    if (!m_engine) {
+    if (!m_engine || m_stopLoading) {
+        m_engineMutex.unlock();
         emit fileNameChanged();
         emit loadStatusChanged();
         emit loadingFinished();
@@ -224,6 +228,16 @@ void ProjectLoader::load()
             dynamic_cast<Sprite *>(target.get())->setInterface(sprite);
             m_sprites.push_back(sprite);
         }
+    }
+
+    if (m_stopLoading) {
+        m_engineMutex.unlock();
+        emit fileNameChanged();
+        emit loadStatusChanged();
+        emit loadingFinished();
+        emit engineChanged();
+        emit spritesChanged();
+        return;
     }
 
     // Run event loop

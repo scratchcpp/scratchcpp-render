@@ -123,6 +123,7 @@ class ProjectLoader : public QObject
         bool m_eventLoopEnabled = true;
         std::atomic<unsigned int> m_downloadedAssets = 0;
         std::atomic<unsigned int> m_assetCount = 0;
+        std::atomic<bool> m_stopLoading = false;
 };
 
 } // namespace scratchcppgui
