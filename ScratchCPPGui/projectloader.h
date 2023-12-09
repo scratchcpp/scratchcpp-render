@@ -30,6 +30,8 @@ class ProjectLoader : public QObject
         Q_PROPERTY(int cloneLimit READ cloneLimit WRITE setCloneLimit NOTIFY cloneLimitChanged)
         Q_PROPERTY(bool spriteFencing READ spriteFencing WRITE setSpriteFencing NOTIFY spriteFencingChanged)
         Q_PROPERTY(bool eventLoopEnabled READ eventLoopEnabled WRITE setEventLoopEnabled NOTIFY eventLoopEnabledChanged)
+        Q_PROPERTY(unsigned int downloadedAssets READ downloadedAssets NOTIFY downloadedAssetsChanged)
+        Q_PROPERTY(unsigned int assetCount READ assetCount NOTIFY assetCountChanged)
 
     public:
         explicit ProjectLoader(QObject *parent = nullptr);
@@ -72,6 +74,10 @@ class ProjectLoader : public QObject
         bool eventLoopEnabled() const;
         void setEventLoopEnabled(bool newEventLoopEnabled);
 
+        unsigned int downloadedAssets() const;
+
+        unsigned int assetCount() const;
+
     signals:
         void fileNameChanged();
         void loadStatusChanged();
@@ -86,6 +92,8 @@ class ProjectLoader : public QObject
         void cloneLimitChanged();
         void spriteFencingChanged();
         void eventLoopEnabledChanged();
+        void downloadedAssetsChanged();
+        void assetCountChanged();
 
     protected:
         void timerEvent(QTimerEvent *event) override;
@@ -113,6 +121,8 @@ class ProjectLoader : public QObject
         int m_cloneLimit = 300;
         bool m_spriteFencing = true;
         bool m_eventLoopEnabled = true;
+        std::atomic<unsigned int> m_downloadedAssets = 0;
+        std::atomic<unsigned int> m_assetCount = 0;
 };
 
 } // namespace scratchcppgui
