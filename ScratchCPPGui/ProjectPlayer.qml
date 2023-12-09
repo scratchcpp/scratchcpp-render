@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
 import ScratchCPPGui
 
 ProjectScene {
@@ -9,11 +11,21 @@ ProjectScene {
     property alias turboMode: loader.turboMode
 	property alias cloneLimit: loader.cloneLimit
 	property alias spriteFencing: loader.spriteFencing
+    property bool showLoadingProgress: true
+    readonly property bool loading: priv.loading
+    readonly property int downloadedAssets: loader.downloadedAssets
+    readonly property int assetCount: loader.assetCount
     signal loaded()
     signal failedToLoad()
 
     id: root
 	clip: true
+    onFileNameChanged: priv.loading = true;
+
+    QtObject {
+        id: priv
+        property bool loading: false
+    }
 
     ProjectLoader {
         id: loader
@@ -21,6 +33,8 @@ ProjectScene {
 		stageWidth: parent.width
 		stageHeight: parent.height
         onLoadingFinished: {
+            priv.loading = false;
+
             if(loadStatus)
                 loaded();
             else
@@ -53,6 +67,46 @@ ProjectScene {
             spriteModel: modelData
             transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
             Component.onCompleted: modelData.renderedTarget = this
+        }
+    }
+
+    Loader {
+        anchors.fill: parent
+        active: showLoadingProgress && loading
+
+        sourceComponent: ColumnLayout {
+            anchors.fill: parent
+
+            Item { Layout.fillHeight: true }
+
+            BusyIndicator {
+                Layout.fillWidth: true
+                Layout.maximumWidth: 100
+                Layout.alignment: Qt.AlignHCenter
+                running: true
+            }
+
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                font.bold: true
+                font.pointSize: 12
+                text: {
+                    if(loading)
+                        return assetCount == downloadedAssets ? qsTr("Loading project...") : qsTr("Downloading assets... (%1 of %2)").arg(downloadedAssets).arg(assetCount);
+                    else
+                        return "";
+                }
+            }
+
+            ProgressBar {
+                Layout.fillWidth: true
+                from: 0
+                to: assetCount
+                value: downloadedAssets
+                indeterminate: assetCount == downloadedAssets
+            }
+
+            Item { Layout.fillHeight: true }
         }
     }
 }
