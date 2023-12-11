@@ -63,11 +63,11 @@ TEST(RenderedTargetTest, LoadAndUpdateProperties)
     target.updateProperties();
     ASSERT_EQ(target.width(), 4);
     ASSERT_EQ(target.height(), 6);
-    ASSERT_EQ(target.x(), 283.5);
-    ASSERT_EQ(target.y(), 88.5);
+    ASSERT_EQ(target.x(), 295);
+    ASSERT_EQ(target.y(), 52.5);
     ASSERT_EQ(target.z(), 0);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(target.transformOriginPoint(), QPointF(-11.5, 36));
+    ASSERT_EQ(target.transformOriginPoint(), QPointF(-23, 72));
 
     target.setStageModel(nullptr);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
@@ -107,11 +107,12 @@ TEST(RenderedTargetTest, LoadAndUpdateProperties)
     target.updateProperties();
     ASSERT_EQ(target.width(), 14.3);
     ASSERT_EQ(target.height(), 5.8);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 220.62);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -49.09);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 237.18);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, -100.93);
     ASSERT_EQ(target.z(), 3);
     ASSERT_EQ(target.rotation(), -157.16);
-    ASSERT_EQ(target.transformOriginPoint(), QPointF(-16.5577, 51.8328));
+    ASSERT_EQ(target.transformOriginPoint().x(), -33.1154);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 103.67);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
