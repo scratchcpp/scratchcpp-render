@@ -41,6 +41,9 @@ class RenderedTargetMock : public IRenderedTarget
 
         MOCK_METHOD(bool, mirrorHorizontally, (), (const, override));
 
+        MOCK_METHOD(bool, isSvg, (), (const, override));
+        MOCK_METHOD(void, paintSvg, (QNanoPainter *), (override));
+
         MOCK_METHOD(QNanoQuickItemPainter *, createItemPainter, (), (const, override));
 };
 

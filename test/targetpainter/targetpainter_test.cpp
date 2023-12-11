@@ -75,6 +75,7 @@ TEST_F(TargetPainterTest, PaintBitmap)
         EXPECT_CALL(target, lockCostume());
         EXPECT_CALL(target, width()).WillOnce(Return(40));
         EXPECT_CALL(target, height()).WillOnce(Return(60));
+        EXPECT_CALL(target, isSvg()).WillOnce(Return(false));
         EXPECT_CALL(target, bitmapBuffer()).WillOnce(Return(&buffer));
         static const QString uniqueKey("abc");
         EXPECT_CALL(target, bitmapUniqueKey()).WillOnce(ReturnRef(uniqueKey));
@@ -89,6 +90,28 @@ TEST_F(TargetPainterTest, PaintBitmap)
         fbo.release();
         refFbo.release();
     }
+
+    context.doneCurrent();
+}
+
+TEST_F(TargetPainterTest, PaintSvg)
+{
+    QOpenGLContext context;
+    QOffscreenSurface surface;
+    createContextAndSurface(&context, &surface);
+
+    TargetPainter targetPainter;
+    QNanoPainter painter;
+    RenderedTargetMock target;
+    targetPainter.synchronize(&target);
+
+    EXPECT_CALL(target, lockCostume());
+    EXPECT_CALL(target, width()).WillOnce(Return(40));
+    EXPECT_CALL(target, height()).WillOnce(Return(60));
+    EXPECT_CALL(target, isSvg()).WillOnce(Return(true));
+    EXPECT_CALL(target, paintSvg(&painter));
+    EXPECT_CALL(target, unlockCostume());
+    targetPainter.paint(&painter);
 
     context.doneCurrent();
 }

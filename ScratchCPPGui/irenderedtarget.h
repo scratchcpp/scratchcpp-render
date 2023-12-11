@@ -5,6 +5,7 @@
 #include <qnanoquickitem.h>
 
 class QBuffer;
+class QNanoPainter;
 
 namespace libscratchcpp
 {
@@ -59,6 +60,9 @@ class IRenderedTarget : public QNanoQuickItem
         virtual void unlockCostume() = 0;
 
         virtual bool mirrorHorizontally() const = 0;
+
+        virtual bool isSvg() const = 0;
+        virtual void paintSvg(QNanoPainter *painter) = 0;
 };
 
 } // namespace scratchcppgui

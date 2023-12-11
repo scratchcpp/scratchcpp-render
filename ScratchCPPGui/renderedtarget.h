@@ -5,6 +5,7 @@
 #include <qnanoquickitem.h>
 #include <QBuffer>
 #include <QMutex>
+#include <QtSvg/QSvgRenderer>
 
 #include "irenderedtarget.h"
 
@@ -55,6 +56,9 @@ class RenderedTarget : public IRenderedTarget
 
         bool mirrorHorizontally() const override;
 
+        bool isSvg() const override;
+        void paintSvg(QNanoPainter *painter) override;
+
     signals:
         void engineChanged();
         void stageModelChanged();
@@ -73,6 +77,7 @@ class RenderedTarget : public IRenderedTarget
         libscratchcpp::Costume *m_costume = nullptr;
         StageModel *m_stageModel = nullptr;
         SpriteModel *m_spriteModel = nullptr;
+        QSvgRenderer m_svgRenderer;
         QBuffer m_bitmapBuffer;
         QString m_bitmapUniqueKey;
         QMutex m_costumeMutex;

@@ -2,6 +2,8 @@
 
 #include <scratchcpp/iengine.h>
 #include <scratchcpp/costume.h>
+#include <QtSvg/QSvgRenderer>
+#include <qnanopainter.h>
 
 #include "renderedtarget.h"
 #include "targetpainter.h"
@@ -80,6 +82,8 @@ void RenderedTarget::loadCostume(Costume *costume)
     m_imageChanged = true;
 
     if (costume->dataFormat() == "svg") {
+        if (costume != m_costume)
+            m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(costume->data()), costume->dataSize()));
     }
 
     m_costume = costume;
@@ -202,6 +206,8 @@ void RenderedTarget::doLoadCostume()
     Target *target = scratchTarget();
 
     if (m_costume->dataFormat() == "svg") {
+        QRectF rect = m_svgRenderer.viewBoxF();
+        calculateSize(target, rect.width(), rect.height());
     } else {
         m_bitmapBuffer.open(QBuffer::WriteOnly);
         m_bitmapBuffer.write(static_cast<const char *>(m_costume->data()), m_costume->dataSize());
@@ -215,6 +221,41 @@ void RenderedTarget::doLoadCostume()
     }
 
     m_costumeMutex.unlock();
+}
+
+void RenderedTarget::paintSvg(QNanoPainter *painter)
+{
+    Q_ASSERT(painter);
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    Q_ASSERT(context);
+
+    if (!context)
+        return;
+
+    QOffscreenSurface surface;
+    surface.setFormat(context->format());
+    surface.create();
+    Q_ASSERT(surface.isValid());
+
+    QSurface *oldSurface = context->surface();
+    context->makeCurrent(&surface);
+
+    const QRectF drawRect(0, 0, width(), height());
+    const QSize drawRectSize = drawRect.size().toSize();
+
+    /*QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setSamples(16);
+    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);*/
+
+    QOpenGLPaintDevice device(drawRectSize);
+    QPainter qPainter;
+    qPainter.begin(&device);
+    qPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    m_svgRenderer.render(&qPainter, drawRect);
+    qPainter.end();
+
+    context->doneCurrent();
+    context->makeCurrent(oldSurface);
 }
 
 void RenderedTarget::calculateSize(Target *target, double costumeWidth, double costumeHeight)
@@ -257,4 +298,12 @@ void RenderedTarget::unlockCostume()
 bool RenderedTarget::mirrorHorizontally() const
 {
     return m_mirrorHorizontally;
+}
+
+bool RenderedTarget::isSvg() const
+{
+    if (!m_costume)
+        return false;
+
+    return (m_costume->dataFormat() == "svg");
 }

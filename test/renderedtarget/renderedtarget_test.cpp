@@ -1,4 +1,7 @@
 #include <QtTest/QSignalSpy>
+#include <QOpenGLContext>
+#include <QOffscreenSurface>
+#include <qnanopainter.h>
 #include <renderedtarget.h>
 #include <stagemodel.h>
 #include <spritemodel.h>
@@ -14,7 +17,29 @@ using namespace libscratchcpp;
 
 using ::testing::Return;
 
-TEST(RenderedTargetTest, Constructors)
+class RenderedTargetTest : public testing::Test
+{
+    public:
+        void createContextAndSurface(QOpenGLContext *context, QOffscreenSurface *surface)
+        {
+            QSurfaceFormat surfaceFormat;
+            surfaceFormat.setMajorVersion(4);
+            surfaceFormat.setMinorVersion(3);
+
+            context->setFormat(surfaceFormat);
+            context->create();
+            ASSERT_TRUE(context->isValid());
+
+            surface->setFormat(surfaceFormat);
+            surface->create();
+            ASSERT_TRUE(surface->isValid());
+
+            context->makeCurrent(surface);
+            ASSERT_EQ(QOpenGLContext::currentContext(), context);
+        }
+};
+
+TEST_F(RenderedTargetTest, Constructors)
 {
     RenderedTarget target1;
     RenderedTarget target2(&target1);
@@ -22,7 +47,7 @@ TEST(RenderedTargetTest, Constructors)
     ASSERT_EQ(target2.parentItem(), &target1);
 }
 
-TEST(RenderedTargetTest, LoadAndUpdateProperties)
+TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
 {
     RenderedTarget target;
     QSignalSpy mirrorHorizontallySpy(&target, &RenderedTarget::mirrorHorizontallyChanged);
@@ -155,17 +180,17 @@ TEST(RenderedTargetTest, LoadAndUpdateProperties)
     ASSERT_EQ(mirrorHorizontallySpy.count(), 2);
 }
 
-TEST(RenderedTargetTest, LoadJpegCostume)
+TEST_F(RenderedTargetTest, LoadJpegCostume)
 {
     std::string str = readFileStr("image.jpg");
-    Costume costume("", "", "");
+    Costume costume("", "abc", "jpg");
     costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
     costume.setBitmapResolution(3);
-    costume.setId("abc");
 
     RenderedTarget target;
 
     target.loadCostume(&costume);
+    ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
@@ -173,23 +198,25 @@ TEST(RenderedTargetTest, LoadJpegCostume)
     target.bitmapBuffer()->close();
 
     target.updateProperties();
+    ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
     ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
 }
 
-TEST(RenderedTargetTest, LoadPngCostume)
+TEST_F(RenderedTargetTest, LoadPngCostume)
 {
     std::string str = readFileStr("image.png");
-    Costume costume("", "", "");
+    Costume costume("", "abc", "png");
     costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
     costume.setBitmapResolution(3);
-    costume.setId("abc");
 
     RenderedTarget target;
 
     target.loadCostume(&costume);
+    ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
@@ -197,13 +224,92 @@ TEST(RenderedTargetTest, LoadPngCostume)
     target.bitmapBuffer()->close();
 
     target.updateProperties();
+    ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
     ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
 }
 
-TEST(RenderedTargetTest, Engine)
+TEST_F(RenderedTargetTest, LoadSvgCostume)
+{
+    std::string str = readFileStr("image.svg");
+    Costume costume("", "abc", "svg");
+    costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
+    costume.setBitmapResolution(3);
+
+    RenderedTarget target;
+
+    target.loadCostume(&costume);
+    ASSERT_TRUE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
+    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+
+    target.updateProperties();
+    ASSERT_TRUE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
+    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+}
+
+TEST_F(RenderedTargetTest, PaintSvg)
+{
+    std::string str = readFileStr("image.svg");
+    Costume costume("", "abc", "svg");
+    costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
+    costume.setBitmapResolution(3);
+
+    Sprite sprite;
+    sprite.setSize(2525.7);
+
+    SpriteModel model;
+    model.init(&sprite);
+
+    RenderedTarget target;
+    target.setSpriteModel(&model);
+    target.loadCostume(&costume);
+    target.updateProperties();
+
+    // Create OpenGL context
+    QOpenGLContext context;
+    QOffscreenSurface surface;
+    createContextAndSurface(&context, &surface);
+
+    // Create a painter
+    QNanoPainter painter;
+
+    QOpenGLFramebufferObjectFormat format;
+    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    // Begin painting
+    QOpenGLFramebufferObject fbo(100, 100, format);
+    fbo.bind();
+    painter.beginFrame(fbo.width(), fbo.height());
+
+    // Paint
+    target.paintSvg(&painter);
+    painter.endFrame();
+
+    // Compare with reference image
+    QBuffer buffer;
+    fbo.toImage().save(&buffer, "png");
+    QFile ref("svg_result.png");
+    ref.open(QFile::ReadOnly);
+    buffer.open(QBuffer::ReadOnly);
+    ASSERT_EQ(buffer.readAll(), ref.readAll());
+
+    // Release
+    fbo.release();
+    context.doneCurrent();
+}
+
+TEST_F(RenderedTargetTest, Engine)
 {
     RenderedTarget target;
     ASSERT_EQ(target.engine(), nullptr);
@@ -213,7 +319,7 @@ TEST(RenderedTargetTest, Engine)
     ASSERT_EQ(target.engine(), &engine);
 }
 
-TEST(RenderedTargetTest, StageModel)
+TEST_F(RenderedTargetTest, StageModel)
 {
     RenderedTarget target;
     ASSERT_EQ(target.stageModel(), nullptr);
@@ -223,7 +329,7 @@ TEST(RenderedTargetTest, StageModel)
     ASSERT_EQ(target.stageModel(), &model);
 }
 
-TEST(RenderedTargetTest, SpriteModel)
+TEST_F(RenderedTargetTest, SpriteModel)
 {
     RenderedTarget target;
     ASSERT_EQ(target.spriteModel(), nullptr);
@@ -233,7 +339,7 @@ TEST(RenderedTargetTest, SpriteModel)
     ASSERT_EQ(target.spriteModel(), &model);
 }
 
-TEST(RenderedTargetTest, ScratchTarget)
+TEST_F(RenderedTargetTest, ScratchTarget)
 {
     RenderedTarget target;
     ASSERT_EQ(target.scratchTarget(), nullptr);

@@ -23,8 +23,12 @@ void TargetPainter::paint(QNanoPainter *painter)
     double width = m_target->width();
     double height = m_target->height();
 
-    QNanoImage image = QNanoImage::fromCache(painter, m_target->bitmapBuffer(), m_target->bitmapUniqueKey());
-    painter->drawImage(image, 0, 0, width, height);
+    if (m_target->isSvg())
+        m_target->paintSvg(painter);
+    else {
+        QNanoImage image = QNanoImage::fromCache(painter, m_target->bitmapBuffer(), m_target->bitmapUniqueKey());
+        painter->drawImage(image, 0, 0, width, height);
+    }
 
     m_target->unlockCostume();
 }
