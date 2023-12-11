@@ -9,4 +9,18 @@ ProjectScene::ProjectScene(QQuickItem *parent)
 {
 }
 
+libscratchcpp::IEngine *ProjectScene::engine() const
+{
+    return m_engine;
+}
+
+void ProjectScene::setEngine(libscratchcpp::IEngine *newEngine)
+{
+    if (m_engine == newEngine)
+        return;
+
+    m_engine = newEngine;
+    emit engineChanged();
+}
+
 } // namespace scratchcppgui
