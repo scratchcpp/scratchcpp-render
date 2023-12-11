@@ -116,5 +116,7 @@ ProjectScene {
         anchors.fill: parent
         hoverEnabled: true
         onPositionChanged: root.handleMouseMove(mouseX, mouseY)
+        onPressed: root.handleMousePress()
+        onReleased: root.handleMouseRelease()
     }
 }
