@@ -16,12 +16,6 @@ RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
 {
 }
 
-RenderedTarget::~RenderedTarget()
-{
-    if (m_svgBitmap)
-        free(m_svgBitmap);
-}
-
 void RenderedTarget::loadProperties()
 {
     Q_ASSERT(!(m_spriteModel && m_stageModel));
@@ -83,30 +77,12 @@ void RenderedTarget::loadCostume(Costume *costume)
         return;
 
     m_costumeMutex.lock();
-    Target *target = scratchTarget();
-    m_costume = costume;
     m_imageChanged = true;
 
     if (costume->dataFormat() == "svg") {
-        // TODO: Load SVG here
-        // In case of rasterizing, write the bitmap to m_svgBitmap
-    } else {
-        if (m_svgBitmap) {
-            free(m_svgBitmap);
-            m_svgBitmap = nullptr;
-        }
-
-        m_bitmapBuffer.open(QBuffer::WriteOnly);
-        m_bitmapBuffer.write(static_cast<const char *>(costume->data()), costume->dataSize());
-        m_bitmapBuffer.close();
-        m_bitmapUniqueKey = QString::fromStdString(costume->id());
-
-        QImageReader reader(&m_bitmapBuffer);
-        QSize size = reader.size();
-        calculateSize(target, size.width(), size.height());
-        m_bitmapBuffer.close();
     }
 
+    m_costume = costume;
     m_costumeMutex.unlock();
 }
 
@@ -116,8 +92,12 @@ void RenderedTarget::updateProperties()
     setVisible(m_visible);
 
     if (m_visible) {
-        setWidth(m_width);
-        setHeight(m_height);
+        if (m_imageChanged) {
+            doLoadCostume();
+            update();
+            m_imageChanged = false;
+        }
+
         setX(m_x);
         setY(m_y);
         setZ(m_z);
@@ -127,11 +107,6 @@ void RenderedTarget::updateProperties()
         if (m_newMirrorHorizontally != m_mirrorHorizontally) {
             m_mirrorHorizontally = m_newMirrorHorizontally;
             emit mirrorHorizontallyChanged();
-        }
-
-        if (m_imageChanged) {
-            update();
-            m_imageChanged = false;
         }
     }
 
@@ -210,38 +185,36 @@ void RenderedTarget::setHeight(qreal height)
     QNanoQuickItem::setHeight(height);
 }
 
-double RenderedTarget::costumeWidth() const
-{
-    return m_width;
-}
-
-void RenderedTarget::setCostumeWidth(double width)
-{
-    mutex.lock();
-    m_width = width;
-    mutex.unlock();
-}
-
-double RenderedTarget::costumeHeight() const
-{
-    return m_height;
-}
-
-void RenderedTarget::setCostumeHeight(double height)
-{
-    mutex.lock();
-    m_height = height;
-    mutex.unlock();
-}
-
-unsigned char *RenderedTarget::svgBitmap() const
-{
-    return m_svgBitmap;
-}
-
 QNanoQuickItemPainter *RenderedTarget::createItemPainter() const
 {
     return new TargetPainter();
+}
+
+void RenderedTarget::doLoadCostume()
+{
+    m_costumeMutex.lock();
+
+    if (!m_costume) {
+        m_costumeMutex.unlock();
+        return;
+    }
+
+    Target *target = scratchTarget();
+
+    if (m_costume->dataFormat() == "svg") {
+    } else {
+        m_bitmapBuffer.open(QBuffer::WriteOnly);
+        m_bitmapBuffer.write(static_cast<const char *>(m_costume->data()), m_costume->dataSize());
+        m_bitmapBuffer.close();
+        m_bitmapUniqueKey = QString::fromStdString(m_costume->id());
+
+        QImageReader reader(&m_bitmapBuffer);
+        QSize size = reader.size();
+        calculateSize(target, size.width(), size.height());
+        m_bitmapBuffer.close();
+    }
+
+    m_costumeMutex.unlock();
 }
 
 void RenderedTarget::calculateSize(Target *target, double costumeWidth, double costumeHeight)
@@ -252,11 +225,11 @@ void RenderedTarget::calculateSize(Target *target, double costumeWidth, double c
 
         if (sprite) {
             double size = sprite->size();
-            m_width = costumeWidth * size / 100 / bitmapRes;
-            m_height = costumeHeight * size / 100 / bitmapRes;
+            setWidth(costumeWidth * size / 100 / bitmapRes);
+            setHeight(costumeHeight * size / 100 / bitmapRes);
         } else {
-            m_width = costumeWidth / bitmapRes;
-            m_height = costumeHeight / bitmapRes;
+            setWidth(costumeWidth / bitmapRes);
+            setHeight(costumeHeight / bitmapRes);
         }
     }
 }

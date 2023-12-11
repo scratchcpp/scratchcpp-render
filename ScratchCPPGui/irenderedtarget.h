@@ -52,13 +52,6 @@ class IRenderedTarget : public QNanoQuickItem
         virtual qreal height() const = 0;
         virtual void setHeight(qreal width) = 0;
 
-        virtual double costumeWidth() const = 0;
-        virtual void setCostumeWidth(double width) = 0;
-
-        virtual double costumeHeight() const = 0;
-        virtual void setCostumeHeight(double width) = 0;
-
-        virtual unsigned char *svgBitmap() const = 0;
         virtual QBuffer *bitmapBuffer() = 0;
         virtual const QString &bitmapUniqueKey() const = 0;
 

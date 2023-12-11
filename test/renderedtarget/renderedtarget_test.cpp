@@ -33,13 +33,13 @@ TEST(RenderedTargetTest, LoadAndUpdateProperties)
     stage.setInterface(&stageModel);
     target.setStageModel(&stageModel);
     Costume costume("", "", "");
+    std::string costumeData = readFileStr("image.png");
+    costume.setData(costumeData.size(), static_cast<void *>(costumeData.data()));
     costume.setRotationCenterX(-23);
     costume.setRotationCenterY(72);
     EngineMock engine;
     target.loadCostume(&costume);
     target.setEngine(&engine);
-    target.setCostumeWidth(102.3);
-    target.setCostumeHeight(80.7);
 
     target.setWidth(14.3);
     target.setHeight(5.8);
@@ -61,8 +61,8 @@ TEST(RenderedTargetTest, LoadAndUpdateProperties)
     ASSERT_EQ(target.transformOriginPoint(), QPointF(3.4, 9.7));
 
     target.updateProperties();
-    ASSERT_EQ(target.width(), 102.3);
-    ASSERT_EQ(target.height(), 80.7);
+    ASSERT_EQ(target.width(), 4);
+    ASSERT_EQ(target.height(), 6);
     ASSERT_EQ(target.x(), 283.5);
     ASSERT_EQ(target.y(), 88.5);
     ASSERT_EQ(target.z(), 0);
@@ -105,8 +105,8 @@ TEST(RenderedTargetTest, LoadAndUpdateProperties)
     ASSERT_EQ(target.transformOriginPoint(), QPointF(3.4, 9.7));
 
     target.updateProperties();
-    ASSERT_EQ(target.width(), 102.3);
-    ASSERT_EQ(target.height(), 80.7);
+    ASSERT_EQ(target.width(), 14.3);
+    ASSERT_EQ(target.height(), 5.8);
     ASSERT_EQ(std::round(target.x() * 100) / 100, 220.62);
     ASSERT_EQ(std::round(target.y() * 100) / 100, -49.09);
     ASSERT_EQ(target.z(), 3);
@@ -163,17 +163,19 @@ TEST(RenderedTargetTest, LoadJpegCostume)
     costume.setId("abc");
 
     RenderedTarget target;
-    ASSERT_EQ(target.costumeWidth(), 0);
-    ASSERT_EQ(target.costumeHeight(), 0);
 
     target.loadCostume(&costume);
-    ASSERT_EQ(target.costumeWidth(), 4 / 3.0);
-    ASSERT_EQ(target.costumeHeight(), 2);
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
+    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+
+    target.updateProperties();
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
     ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-    ASSERT_EQ(target.svgBitmap(), nullptr);
 }
 
 TEST(RenderedTargetTest, LoadPngCostume)
@@ -185,17 +187,19 @@ TEST(RenderedTargetTest, LoadPngCostume)
     costume.setId("abc");
 
     RenderedTarget target;
-    ASSERT_EQ(target.costumeWidth(), 0);
-    ASSERT_EQ(target.costumeHeight(), 0);
 
     target.loadCostume(&costume);
-    ASSERT_EQ(target.costumeWidth(), 4 / 3.0);
-    ASSERT_EQ(target.costumeHeight(), 2);
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
+    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+
+    target.updateProperties();
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
     ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-    ASSERT_EQ(target.svgBitmap(), nullptr);
 }
 
 TEST(RenderedTargetTest, Engine)
@@ -245,22 +249,4 @@ TEST(RenderedTargetTest, ScratchTarget)
     spriteModel.init(&sprite);
     target.setSpriteModel(&spriteModel);
     ASSERT_EQ(target.scratchTarget(), &sprite);
-}
-
-TEST(RenderedTargetTest, CostumeWidth)
-{
-    RenderedTarget target;
-    ASSERT_EQ(target.costumeWidth(), 0);
-
-    target.setCostumeWidth(64.15);
-    ASSERT_EQ(target.costumeWidth(), 64.15);
-}
-
-TEST(RenderedTargetTest, CostumeHeight)
-{
-    RenderedTarget target;
-    ASSERT_EQ(target.costumeHeight(), 0);
-
-    target.setCostumeHeight(46.48);
-    ASSERT_EQ(target.costumeHeight(), 46.48);
 }

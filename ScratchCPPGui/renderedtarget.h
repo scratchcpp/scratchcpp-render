@@ -25,7 +25,6 @@ class RenderedTarget : public IRenderedTarget
 
     public:
         RenderedTarget(QNanoQuickItem *parent = nullptr);
-        ~RenderedTarget();
 
         Q_INVOKABLE void loadProperties() override;
         void loadCostume(libscratchcpp::Costume *costume) override;
@@ -48,13 +47,6 @@ class RenderedTarget : public IRenderedTarget
         qreal height() const override;
         void setHeight(qreal height) override;
 
-        double costumeWidth() const override;
-        void setCostumeWidth(double width) override;
-
-        double costumeHeight() const override;
-        void setCostumeHeight(double height) override;
-
-        unsigned char *svgBitmap() const override;
         QBuffer *bitmapBuffer() override;
         const QString &bitmapUniqueKey() const override;
 
@@ -74,21 +66,19 @@ class RenderedTarget : public IRenderedTarget
         QNanoQuickItemPainter *createItemPainter() const override;
 
     private:
+        void doLoadCostume();
         void calculateSize(libscratchcpp::Target *target, double costumeWidth, double costumeHeight);
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
         StageModel *m_stageModel = nullptr;
         SpriteModel *m_spriteModel = nullptr;
-        unsigned char *m_svgBitmap = nullptr;
         QBuffer m_bitmapBuffer;
         QString m_bitmapUniqueKey;
         QMutex m_costumeMutex;
         QMutex mutex;
         bool m_imageChanged = false;
         bool m_visible = true;
-        double m_width = 0;
-        double m_height = 0;
         double m_x = 0;
         double m_y = 0;
         double m_z = 0;
