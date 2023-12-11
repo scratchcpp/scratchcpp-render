@@ -33,4 +33,16 @@ void ProjectScene::handleMouseMove(qreal x, qreal y)
     }
 }
 
+void ProjectScene::handleMousePress()
+{
+    if (m_engine)
+        m_engine->setMousePressed(true);
+}
+
+void ProjectScene::handleMouseRelease()
+{
+    if (m_engine)
+        m_engine->setMousePressed(false);
+}
+
 } // namespace scratchcppgui

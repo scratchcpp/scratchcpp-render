@@ -29,3 +29,29 @@ TEST(ProjectScene, HandleMouseMove)
     EXPECT_CALL(engine, setMouseY(216.7));
     scene.handleMouseMove(46.9, -16.7);
 }
+
+TEST(ProjectScene, HandleMousePress)
+{
+    ProjectScene scene;
+    EngineMock engine;
+    scene.setEngine(&engine);
+
+    EXPECT_CALL(engine, setMousePressed(true));
+    scene.handleMousePress();
+
+    EXPECT_CALL(engine, setMousePressed(true));
+    scene.handleMousePress();
+}
+
+TEST(ProjectScene, HandleMouseRelease)
+{
+    ProjectScene scene;
+    EngineMock engine;
+    scene.setEngine(&engine);
+
+    EXPECT_CALL(engine, setMousePressed(false));
+    scene.handleMouseRelease();
+
+    EXPECT_CALL(engine, setMousePressed(false));
+    scene.handleMouseRelease();
+}

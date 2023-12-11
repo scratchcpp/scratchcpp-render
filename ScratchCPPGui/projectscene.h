@@ -25,6 +25,8 @@ class ProjectScene : public QQuickItem
         void setEngine(libscratchcpp::IEngine *newEngine);
 
         Q_INVOKABLE void handleMouseMove(qreal x, qreal y);
+        Q_INVOKABLE void handleMousePress();
+        Q_INVOKABLE void handleMouseRelease();
 
     signals:
         void engineChanged();
