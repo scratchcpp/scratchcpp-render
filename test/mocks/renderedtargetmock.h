@@ -33,13 +33,6 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(qreal, height, (), (const, override));
         MOCK_METHOD(void, setHeight, (qreal), (override));
 
-        MOCK_METHOD(double, costumeWidth, (), (const, override));
-        MOCK_METHOD(void, setCostumeWidth, (double), (override));
-
-        MOCK_METHOD(double, costumeHeight, (), (const, override));
-        MOCK_METHOD(void, setCostumeHeight, (double), (override));
-
-        MOCK_METHOD(unsigned char *, svgBitmap, (), (const, override));
         MOCK_METHOD(QBuffer *, bitmapBuffer, (), (override));
         MOCK_METHOD(const QString &, bitmapUniqueKey, (), (const, override));
 
@@ -47,6 +40,9 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(void, unlockCostume, (), (override));
 
         MOCK_METHOD(bool, mirrorHorizontally, (), (const, override));
+
+        MOCK_METHOD(bool, isSvg, (), (const, override));
+        MOCK_METHOD(void, paintSvg, (QNanoPainter *), (override));
 
         MOCK_METHOD(QNanoQuickItemPainter *, createItemPainter, (), (const, override));
 };

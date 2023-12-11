@@ -125,8 +125,8 @@ Button {
 - [x] Everything related to displaying sprites (position, rotation, size, etc.)
 - [x] Loading projects in another thread
 - [x] API for engine properties (FPS, turbo mode, etc.)
-- [ ] Loading projects from URL
-- [ ] SVG rendering
+- [x] Loading projects from URL
+- [x] SVG rendering
 - [ ] Mouse position
 - [ ] Key press events
 - [ ] Mouse press events

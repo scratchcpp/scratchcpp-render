@@ -2,6 +2,8 @@
 
 #include <scratchcpp/iengine.h>
 #include <scratchcpp/costume.h>
+#include <QtSvg/QSvgRenderer>
+#include <qnanopainter.h>
 
 #include "renderedtarget.h"
 #include "targetpainter.h"
@@ -14,12 +16,6 @@ using namespace libscratchcpp;
 RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
     IRenderedTarget(parent)
 {
-}
-
-RenderedTarget::~RenderedTarget()
-{
-    if (m_svgBitmap)
-        free(m_svgBitmap);
 }
 
 void RenderedTarget::loadProperties()
@@ -59,10 +55,10 @@ void RenderedTarget::loadProperties()
 
             // Coordinates
             double size = sprite->size() / 100;
-            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * size / 2 * (m_newMirrorHorizontally ? -1 : 1);
-            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * size / 2;
-            m_originX = m_costume->rotationCenterX() * size / 2.0;
-            m_originY = m_costume->rotationCenterY() * size / 2.0;
+            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * size / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
+            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * size / m_costume->bitmapResolution();
+            m_originX = m_costume->rotationCenterX() * size / m_costume->bitmapResolution();
+            m_originY = m_costume->rotationCenterY() * size / m_costume->bitmapResolution();
 
             // Layer
             m_z = sprite->layerOrder();
@@ -70,10 +66,10 @@ void RenderedTarget::loadProperties()
 
         mutex.unlock();
     } else if (m_stageModel) {
-        m_x = static_cast<double>(m_engine->stageWidth()) / 2 - m_costume->rotationCenterX() / 2.0;
-        m_y = static_cast<double>(m_engine->stageHeight()) / 2 - m_costume->rotationCenterY() / 2.0;
-        m_originX = m_costume->rotationCenterX() / 2.0;
-        m_originY = m_costume->rotationCenterY() / 2.0;
+        m_x = static_cast<double>(m_engine->stageWidth()) / 2 - m_costume->rotationCenterX() / m_costume->bitmapResolution();
+        m_y = static_cast<double>(m_engine->stageHeight()) / 2 - m_costume->rotationCenterY() / m_costume->bitmapResolution();
+        m_originX = m_costume->rotationCenterX() / m_costume->bitmapResolution();
+        m_originY = m_costume->rotationCenterY() / m_costume->bitmapResolution();
     }
 }
 
@@ -83,30 +79,14 @@ void RenderedTarget::loadCostume(Costume *costume)
         return;
 
     m_costumeMutex.lock();
-    Target *target = scratchTarget();
-    m_costume = costume;
     m_imageChanged = true;
 
     if (costume->dataFormat() == "svg") {
-        // TODO: Load SVG here
-        // In case of rasterizing, write the bitmap to m_svgBitmap
-    } else {
-        if (m_svgBitmap) {
-            free(m_svgBitmap);
-            m_svgBitmap = nullptr;
-        }
-
-        m_bitmapBuffer.open(QBuffer::WriteOnly);
-        m_bitmapBuffer.write(static_cast<const char *>(costume->data()), costume->dataSize());
-        m_bitmapBuffer.close();
-        m_bitmapUniqueKey = QString::fromStdString(costume->id());
-
-        QImageReader reader(&m_bitmapBuffer);
-        QSize size = reader.size();
-        calculateSize(target, size.width(), size.height());
-        m_bitmapBuffer.close();
+        if (costume != m_costume)
+            m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(costume->data()), costume->dataSize()));
     }
 
+    m_costume = costume;
     m_costumeMutex.unlock();
 }
 
@@ -116,8 +96,12 @@ void RenderedTarget::updateProperties()
     setVisible(m_visible);
 
     if (m_visible) {
-        setWidth(m_width);
-        setHeight(m_height);
+        if (m_imageChanged) {
+            doLoadCostume();
+            update();
+            m_imageChanged = false;
+        }
+
         setX(m_x);
         setY(m_y);
         setZ(m_z);
@@ -127,11 +111,6 @@ void RenderedTarget::updateProperties()
         if (m_newMirrorHorizontally != m_mirrorHorizontally) {
             m_mirrorHorizontally = m_newMirrorHorizontally;
             emit mirrorHorizontallyChanged();
-        }
-
-        if (m_imageChanged) {
-            update();
-            m_imageChanged = false;
         }
     }
 
@@ -210,38 +189,73 @@ void RenderedTarget::setHeight(qreal height)
     QNanoQuickItem::setHeight(height);
 }
 
-double RenderedTarget::costumeWidth() const
-{
-    return m_width;
-}
-
-void RenderedTarget::setCostumeWidth(double width)
-{
-    mutex.lock();
-    m_width = width;
-    mutex.unlock();
-}
-
-double RenderedTarget::costumeHeight() const
-{
-    return m_height;
-}
-
-void RenderedTarget::setCostumeHeight(double height)
-{
-    mutex.lock();
-    m_height = height;
-    mutex.unlock();
-}
-
-unsigned char *RenderedTarget::svgBitmap() const
-{
-    return m_svgBitmap;
-}
-
 QNanoQuickItemPainter *RenderedTarget::createItemPainter() const
 {
     return new TargetPainter();
+}
+
+void RenderedTarget::doLoadCostume()
+{
+    m_costumeMutex.lock();
+
+    if (!m_costume) {
+        m_costumeMutex.unlock();
+        return;
+    }
+
+    Target *target = scratchTarget();
+
+    if (m_costume->dataFormat() == "svg") {
+        QRectF rect = m_svgRenderer.viewBoxF();
+        calculateSize(target, rect.width(), rect.height());
+    } else {
+        m_bitmapBuffer.open(QBuffer::WriteOnly);
+        m_bitmapBuffer.write(static_cast<const char *>(m_costume->data()), m_costume->dataSize());
+        m_bitmapBuffer.close();
+        m_bitmapUniqueKey = QString::fromStdString(m_costume->id());
+
+        QImageReader reader(&m_bitmapBuffer);
+        QSize size = reader.size();
+        calculateSize(target, size.width(), size.height());
+        m_bitmapBuffer.close();
+    }
+
+    m_costumeMutex.unlock();
+}
+
+void RenderedTarget::paintSvg(QNanoPainter *painter)
+{
+    Q_ASSERT(painter);
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    Q_ASSERT(context);
+
+    if (!context)
+        return;
+
+    QOffscreenSurface surface;
+    surface.setFormat(context->format());
+    surface.create();
+    Q_ASSERT(surface.isValid());
+
+    QSurface *oldSurface = context->surface();
+    context->makeCurrent(&surface);
+
+    const QRectF drawRect(0, 0, width(), height());
+    const QSize drawRectSize = drawRect.size().toSize();
+
+    /*QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setSamples(16);
+    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);*/
+
+    QOpenGLPaintDevice device(drawRectSize);
+    QPainter qPainter;
+    qPainter.begin(&device);
+    qPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    m_svgRenderer.render(&qPainter, drawRect);
+    qPainter.end();
+
+    context->doneCurrent();
+    context->makeCurrent(oldSurface);
 }
 
 void RenderedTarget::calculateSize(Target *target, double costumeWidth, double costumeHeight)
@@ -252,11 +266,11 @@ void RenderedTarget::calculateSize(Target *target, double costumeWidth, double c
 
         if (sprite) {
             double size = sprite->size();
-            m_width = costumeWidth * size / 100 / bitmapRes;
-            m_height = costumeHeight * size / 100 / bitmapRes;
+            setWidth(costumeWidth * size / 100 / bitmapRes);
+            setHeight(costumeHeight * size / 100 / bitmapRes);
         } else {
-            m_width = costumeWidth / bitmapRes;
-            m_height = costumeHeight / bitmapRes;
+            setWidth(costumeWidth / bitmapRes);
+            setHeight(costumeHeight / bitmapRes);
         }
     }
 }
@@ -284,4 +298,12 @@ void RenderedTarget::unlockCostume()
 bool RenderedTarget::mirrorHorizontally() const
 {
     return m_mirrorHorizontally;
+}
+
+bool RenderedTarget::isSvg() const
+{
+    if (!m_costume)
+        return false;
+
+    return (m_costume->dataFormat() == "svg");
 }
