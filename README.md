@@ -126,7 +126,7 @@ Button {
 - [x] Loading projects in another thread
 - [x] API for engine properties (FPS, turbo mode, etc.)
 - [x] Loading projects from URL
-- [ ] SVG rendering
+- [x] SVG rendering
 - [ ] Mouse position
 - [ ] Key press events
 - [ ] Mouse press events
