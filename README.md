@@ -127,9 +127,9 @@ Button {
 - [x] API for engine properties (FPS, turbo mode, etc.)
 - [x] Loading projects from URL
 - [x] SVG rendering
-- [ ] Mouse position
+- [x] Mouse position
 - [ ] Key press events
-- [ ] Mouse press events
+- [x] Mouse press events
 - [ ] Sprite click events
 - [ ] Clones
 - [ ] Sprite dragging
