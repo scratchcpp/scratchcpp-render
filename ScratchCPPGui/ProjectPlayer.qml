@@ -20,6 +20,7 @@ ProjectScene {
 
     id: root
 	clip: true
+    engine: loader.engine
     onFileNameChanged: priv.loading = true;
 
     QtObject {
@@ -108,5 +109,14 @@ ProjectScene {
 
             Item { Layout.fillHeight: true }
         }
+    }
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        onPositionChanged: root.handleMouseMove(mouseX, mouseY)
+        onPressed: root.handleMousePress()
+        onReleased: root.handleMouseRelease()
     }
 }
