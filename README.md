@@ -128,7 +128,7 @@ Button {
 - [x] Loading projects from URL
 - [x] SVG rendering
 - [x] Mouse position
-- [ ] Key press events
+- [x] Key press events
 - [x] Mouse press events
 - [ ] Sprite click events
 - [ ] Clones
