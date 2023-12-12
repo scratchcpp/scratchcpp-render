@@ -12,6 +12,8 @@ class IEngine;
 namespace scratchcppgui
 {
 
+class KeyEventHandler;
+
 class ProjectScene : public QQuickItem
 {
         Q_OBJECT
@@ -28,11 +30,17 @@ class ProjectScene : public QQuickItem
         Q_INVOKABLE void handleMousePress();
         Q_INVOKABLE void handleMouseRelease();
 
+        void handleKeyPress(Qt::Key key, const QString &text);
+        void handleKeyRelease(Qt::Key key, const QString &text);
+
     signals:
         void engineChanged();
 
     private:
+        void installKeyHandler(QQuickWindow *window);
+
         libscratchcpp::IEngine *m_engine = nullptr;
+        KeyEventHandler *m_keyHandler = nullptr;
 };
 
 } // namespace scratchcppgui
