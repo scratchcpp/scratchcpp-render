@@ -1,3 +1,4 @@
+#include <scratchcpp/keyevent.h>
 #include <projectscene.h>
 #include <enginemock.h>
 
@@ -54,4 +55,37 @@ TEST(ProjectScene, HandleMouseRelease)
 
     EXPECT_CALL(engine, setMousePressed(false));
     scene.handleMouseRelease();
+}
+
+TEST(ProjectScene, HandleKeyPressAndRelease)
+{
+    static const std::unordered_map<Qt::Key, KeyEvent::Type> SPECIAL_KEY_MAP = {
+        { Qt::Key_Space, KeyEvent::Type::Space }, { Qt::Key_Left, KeyEvent::Type::Left },    { Qt::Key_Up, KeyEvent::Type::Up },      { Qt::Key_Right, KeyEvent::Type::Right },
+        { Qt::Key_Down, KeyEvent::Type::Down },   { Qt::Key_Return, KeyEvent::Type::Enter }, { Qt::Key_Enter, KeyEvent::Type::Enter }
+    };
+
+    ProjectScene scene;
+    EngineMock engine;
+    scene.setEngine(&engine);
+
+    for (const auto &[qtKey, scratchKey] : SPECIAL_KEY_MAP) {
+        KeyEvent event(scratchKey);
+        EXPECT_CALL(engine, setKeyState(event.name(), true));
+        scene.handleKeyPress(qtKey, "test");
+
+        EXPECT_CALL(engine, setKeyState(event.name(), false));
+        scene.handleKeyRelease(qtKey, "test");
+    }
+
+    EXPECT_CALL(engine, setKeyState("a", true));
+    scene.handleKeyPress(Qt::Key_A, "a");
+
+    EXPECT_CALL(engine, setKeyState("a", false));
+    scene.handleKeyRelease(Qt::Key_A, "a");
+
+    EXPECT_CALL(engine, setKeyState("0", true));
+    scene.handleKeyPress(Qt::Key_0, "0");
+
+    EXPECT_CALL(engine, setKeyState("0", false));
+    scene.handleKeyRelease(Qt::Key_0, "0");
 }
