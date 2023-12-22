@@ -13,9 +13,30 @@
 using namespace scratchcppgui;
 using namespace libscratchcpp;
 
+static const double SVG_SCALE_LIMIT = 0.25; // the maximum viewport dimensions are multiplied by this
+
 RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
     IRenderedTarget(parent)
 {
+    // Get maximum viewport dimensions
+    QOpenGLContext context;
+    context.create();
+    Q_ASSERT(context.isValid());
+
+    if (context.isValid()) {
+        QOffscreenSurface surface;
+        surface.create();
+        Q_ASSERT(surface.isValid());
+
+        if (surface.isValid()) {
+            context.makeCurrent(&surface);
+            GLint dims[2];
+            glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
+            m_maximumWidth = dims[0] * SVG_SCALE_LIMIT;
+            m_maximumHeight = dims[1] * SVG_SCALE_LIMIT;
+            context.doneCurrent();
+        }
+    }
 }
 
 void RenderedTarget::loadProperties()
@@ -56,10 +77,11 @@ void RenderedTarget::loadProperties()
             // Coordinates
             m_size = sprite->size() / 100;
             updateCostumeData();
-            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
-            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution();
-            m_originX = m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution();
-            m_originY = m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution();
+            double clampedSize = std::min(m_size, m_maxSize);
+            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
+            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution();
+            m_originX = m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution();
+            m_originY = m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution();
 
             // Layer
             m_z = sprite->layerOrder();
@@ -105,6 +127,12 @@ void RenderedTarget::updateProperties()
         setHeight(m_height);
         setRotation(m_rotation);
         setTransformOriginPoint(QPointF(m_originX, m_originY));
+        Q_ASSERT(m_maxSize > 0);
+
+        if (!m_stageModel && (m_size > m_maxSize) && (m_maxSize != 0))
+            setScale(m_size / m_maxSize);
+        else
+            setScale(1);
 
         if (m_newMirrorHorizontally != m_mirrorHorizontally) {
             m_mirrorHorizontally = m_newMirrorHorizontally;
@@ -260,7 +288,7 @@ void RenderedTarget::paintSvg(QNanoPainter *painter)
     QSurface *oldSurface = context->surface();
     context->makeCurrent(&surface);
 
-    const QRectF drawRect(0, 0, width(), height());
+    const QRectF drawRect(0, 0, std::min(width(), m_maximumWidth), std::min(height(), m_maximumHeight));
     const QSize drawRectSize = drawRect.size().toSize();
 
     /*QOpenGLFramebufferObjectFormat fboFormat;
@@ -282,11 +310,13 @@ void RenderedTarget::calculateSize(Target *target, double costumeWidth, double c
 {
     if (m_costume) {
         double bitmapRes = m_costume->bitmapResolution();
+        m_maxSize = std::min(m_maximumWidth / costumeWidth, m_maximumHeight / costumeHeight);
         Sprite *sprite = dynamic_cast<Sprite *>(target);
 
         if (sprite) {
-            m_width = costumeWidth * m_size / bitmapRes;
-            m_height = costumeHeight * m_size / bitmapRes;
+            double clampedSize = std::min(m_size, m_maxSize);
+            m_width = costumeWidth * clampedSize / bitmapRes;
+            m_height = costumeHeight * clampedSize / bitmapRes;
         } else {
             m_width = costumeWidth / bitmapRes;
             m_height = costumeHeight / bitmapRes;
