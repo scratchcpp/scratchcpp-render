@@ -130,8 +130,8 @@ TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
     ASSERT_EQ(target.transformOriginPoint(), QPointF(3.4, 9.7));
 
     target.updateProperties();
-    ASSERT_EQ(target.width(), 14.3);
-    ASSERT_EQ(target.height(), 5.8);
+    ASSERT_EQ(target.width(), 5.7592);
+    ASSERT_EQ(target.height(), 8.6388);
     ASSERT_EQ(std::round(target.x() * 100) / 100, 237.18);
     ASSERT_EQ(std::round(target.y() * 100) / 100, -100.93);
     ASSERT_EQ(target.z(), 3);
@@ -197,6 +197,41 @@ TEST_F(RenderedTargetTest, LoadJpegCostume)
     ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
     target.bitmapBuffer()->close();
 
+    EngineMock engine;
+    SpriteModel spriteModel;
+    Sprite sprite;
+    sprite.setSize(196.5);
+    spriteModel.init(&sprite);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setEngine(&engine);
+    target.setSpriteModel(&spriteModel);
+    target.loadProperties();
+    ASSERT_FALSE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
+    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
+    target.bitmapBuffer()->open(QBuffer::WriteOnly); // clear the buffer
+    target.bitmapBuffer()->close();
+
+    StageModel stageModel;
+    Stage stage;
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setSpriteModel(nullptr);
+    target.setStageModel(&stageModel);
+    target.loadProperties();
+    ASSERT_FALSE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
+    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
+
     target.updateProperties();
     ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
@@ -221,6 +256,41 @@ TEST_F(RenderedTargetTest, LoadPngCostume)
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
     ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+
+    EngineMock engine;
+    SpriteModel spriteModel;
+    Sprite sprite;
+    sprite.setSize(196.5);
+    spriteModel.init(&sprite);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setEngine(&engine);
+    target.setSpriteModel(&spriteModel);
+    target.loadProperties();
+    ASSERT_FALSE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
+    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
+    target.bitmapBuffer()->open(QBuffer::WriteOnly); // clear the buffer
+    target.bitmapBuffer()->close();
+
+    StageModel stageModel;
+    Stage stage;
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setSpriteModel(nullptr);
+    target.setStageModel(&stageModel);
+    target.loadProperties();
+    ASSERT_FALSE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
+    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
     target.bitmapBuffer()->close();
 
     target.updateProperties();
@@ -265,15 +335,20 @@ TEST_F(RenderedTargetTest, PaintSvg)
     costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
     costume.setBitmapResolution(3);
 
+    EngineMock engine;
     Sprite sprite;
     sprite.setSize(2525.7);
 
     SpriteModel model;
     model.init(&sprite);
 
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     RenderedTarget target;
+    target.setEngine(&engine);
     target.setSpriteModel(&model);
     target.loadCostume(&costume);
+    target.loadProperties();
     target.updateProperties();
 
     // Create OpenGL context
