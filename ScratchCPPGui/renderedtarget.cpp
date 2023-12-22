@@ -54,11 +54,12 @@ void RenderedTarget::loadProperties()
             }
 
             // Coordinates
-            double size = sprite->size() / 100;
-            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * size / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
-            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * size / m_costume->bitmapResolution();
-            m_originX = m_costume->rotationCenterX() * size / m_costume->bitmapResolution();
-            m_originY = m_costume->rotationCenterY() * size / m_costume->bitmapResolution();
+            m_size = sprite->size() / 100;
+            updateCostumeData();
+            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
+            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution();
+            m_originX = m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution();
+            m_originY = m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution();
 
             // Layer
             m_z = sprite->layerOrder();
@@ -66,6 +67,7 @@ void RenderedTarget::loadProperties()
 
         mutex.unlock();
     } else if (m_stageModel) {
+        updateCostumeData();
         m_x = static_cast<double>(m_engine->stageWidth()) / 2 - m_costume->rotationCenterX() / m_costume->bitmapResolution();
         m_y = static_cast<double>(m_engine->stageHeight()) / 2 - m_costume->rotationCenterY() / m_costume->bitmapResolution();
         m_originX = m_costume->rotationCenterX() / m_costume->bitmapResolution();
@@ -79,13 +81,8 @@ void RenderedTarget::loadCostume(Costume *costume)
         return;
 
     m_costumeMutex.lock();
-    m_imageChanged = true;
-
-    if (costume->dataFormat() == "svg") {
-        if (costume != m_costume)
-            m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(costume->data()), costume->dataSize()));
-    }
-
+    m_loadCostume = true;
+    m_costumeChanged = (costume != m_costume);
     m_costume = costume;
     m_costumeMutex.unlock();
 }
@@ -97,7 +94,6 @@ void RenderedTarget::updateProperties()
 
     if (m_visible) {
         if (m_imageChanged) {
-            doLoadCostume();
             update();
             m_imageChanged = false;
         }
@@ -105,6 +101,8 @@ void RenderedTarget::updateProperties()
         setX(m_x);
         setY(m_y);
         setZ(m_z);
+        setWidth(m_width);
+        setHeight(m_height);
         setRotation(m_rotation);
         setTransformOriginPoint(QPointF(m_originX, m_originY));
 
@@ -194,6 +192,28 @@ QNanoQuickItemPainter *RenderedTarget::createItemPainter() const
     return new TargetPainter();
 }
 
+void RenderedTarget::updateCostumeData()
+{
+    // Costume
+    m_costumeMutex.lock();
+
+    if (m_loadCostume) {
+        m_loadCostume = false;
+        m_imageChanged = true;
+
+        if (m_costumeChanged) {
+            m_costumeChanged = false;
+            assert(m_costume);
+
+            if (m_costume->dataFormat() == "svg")
+                m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(m_costume->data()), m_costume->dataSize()));
+        }
+    }
+
+    m_costumeMutex.unlock();
+    doLoadCostume();
+}
+
 void RenderedTarget::doLoadCostume()
 {
     m_costumeMutex.lock();
@@ -265,12 +285,11 @@ void RenderedTarget::calculateSize(Target *target, double costumeWidth, double c
         Sprite *sprite = dynamic_cast<Sprite *>(target);
 
         if (sprite) {
-            double size = sprite->size();
-            setWidth(costumeWidth * size / 100 / bitmapRes);
-            setHeight(costumeHeight * size / 100 / bitmapRes);
+            m_width = costumeWidth * m_size / bitmapRes;
+            m_height = costumeHeight * m_size / bitmapRes;
         } else {
-            setWidth(costumeWidth / bitmapRes);
-            setHeight(costumeHeight / bitmapRes);
+            m_width = costumeWidth / bitmapRes;
+            m_height = costumeHeight / bitmapRes;
         }
     }
 }
