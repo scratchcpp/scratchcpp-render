@@ -13,7 +13,7 @@
 using namespace scratchcppgui;
 using namespace libscratchcpp;
 
-static const double SVG_SCALE_LIMIT = 0.25; // the maximum viewport dimensions are multiplied by this
+static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions are multiplied by this
 
 RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
     IRenderedTarget(parent)
