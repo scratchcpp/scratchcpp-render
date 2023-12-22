@@ -316,8 +316,8 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
     context.makeCurrent(&surface);
     GLint dims[2];
     glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
-    double maxWidth = dims[0] * 0.25;
-    double maxHeight = dims[1] * 0.25;
+    double maxWidth = dims[0] * 0.1;
+    double maxHeight = dims[1] * 0.1;
     double maxSize = std::min(maxWidth / (1143 / 90.0), maxHeight / (1143 / 90.0));
     context.doneCurrent();
 
@@ -369,10 +369,10 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
     ASSERT_EQ(std::round(target.width() * 100) / 100, maxWidth);
     ASSERT_EQ(std::round(target.height() * 100) / 100, maxHeight);
     ASSERT_EQ(target.scale(), 1);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 27381.35);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -16849.39);
-    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -27091.65);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 17093.54);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 11126.36);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, -6593.27);
+    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -10836.66);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 6837.42);
 
     // Test scale limit
     sprite.setSize(maxSize * 250);
@@ -405,11 +405,11 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
 
     ASSERT_EQ(std::round(target.width() * 100) / 100, maxWidth);
     ASSERT_EQ(std::round(target.height() * 100) / 100, maxHeight);
-    ASSERT_EQ(target.scale(), 2.5);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 27381.35);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -16849.39);
-    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -27091.65);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 17093.54);
+    ASSERT_EQ(std::round(target.scale() * 100) / 100, 2.5);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 11126.36);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, -6593.27);
+    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -10836.66);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 6837.42);
 }
 
 TEST_F(RenderedTargetTest, PaintSvg)
