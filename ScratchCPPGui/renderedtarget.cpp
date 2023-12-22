@@ -52,6 +52,9 @@ void RenderedTarget::loadProperties()
         // Visibility
         m_visible = sprite->visible();
 
+        m_size = sprite->size() / 100;
+        updateCostumeData();
+
         if (m_visible) {
             // Direction
             switch (sprite->rotationStyle()) {
@@ -75,8 +78,6 @@ void RenderedTarget::loadProperties()
             }
 
             // Coordinates
-            m_size = sprite->size() / 100;
-            updateCostumeData();
             double clampedSize = std::min(m_size, m_maxSize);
             m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
             m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution();
