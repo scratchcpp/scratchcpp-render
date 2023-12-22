@@ -88,6 +88,7 @@ class RenderedTarget : public IRenderedTarget
         bool m_imageChanged = false;
         bool m_visible = true;
         double m_size = 1;
+        double m_maxSize = 1;
         double m_x = 0;
         double m_y = 0;
         double m_z = 0;
@@ -98,6 +99,8 @@ class RenderedTarget : public IRenderedTarget
         bool m_newMirrorHorizontally = false;
         double m_originX = 0;
         double m_originY = 0;
+        qreal m_maximumWidth = std::numeric_limits<double>::infinity();
+        qreal m_maximumHeight = std::numeric_limits<double>::infinity();
 };
 
 } // namespace scratchcppgui
