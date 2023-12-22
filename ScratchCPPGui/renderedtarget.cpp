@@ -291,10 +291,6 @@ void RenderedTarget::paintSvg(QNanoPainter *painter)
     const QRectF drawRect(0, 0, std::min(width(), m_maximumWidth), std::min(height(), m_maximumHeight));
     const QSize drawRectSize = drawRect.size().toSize();
 
-    /*QOpenGLFramebufferObjectFormat fboFormat;
-    fboFormat.setSamples(16);
-    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);*/
-
     QOpenGLPaintDevice device(drawRectSize);
     QPainter qPainter;
     qPainter.begin(&device);
