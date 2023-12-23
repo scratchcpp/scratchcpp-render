@@ -303,6 +303,66 @@ void RenderedTarget::paintSvg(QNanoPainter *painter)
     context->makeCurrent(oldSurface);
 }
 
+void RenderedTarget::updateHullPoints(QOpenGLFramebufferObject *fbo)
+{
+    if (m_stageModel)
+        return; // hull points are useless for the stage
+
+    Q_ASSERT(fbo);
+    int width = fbo->width();
+    int height = fbo->height();
+    m_hullPoints.clear();
+    m_hullPoints.reserve(width * height);
+
+    // Blit multisampled FBO to a custom FBO
+    QOpenGLFramebufferObject customFbo(fbo->size());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo->handle());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, customFbo.handle());
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, customFbo.handle());
+
+    // Read pixels from framebuffer
+    size_t size = width * height * 4;
+    GLubyte *pixelData = new GLubyte[size];
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+    fbo->bind();
+
+    // Flip vertically
+    int rowSize = width * 4;
+    GLubyte *tempRow = new GLubyte[rowSize];
+
+    for (size_t i = 0; i < height / 2; ++i) {
+        size_t topRowIndex = i * rowSize;
+        size_t bottomRowIndex = (height - 1 - i) * rowSize;
+
+        // Swap rows
+        memcpy(tempRow, &pixelData[topRowIndex], rowSize);
+        memcpy(&pixelData[topRowIndex], &pixelData[bottomRowIndex], rowSize);
+        memcpy(&pixelData[bottomRowIndex], tempRow, rowSize);
+    }
+
+    delete[] tempRow;
+
+    // Fill hull points vector
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x) * 4; // RGBA channels
+
+            // Check alpha channel
+            if (pixelData[index + 3] > 0)
+                m_hullPoints.push_back(QPointF(x, y));
+        }
+    }
+
+    delete[] pixelData;
+}
+
+const std::vector<QPointF> &RenderedTarget::hullPoints() const
+{
+    return m_hullPoints;
+}
+
 void RenderedTarget::calculateSize(Target *target, double costumeWidth, double costumeHeight)
 {
     if (m_costume) {

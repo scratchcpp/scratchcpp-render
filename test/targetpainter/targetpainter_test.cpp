@@ -57,7 +57,7 @@ TEST_F(TargetPainterTest, PaintBitmap)
 
         // Begin painting reference
         QNanoPainter refPainter;
-        QOpenGLFramebufferObject refFbo(100, 100, format);
+        QOpenGLFramebufferObject refFbo(40, 60, format);
         refFbo.bind();
         refPainter.beginFrame(refFbo.width(), refFbo.height());
 
@@ -67,7 +67,7 @@ TEST_F(TargetPainterTest, PaintBitmap)
         refPainter.endFrame();
 
         // Begin painting
-        QOpenGLFramebufferObject fbo(100, 100, format);
+        QOpenGLFramebufferObject fbo(40, 60, format);
         fbo.bind();
         painter.beginFrame(fbo.width(), fbo.height());
 
@@ -79,6 +79,7 @@ TEST_F(TargetPainterTest, PaintBitmap)
         EXPECT_CALL(target, bitmapBuffer()).WillOnce(Return(&buffer));
         static const QString uniqueKey("abc");
         EXPECT_CALL(target, bitmapUniqueKey()).WillOnce(ReturnRef(uniqueKey));
+        EXPECT_CALL(target, updateHullPoints);
         EXPECT_CALL(target, unlockCostume());
         targetPainter.paint(&painter);
         painter.endFrame();
@@ -110,6 +111,7 @@ TEST_F(TargetPainterTest, PaintSvg)
     EXPECT_CALL(target, height()).WillOnce(Return(60));
     EXPECT_CALL(target, isSvg()).WillOnce(Return(true));
     EXPECT_CALL(target, paintSvg(&painter));
+    EXPECT_CALL(target, updateHullPoints);
     EXPECT_CALL(target, unlockCostume());
     targetPainter.paint(&painter);
 

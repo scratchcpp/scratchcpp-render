@@ -63,6 +63,9 @@ class IRenderedTarget : public QNanoQuickItem
 
         virtual bool isSvg() const = 0;
         virtual void paintSvg(QNanoPainter *painter) = 0;
+
+        virtual void updateHullPoints(QOpenGLFramebufferObject *fbo) = 0;
+        virtual const std::vector<QPointF> &hullPoints() const = 0;
 };
 
 } // namespace scratchcppgui

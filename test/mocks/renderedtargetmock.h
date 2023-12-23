@@ -44,6 +44,9 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(bool, isSvg, (), (const, override));
         MOCK_METHOD(void, paintSvg, (QNanoPainter *), (override));
 
+        MOCK_METHOD(void, updateHullPoints, (QOpenGLFramebufferObject *), (override));
+        MOCK_METHOD(const std::vector<QPointF> &, hullPoints, (), (const, override));
+
         MOCK_METHOD(QNanoQuickItemPainter *, createItemPainter, (), (const, override));
 };
 
