@@ -13,9 +13,30 @@
 using namespace scratchcppgui;
 using namespace libscratchcpp;
 
+static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions are multiplied by this
+
 RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
     IRenderedTarget(parent)
 {
+    // Get maximum viewport dimensions
+    QOpenGLContext context;
+    context.create();
+    Q_ASSERT(context.isValid());
+
+    if (context.isValid()) {
+        QOffscreenSurface surface;
+        surface.create();
+        Q_ASSERT(surface.isValid());
+
+        if (surface.isValid()) {
+            context.makeCurrent(&surface);
+            GLint dims[2];
+            glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
+            m_maximumWidth = dims[0] * SVG_SCALE_LIMIT;
+            m_maximumHeight = dims[1] * SVG_SCALE_LIMIT;
+            context.doneCurrent();
+        }
+    }
 }
 
 void RenderedTarget::loadProperties()
@@ -30,6 +51,9 @@ void RenderedTarget::loadProperties()
 
         // Visibility
         m_visible = sprite->visible();
+
+        m_size = sprite->size() / 100;
+        updateCostumeData();
 
         if (m_visible) {
             // Direction
@@ -54,11 +78,11 @@ void RenderedTarget::loadProperties()
             }
 
             // Coordinates
-            double size = sprite->size() / 100;
-            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * size / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
-            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * size / m_costume->bitmapResolution();
-            m_originX = m_costume->rotationCenterX() * size / m_costume->bitmapResolution();
-            m_originY = m_costume->rotationCenterY() * size / m_costume->bitmapResolution();
+            double clampedSize = std::min(m_size, m_maxSize);
+            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
+            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution();
+            m_originX = m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution();
+            m_originY = m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution();
 
             // Layer
             m_z = sprite->layerOrder();
@@ -66,6 +90,7 @@ void RenderedTarget::loadProperties()
 
         mutex.unlock();
     } else if (m_stageModel) {
+        updateCostumeData();
         m_x = static_cast<double>(m_engine->stageWidth()) / 2 - m_costume->rotationCenterX() / m_costume->bitmapResolution();
         m_y = static_cast<double>(m_engine->stageHeight()) / 2 - m_costume->rotationCenterY() / m_costume->bitmapResolution();
         m_originX = m_costume->rotationCenterX() / m_costume->bitmapResolution();
@@ -79,13 +104,8 @@ void RenderedTarget::loadCostume(Costume *costume)
         return;
 
     m_costumeMutex.lock();
-    m_imageChanged = true;
-
-    if (costume->dataFormat() == "svg") {
-        if (costume != m_costume)
-            m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(costume->data()), costume->dataSize()));
-    }
-
+    m_loadCostume = true;
+    m_costumeChanged = (costume != m_costume);
     m_costume = costume;
     m_costumeMutex.unlock();
 }
@@ -97,7 +117,6 @@ void RenderedTarget::updateProperties()
 
     if (m_visible) {
         if (m_imageChanged) {
-            doLoadCostume();
             update();
             m_imageChanged = false;
         }
@@ -105,8 +124,16 @@ void RenderedTarget::updateProperties()
         setX(m_x);
         setY(m_y);
         setZ(m_z);
+        setWidth(m_width);
+        setHeight(m_height);
         setRotation(m_rotation);
         setTransformOriginPoint(QPointF(m_originX, m_originY));
+        Q_ASSERT(m_maxSize > 0);
+
+        if (!m_stageModel && (m_size > m_maxSize) && (m_maxSize != 0))
+            setScale(m_size / m_maxSize);
+        else
+            setScale(1);
 
         if (m_newMirrorHorizontally != m_mirrorHorizontally) {
             m_mirrorHorizontally = m_newMirrorHorizontally;
@@ -194,6 +221,28 @@ QNanoQuickItemPainter *RenderedTarget::createItemPainter() const
     return new TargetPainter();
 }
 
+void RenderedTarget::updateCostumeData()
+{
+    // Costume
+    m_costumeMutex.lock();
+
+    if (m_loadCostume) {
+        m_loadCostume = false;
+        m_imageChanged = true;
+
+        if (m_costumeChanged) {
+            m_costumeChanged = false;
+            assert(m_costume);
+
+            if (m_costume->dataFormat() == "svg")
+                m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(m_costume->data()), m_costume->dataSize()));
+        }
+    }
+
+    m_costumeMutex.unlock();
+    doLoadCostume();
+}
+
 void RenderedTarget::doLoadCostume()
 {
     m_costumeMutex.lock();
@@ -240,12 +289,8 @@ void RenderedTarget::paintSvg(QNanoPainter *painter)
     QSurface *oldSurface = context->surface();
     context->makeCurrent(&surface);
 
-    const QRectF drawRect(0, 0, width(), height());
+    const QRectF drawRect(0, 0, std::min(width(), m_maximumWidth), std::min(height(), m_maximumHeight));
     const QSize drawRectSize = drawRect.size().toSize();
-
-    /*QOpenGLFramebufferObjectFormat fboFormat;
-    fboFormat.setSamples(16);
-    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);*/
 
     QOpenGLPaintDevice device(drawRectSize);
     QPainter qPainter;
@@ -262,15 +307,16 @@ void RenderedTarget::calculateSize(Target *target, double costumeWidth, double c
 {
     if (m_costume) {
         double bitmapRes = m_costume->bitmapResolution();
+        m_maxSize = std::min(m_maximumWidth / costumeWidth, m_maximumHeight / costumeHeight);
         Sprite *sprite = dynamic_cast<Sprite *>(target);
 
         if (sprite) {
-            double size = sprite->size();
-            setWidth(costumeWidth * size / 100 / bitmapRes);
-            setHeight(costumeHeight * size / 100 / bitmapRes);
+            double clampedSize = std::min(m_size, m_maxSize);
+            m_width = costumeWidth * clampedSize / bitmapRes;
+            m_height = costumeHeight * clampedSize / bitmapRes;
         } else {
-            setWidth(costumeWidth / bitmapRes);
-            setHeight(costumeHeight / bitmapRes);
+            m_width = costumeWidth / bitmapRes;
+            m_height = costumeHeight / bitmapRes;
         }
     }
 }

@@ -154,6 +154,7 @@ QOpenGLFramebufferObject *QNanoQuickItemPainter::createFramebufferObject(const Q
 {
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+    format.setSamples(16);
     QSize fboSize(size);
     if (m_textureWidth > -1) fboSize.setWidth(static_cast<int>(m_textureWidth*m_itemData.devicePixelRatio));
     if (m_textureHeight > -1) fboSize.setHeight(static_cast<int>(m_textureHeight*m_itemData.devicePixelRatio));

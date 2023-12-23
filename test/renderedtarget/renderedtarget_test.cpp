@@ -130,8 +130,8 @@ TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
     ASSERT_EQ(target.transformOriginPoint(), QPointF(3.4, 9.7));
 
     target.updateProperties();
-    ASSERT_EQ(target.width(), 14.3);
-    ASSERT_EQ(target.height(), 5.8);
+    ASSERT_EQ(target.width(), 5.7592);
+    ASSERT_EQ(target.height(), 8.6388);
     ASSERT_EQ(std::round(target.x() * 100) / 100, 237.18);
     ASSERT_EQ(std::round(target.y() * 100) / 100, -100.93);
     ASSERT_EQ(target.z(), 3);
@@ -197,6 +197,41 @@ TEST_F(RenderedTargetTest, LoadJpegCostume)
     ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
     target.bitmapBuffer()->close();
 
+    EngineMock engine;
+    SpriteModel spriteModel;
+    Sprite sprite;
+    sprite.setSize(196.5);
+    spriteModel.init(&sprite);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setEngine(&engine);
+    target.setSpriteModel(&spriteModel);
+    target.loadProperties();
+    ASSERT_FALSE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
+    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
+    target.bitmapBuffer()->open(QBuffer::WriteOnly); // clear the buffer
+    target.bitmapBuffer()->close();
+
+    StageModel stageModel;
+    Stage stage;
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setSpriteModel(nullptr);
+    target.setStageModel(&stageModel);
+    target.loadProperties();
+    ASSERT_FALSE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
+    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
+
     target.updateProperties();
     ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
@@ -223,6 +258,41 @@ TEST_F(RenderedTargetTest, LoadPngCostume)
     ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
     target.bitmapBuffer()->close();
 
+    EngineMock engine;
+    SpriteModel spriteModel;
+    Sprite sprite;
+    sprite.setSize(196.5);
+    spriteModel.init(&sprite);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setEngine(&engine);
+    target.setSpriteModel(&spriteModel);
+    target.loadProperties();
+    ASSERT_FALSE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
+    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
+    target.bitmapBuffer()->open(QBuffer::WriteOnly); // clear the buffer
+    target.bitmapBuffer()->close();
+
+    StageModel stageModel;
+    Stage stage;
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setSpriteModel(nullptr);
+    target.setStageModel(&stageModel);
+    target.loadProperties();
+    ASSERT_FALSE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
+    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
+    target.bitmapBuffer()->close();
+
     target.updateProperties();
     ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
@@ -234,14 +304,53 @@ TEST_F(RenderedTargetTest, LoadPngCostume)
 
 TEST_F(RenderedTargetTest, LoadSvgCostume)
 {
+    // Get maximum viewport dimensions
+    QOpenGLContext context;
+    context.create();
+    Q_ASSERT(context.isValid());
+
+    QOffscreenSurface surface;
+    surface.create();
+    Q_ASSERT(surface.isValid());
+
+    context.makeCurrent(&surface);
+    GLint dims[2];
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
+    double maxWidth = dims[0] * 0.1;
+    double maxHeight = dims[1] * 0.1;
+    double maxSize = std::min(maxWidth / (1143 / 90.0), maxHeight / (1143 / 90.0));
+    context.doneCurrent();
+
     std::string str = readFileStr("image.svg");
-    Costume costume("", "abc", "svg");
-    costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
-    costume.setBitmapResolution(3);
+    auto costume = std::make_shared<Costume>("", "abc", "svg");
+    costume->setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
+    costume->setBitmapResolution(1);
+
+    EngineMock engine;
+    SpriteModel model;
+    Sprite sprite;
+    sprite.setSize(maxSize * 100);
+    sprite.setX(49.7);
+    sprite.setY(-64.15);
+    costume->setRotationCenterX(-84);
+    costume->setRotationCenterY(53);
+    model.init(&sprite);
 
     RenderedTarget target;
+    target.setEngine(&engine);
+    target.setSpriteModel(&model);
 
-    target.loadCostume(&costume);
+    target.loadCostume(costume.get());
+    ASSERT_TRUE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
+    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.loadProperties();
     ASSERT_TRUE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
@@ -256,6 +365,51 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
     ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
     ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
     target.bitmapBuffer()->close();
+
+    ASSERT_EQ(std::round(target.width() * 100) / 100, maxWidth);
+    ASSERT_EQ(std::round(target.height() * 100) / 100, maxHeight);
+    ASSERT_EQ(target.scale(), 1);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 11126.36);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, -6593.27);
+    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -10836.66);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 6837.42);
+
+    // Test scale limit
+    sprite.setSize(maxSize * 250);
+
+    target.loadCostume(costume.get());
+    ASSERT_TRUE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
+    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.loadProperties();
+    ASSERT_TRUE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
+    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+
+    target.updateProperties();
+    ASSERT_TRUE(target.isSvg());
+    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
+    target.bitmapBuffer()->open(QBuffer::ReadOnly);
+    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
+    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
+    target.bitmapBuffer()->close();
+
+    ASSERT_EQ(std::round(target.width() * 100) / 100, maxWidth);
+    ASSERT_EQ(std::round(target.height() * 100) / 100, maxHeight);
+    ASSERT_EQ(std::round(target.scale() * 100) / 100, 2.5);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 11126.36);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, -6593.27);
+    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -10836.66);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 6837.42);
 }
 
 TEST_F(RenderedTargetTest, PaintSvg)
@@ -265,15 +419,20 @@ TEST_F(RenderedTargetTest, PaintSvg)
     costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
     costume.setBitmapResolution(3);
 
+    EngineMock engine;
     Sprite sprite;
     sprite.setSize(2525.7);
 
     SpriteModel model;
     model.init(&sprite);
 
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     RenderedTarget target;
+    target.setEngine(&engine);
     target.setSpriteModel(&model);
     target.loadCostume(&costume);
+    target.loadProperties();
     target.updateProperties();
 
     // Create OpenGL context

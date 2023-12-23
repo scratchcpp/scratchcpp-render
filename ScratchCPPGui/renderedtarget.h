@@ -70,6 +70,7 @@ class RenderedTarget : public IRenderedTarget
         QNanoQuickItemPainter *createItemPainter() const override;
 
     private:
+        void updateCostumeData();
         void doLoadCostume();
         void calculateSize(libscratchcpp::Target *target, double costumeWidth, double costumeHeight);
 
@@ -82,16 +83,24 @@ class RenderedTarget : public IRenderedTarget
         QString m_bitmapUniqueKey;
         QMutex m_costumeMutex;
         QMutex mutex;
+        bool m_loadCostume = false;
+        bool m_costumeChanged = false;
         bool m_imageChanged = false;
         bool m_visible = true;
+        double m_size = 1;
+        double m_maxSize = 1;
         double m_x = 0;
         double m_y = 0;
         double m_z = 0;
+        double m_width = 0;
+        double m_height = 0;
         double m_rotation = 0;
         bool m_mirrorHorizontally = false;
         bool m_newMirrorHorizontally = false;
         double m_originX = 0;
         double m_originY = 0;
+        qreal m_maximumWidth = std::numeric_limits<double>::infinity();
+        qreal m_maximumHeight = std::numeric_limits<double>::infinity();
 };
 
 } // namespace scratchcppgui
