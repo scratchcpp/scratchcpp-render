@@ -520,6 +520,28 @@ TEST_F(RenderedTargetTest, HullPoints)
     // Release
     fbo.release();
     context.doneCurrent();
+
+    // Test contains()
+    ASSERT_FALSE(target.contains({ 0, 0 }));
+    ASSERT_FALSE(target.contains({ 1, 0 }));
+    ASSERT_FALSE(target.contains({ 2, 0 }));
+    ASSERT_FALSE(target.contains({ 3, 0 }));
+
+    ASSERT_FALSE(target.contains({ 0, 1 }));
+    ASSERT_TRUE(target.contains({ 1, 1 }));
+    ASSERT_TRUE(target.contains({ 1.4, 1.25 }));
+    ASSERT_TRUE(target.contains({ 2, 1 }));
+    ASSERT_TRUE(target.contains({ 3, 1 }));
+
+    ASSERT_TRUE(target.contains({ 1, 2 }));
+    ASSERT_FALSE(target.contains({ 2, 2 }));
+    ASSERT_TRUE(target.contains({ 3, 2 }));
+    ASSERT_FALSE(target.contains({ 3.5, 2.1 }));
+
+    ASSERT_TRUE(target.contains({ 1, 3 }));
+    ASSERT_TRUE(target.contains({ 2, 3 }));
+    ASSERT_TRUE(target.contains({ 3, 3 }));
+    ASSERT_FALSE(target.contains({ 3.3, 3.5 }));
 }
 
 TEST_F(RenderedTargetTest, Engine)

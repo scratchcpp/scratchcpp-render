@@ -363,6 +363,19 @@ const std::vector<QPointF> &RenderedTarget::hullPoints() const
     return m_hullPoints;
 }
 
+bool RenderedTarget::contains(const QPointF &point) const
+{
+    if (m_stageModel)
+        return true; // the stage contains any point within the scene
+
+    for (const auto &hullPoint : m_hullPoints) {
+        if (point.toPoint() == hullPoint.toPoint())
+            return true;
+    }
+
+    return false;
+}
+
 void RenderedTarget::calculateSize(Target *target, double costumeWidth, double costumeHeight)
 {
     if (m_costume) {

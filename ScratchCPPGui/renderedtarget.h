@@ -62,6 +62,8 @@ class RenderedTarget : public IRenderedTarget
         void updateHullPoints(QOpenGLFramebufferObject *fbo) override;
         const std::vector<QPointF> &hullPoints() const override;
 
+        Q_INVOKABLE bool contains(const QPointF &point) const override;
+
     signals:
         void engineChanged();
         void stageModelChanged();
