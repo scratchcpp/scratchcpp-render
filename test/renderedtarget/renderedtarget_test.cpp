@@ -468,6 +468,82 @@ TEST_F(RenderedTargetTest, PaintSvg)
     context.doneCurrent();
 }
 
+TEST_F(RenderedTargetTest, HullPoints)
+{
+    EngineMock engine;
+    Sprite sprite;
+    SpriteModel model;
+    model.init(&sprite);
+
+    RenderedTarget target;
+    target.setEngine(&engine);
+    target.setSpriteModel(&model);
+
+    // Create OpenGL context
+    QOpenGLContext context;
+    QOffscreenSurface surface;
+    createContextAndSurface(&context, &surface);
+
+    // Create a painter
+    QNanoPainter painter;
+
+    QOpenGLFramebufferObjectFormat format;
+    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    // Begin painting
+    QOpenGLFramebufferObject fbo(4, 6, format);
+    fbo.bind();
+    painter.beginFrame(fbo.width(), fbo.height());
+
+    // Paint
+    QNanoImage image = QNanoImage::fromCache(&painter, "image.png");
+    painter.drawImage(image, 0, 0);
+    painter.endFrame();
+
+    // Test hull points
+    target.updateHullPoints(&fbo);
+    ASSERT_EQ(target.hullPoints(), std::vector<QPointF>({ { 1, 1 }, { 2, 1 }, { 3, 1 }, { 1, 2 }, { 3, 2 }, { 1, 3 }, { 2, 3 }, { 3, 3 } }));
+
+    // Begin painting (multisampled)
+    format.setSamples(16);
+    QOpenGLFramebufferObject fboMultiSampled(4, 6, format);
+    fboMultiSampled.bind();
+    painter.beginFrame(fboMultiSampled.width(), fboMultiSampled.height());
+
+    // Paint (multisampled)
+    painter.drawImage(image, 0, 0);
+    painter.endFrame();
+
+    // Test hull points (this is undefined with multisampling, so we just check if there are any hull points)
+    ASSERT_FALSE(target.hullPoints().empty());
+
+    // Release
+    fbo.release();
+    context.doneCurrent();
+
+    // Test contains()
+    ASSERT_FALSE(target.contains({ 0, 0 }));
+    ASSERT_FALSE(target.contains({ 1, 0 }));
+    ASSERT_FALSE(target.contains({ 2, 0 }));
+    ASSERT_FALSE(target.contains({ 3, 0 }));
+
+    ASSERT_FALSE(target.contains({ 0, 1 }));
+    ASSERT_TRUE(target.contains({ 1, 1 }));
+    ASSERT_TRUE(target.contains({ 1.4, 1.25 }));
+    ASSERT_TRUE(target.contains({ 2, 1 }));
+    ASSERT_TRUE(target.contains({ 3, 1 }));
+
+    ASSERT_TRUE(target.contains({ 1, 2 }));
+    ASSERT_FALSE(target.contains({ 2, 2 }));
+    ASSERT_TRUE(target.contains({ 3, 2 }));
+    ASSERT_FALSE(target.contains({ 3.5, 2.1 }));
+
+    ASSERT_TRUE(target.contains({ 1, 3 }));
+    ASSERT_TRUE(target.contains({ 2, 3 }));
+    ASSERT_TRUE(target.contains({ 3, 3 }));
+    ASSERT_FALSE(target.contains({ 3.3, 3.5 }));
+}
+
 TEST_F(RenderedTargetTest, Engine)
 {
     RenderedTarget target;

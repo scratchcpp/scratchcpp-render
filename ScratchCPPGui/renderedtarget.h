@@ -59,6 +59,11 @@ class RenderedTarget : public IRenderedTarget
         bool isSvg() const override;
         void paintSvg(QNanoPainter *painter) override;
 
+        void updateHullPoints(QOpenGLFramebufferObject *fbo) override;
+        const std::vector<QPointF> &hullPoints() const override;
+
+        Q_INVOKABLE bool contains(const QPointF &point) const override;
+
     signals:
         void engineChanged();
         void stageModelChanged();
@@ -101,6 +106,7 @@ class RenderedTarget : public IRenderedTarget
         double m_originY = 0;
         qreal m_maximumWidth = std::numeric_limits<double>::infinity();
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();
+        std::vector<QPointF> m_hullPoints;
 };
 
 } // namespace scratchcppgui

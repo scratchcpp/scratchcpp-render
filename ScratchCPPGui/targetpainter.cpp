@@ -26,10 +26,30 @@ void TargetPainter::paint(QNanoPainter *painter)
     if (m_target->isSvg())
         m_target->paintSvg(painter);
     else {
+        QOpenGLContext *context = QOpenGLContext::currentContext();
+        Q_ASSERT(context);
+
+        if (!context)
+            return;
+
+        QOffscreenSurface surface;
+        surface.setFormat(context->format());
+        surface.create();
+        Q_ASSERT(surface.isValid());
+
+        QSurface *oldSurface = context->surface();
+        context->makeCurrent(&surface);
+
+        painter->beginFrame(width, height);
         QNanoImage image = QNanoImage::fromCache(painter, m_target->bitmapBuffer(), m_target->bitmapUniqueKey());
         painter->drawImage(image, 0, 0, width, height);
+        painter->endFrame();
+
+        context->doneCurrent();
+        context->makeCurrent(oldSurface);
     }
 
+    m_target->updateHullPoints(framebufferObject());
     m_target->unlockCostume();
 }
 
