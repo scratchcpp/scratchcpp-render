@@ -80,10 +80,12 @@ void RenderedTarget::loadProperties()
 
             // Coordinates
             double clampedSize = std::min(m_size, m_maxSize);
-            m_x = static_cast<double>(m_engine->stageWidth()) / 2 + sprite->x() - m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1);
-            m_y = static_cast<double>(m_engine->stageHeight()) / 2 - sprite->y() - m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution();
-            m_originX = m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution();
-            m_originY = m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution();
+            double stageWidth = m_engine->stageWidth();
+            double stageHeight = m_engine->stageHeight();
+            m_x = m_stageScale * (stageWidth / 2 + sprite->x() - m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1));
+            m_y = m_stageScale * (stageHeight / 2 - sprite->y() - m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution());
+            m_originX = m_costume->rotationCenterX() * clampedSize * m_stageScale / m_costume->bitmapResolution();
+            m_originY = m_costume->rotationCenterY() * clampedSize * m_stageScale / m_costume->bitmapResolution();
 
             // Layer
             m_z = sprite->layerOrder();
@@ -92,8 +94,10 @@ void RenderedTarget::loadProperties()
         mutex.unlock();
     } else if (m_stageModel) {
         updateCostumeData();
-        m_x = static_cast<double>(m_engine->stageWidth()) / 2 - m_costume->rotationCenterX() / m_costume->bitmapResolution();
-        m_y = static_cast<double>(m_engine->stageHeight()) / 2 - m_costume->rotationCenterY() / m_costume->bitmapResolution();
+        double stageWidth = m_engine->stageWidth();
+        double stageHeight = m_engine->stageHeight();
+        m_x = m_stageScale * (stageWidth / 2 - m_costume->rotationCenterX() / m_costume->bitmapResolution());
+        m_y = m_stageScale * (stageHeight / 2 - m_costume->rotationCenterY() / m_costume->bitmapResolution());
         m_originX = m_costume->rotationCenterX() / m_costume->bitmapResolution();
         m_originY = m_costume->rotationCenterY() / m_costume->bitmapResolution();
     }
@@ -211,6 +215,21 @@ void RenderedTarget::setMouseArea(SceneMouseArea *newMouseArea)
     Q_ASSERT(m_mouseArea);
     connect(m_mouseArea, &SceneMouseArea::mouseMoved, this, &RenderedTarget::handleSceneMouseMove);
     emit mouseAreaChanged();
+}
+
+double RenderedTarget::stageScale() const
+{
+    return m_stageScale;
+}
+
+void RenderedTarget::setStageScale(double newStageScale)
+{
+    if (qFuzzyCompare(m_stageScale, newStageScale))
+        return;
+
+    m_stageScale = newStageScale;
+    Q_ASSERT(m_stageScale > 0);
+    emit stageScaleChanged();
 }
 
 qreal RenderedTarget::width() const
@@ -436,16 +455,16 @@ void RenderedTarget::calculateSize(Target *target, double costumeWidth, double c
 {
     if (m_costume) {
         double bitmapRes = m_costume->bitmapResolution();
-        m_maxSize = std::min(m_maximumWidth / costumeWidth, m_maximumHeight / costumeHeight);
+        m_maxSize = std::min(m_maximumWidth / (costumeWidth * m_stageScale), m_maximumHeight / (costumeHeight * m_stageScale));
         Sprite *sprite = dynamic_cast<Sprite *>(target);
 
         if (sprite) {
             double clampedSize = std::min(m_size, m_maxSize);
-            m_width = costumeWidth * clampedSize / bitmapRes;
-            m_height = costumeHeight * clampedSize / bitmapRes;
+            m_width = costumeWidth * clampedSize * m_stageScale / bitmapRes;
+            m_height = costumeHeight * clampedSize * m_stageScale / bitmapRes;
         } else {
-            m_width = costumeWidth / bitmapRes;
-            m_height = costumeHeight / bitmapRes;
+            m_width = costumeWidth * m_stageScale / bitmapRes;
+            m_height = costumeHeight * m_stageScale / bitmapRes;
         }
     }
 }
@@ -458,8 +477,8 @@ void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
         Q_ASSERT(m_spriteModel && m_spriteModel->sprite());
         Q_ASSERT(m_engine);
         Sprite *sprite = m_spriteModel->sprite();
-        sprite->setX(x - m_engine->stageWidth() / 2.0 - m_dragDeltaX);
-        sprite->setY(-y + m_engine->stageHeight() / 2.0 - m_dragDeltaY);
+        sprite->setX(x / m_stageScale - m_engine->stageWidth() / 2.0 - m_dragDeltaX);
+        sprite->setY(-y / m_stageScale + m_engine->stageHeight() / 2.0 - m_dragDeltaY);
     }
 }
 

@@ -7,6 +7,8 @@ import ScratchCPPGui
 
 ProjectScene {
     property string fileName
+    property int stageWidth: 480
+    property int stageHeight: 360
     property alias fps: loader.fps
     property alias turboMode: loader.turboMode
 	property alias cloneLimit: loader.cloneLimit
@@ -21,6 +23,7 @@ ProjectScene {
     id: root
 	clip: true
     engine: loader.engine
+    stageScale: (stageWidth == 0 || stageHeight == 0) ? 1 : Math.min(width / stageWidth, height / stageHeight)
     onFileNameChanged: priv.loading = true;
 
     QtObject {
@@ -31,8 +34,8 @@ ProjectScene {
     ProjectLoader {
         id: loader
         fileName: root.fileName
-		stageWidth: parent.width
-		stageHeight: parent.height
+        stageWidth: root.stageWidth
+        stageHeight: root.stageHeight
         onLoadingFinished: {
             priv.loading = false;
 
@@ -48,6 +51,7 @@ ProjectScene {
         engine: loader.engine
         stageModel: loader.stage
         mouseArea: sceneMouseArea
+        stageScale: root.stageScale
         onStageModelChanged: stageModel.renderedTarget = this
     }
 
@@ -68,6 +72,7 @@ ProjectScene {
             engine: loader.engine
             spriteModel: modelData
             mouseArea: sceneMouseArea
+            stageScale: root.stageScale
             transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
             Component.onCompleted: modelData.renderedTarget = this
         }

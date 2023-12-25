@@ -74,6 +74,7 @@ TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
     target.setZ(2.5);
     target.setRotation(-78.05);
     target.setTransformOriginPoint(QPointF(3.4, 9.7));
+    target.setStageScale(3.5);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(249));
@@ -87,10 +88,10 @@ TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
     ASSERT_EQ(target.transformOriginPoint(), QPointF(3.4, 9.7));
 
     target.updateProperties();
-    ASSERT_EQ(target.width(), 4);
-    ASSERT_EQ(target.height(), 6);
-    ASSERT_EQ(target.x(), 295);
-    ASSERT_EQ(target.y(), 52.5);
+    ASSERT_EQ(target.width(), 14);
+    ASSERT_EQ(target.height(), 21);
+    ASSERT_EQ(target.x(), 1032.5);
+    ASSERT_EQ(target.y(), 183.75);
     ASSERT_EQ(target.z(), 0);
     ASSERT_EQ(target.rotation(), 0);
     ASSERT_EQ(target.transformOriginPoint(), QPointF(-23, 72));
@@ -118,6 +119,7 @@ TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
     target.setZ(2.5);
     target.setRotation(-78.05);
     target.setTransformOriginPoint(QPointF(3.4, 9.7));
+    target.setStageScale(5.23);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(249));
@@ -131,14 +133,14 @@ TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
     ASSERT_EQ(target.transformOriginPoint(), QPointF(3.4, 9.7));
 
     target.updateProperties();
-    ASSERT_EQ(target.width(), 5.7592);
-    ASSERT_EQ(target.height(), 8.6388);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 237.18);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -100.93);
+    ASSERT_EQ(std::round(target.width() * 100) / 100, 30.12);
+    ASSERT_EQ(std::round(target.height() * 100) / 100, 45.18);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 1240.43);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, -527.84);
     ASSERT_EQ(target.z(), 3);
     ASSERT_EQ(target.rotation(), -157.16);
-    ASSERT_EQ(target.transformOriginPoint().x(), -33.1154);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 103.67);
+    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -173.19);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 542.17);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
@@ -377,6 +379,7 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
 
     // Test scale limit
     sprite.setSize(maxSize * 250);
+    target.setStageScale(3.89);
 
     target.loadCostume(costume.get());
     ASSERT_TRUE(target.isSvg());
@@ -406,9 +409,9 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
 
     ASSERT_EQ(std::round(target.width() * 100) / 100, maxWidth);
     ASSERT_EQ(std::round(target.height() * 100) / 100, maxHeight);
-    ASSERT_EQ(std::round(target.scale() * 100) / 100, 2.5);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 11126.36);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -6593.27);
+    ASSERT_EQ(std::round(target.scale() * 100) / 100, 9.73);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 11963.59);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, -5887.67);
     ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -10836.66);
     ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 6837.42);
 }
@@ -602,4 +605,13 @@ TEST_F(RenderedTargetTest, MouseArea)
     SceneMouseArea mouseArea;
     target.setMouseArea(&mouseArea);
     ASSERT_EQ(target.mouseArea(), &mouseArea);
+}
+
+TEST_F(RenderedTargetTest, StageScale)
+{
+    RenderedTarget target;
+    ASSERT_EQ(target.stageScale(), 1);
+
+    target.setStageScale(6.4);
+    ASSERT_EQ(target.stageScale(), 6.4);
 }
