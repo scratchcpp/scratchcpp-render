@@ -50,6 +50,5 @@ IRenderedTarget *SceneMouseArea::draggedSprite() const
 
 void SceneMouseArea::setDraggedSprite(IRenderedTarget *sprite)
 {
-    Q_ASSERT(sprite);
     m_draggedSprite = sprite;
 }

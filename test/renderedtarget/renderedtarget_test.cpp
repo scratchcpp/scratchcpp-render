@@ -548,6 +548,131 @@ TEST_F(RenderedTargetTest, HullPoints)
     ASSERT_FALSE(target.contains({ 3.3, 3.5 }));
 }
 
+TEST_F(RenderedTargetTest, SpriteDragging)
+{
+    RenderedTarget target;
+    EngineMock engine;
+    target.setEngine(&engine);
+
+    SpriteModel model;
+    Sprite sprite;
+    sprite.setX(64.08);
+    sprite.setY(-6.86);
+    model.init(&sprite);
+    target.setSpriteModel(&model);
+    target.setStageScale(3.5);
+
+    SceneMouseArea mouseArea;
+    target.setMouseArea(&mouseArea);
+
+    emit mouseArea.mouseMoved(1064, 651);
+    ASSERT_EQ(sprite.x(), 64.08);
+    ASSERT_EQ(sprite.y(), -6.86);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+
+    // Try right mouse button (should not work)
+    QMouseEvent moveEventRightButton(QEvent::MouseMove, QPointF(), QPointF(), Qt::RightButton, Qt::RightButton, Qt::NoModifier);
+    QMouseEvent pressEventRightButton(QEvent::MouseButtonPress, QPointF(), QPointF(), Qt::RightButton, Qt::RightButton, Qt::NoModifier);
+    QMouseEvent releaseEventRightButton(QEvent::MouseButtonRelease, QPointF(), QPointF(), Qt::RightButton, Qt::RightButton, Qt::NoModifier);
+    QCoreApplication::sendEvent(&target, &pressEventRightButton);
+    QCoreApplication::sendEvent(&target, &moveEventRightButton);
+    ASSERT_EQ(sprite.x(), 64.08);
+    ASSERT_EQ(sprite.y(), -6.86);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+    QCoreApplication::sendEvent(&target, &releaseEventRightButton);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+
+    emit mouseArea.mouseMoved(1064, 651);
+    ASSERT_EQ(sprite.x(), 64.08);
+    ASSERT_EQ(sprite.y(), -6.86);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+
+    // Try right mouse button with "draggable" set to true (should not work)
+    sprite.setDraggable(true);
+    QCoreApplication::sendEvent(&target, &pressEventRightButton);
+    QCoreApplication::sendEvent(&target, &moveEventRightButton);
+    ASSERT_EQ(sprite.x(), 64.08);
+    ASSERT_EQ(sprite.y(), -6.86);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+    QCoreApplication::sendEvent(&target, &releaseEventRightButton);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+
+    emit mouseArea.mouseMoved(1064, 651);
+    ASSERT_EQ(sprite.x(), 64.08);
+    ASSERT_EQ(sprite.y(), -6.86);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+
+    // Try left mouse button (should not work with "draggable" set to false)
+    sprite.setDraggable(false);
+    QMouseEvent moveEvent(QEvent::MouseMove, QPointF(), QPointF(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, QPointF(), QPointF(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, QPointF(), QPointF(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QCoreApplication::sendEvent(&target, &pressEvent);
+    QCoreApplication::sendEvent(&target, &moveEvent);
+    ASSERT_EQ(sprite.x(), 64.08);
+    ASSERT_EQ(sprite.y(), -6.86);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+
+    emit mouseArea.mouseMoved(1064, 651);
+    ASSERT_EQ(sprite.x(), 64.08);
+    ASSERT_EQ(sprite.y(), -6.86);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+    QCoreApplication::sendEvent(&target, &releaseEvent);
+
+    // Try left mouse button with "draggable" set to true
+    sprite.setDraggable(true);
+    QCoreApplication::sendEvent(&target, &pressEvent);
+    EXPECT_CALL(engine, mouseX()).WillOnce(Return(67.95));
+    EXPECT_CALL(engine, mouseY()).WillOnce(Return(2.1));
+    EXPECT_CALL(engine, moveSpriteToFront(&sprite));
+    QCoreApplication::sendEvent(&target, &moveEvent);
+    ASSERT_EQ(sprite.x(), 64.08);
+    ASSERT_EQ(sprite.y(), -6.86);
+    ASSERT_EQ(mouseArea.draggedSprite(), &target);
+
+    // Drag
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    emit mouseArea.mouseMoved(1067.8, 649.06);
+    ASSERT_EQ(std::round(sprite.x() * 100) / 100, 61.22);
+    ASSERT_EQ(std::round(sprite.y() * 100) / 100, -14.41);
+    ASSERT_EQ(mouseArea.draggedSprite(), &target);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    emit mouseArea.mouseMoved(1092.47, 605.46);
+    ASSERT_EQ(std::round(sprite.x() * 100) / 100, 68.26);
+    ASSERT_EQ(std::round(sprite.y() * 100) / 100, -1.95);
+    ASSERT_EQ(mouseArea.draggedSprite(), &target);
+
+    // Create another sprite
+    RenderedTarget anotherTarget;
+    anotherTarget.setEngine(&engine);
+
+    SpriteModel anotherModel;
+    Sprite anotherSprite;
+    anotherSprite.setX(64.08);
+    anotherSprite.setY(-6.86);
+    anotherSprite.setDraggable(true);
+    anotherModel.init(&anotherSprite);
+    anotherTarget.setSpriteModel(&model);
+    anotherTarget.setStageScale(3.5);
+    anotherTarget.setMouseArea(&mouseArea);
+
+    // Try to drag the second sprite while the first is being dragged
+    sprite.setDraggable(true);
+    QCoreApplication::sendEvent(&anotherTarget, &pressEvent);
+    QCoreApplication::sendEvent(&anotherTarget, &moveEvent);
+    ASSERT_EQ(mouseArea.draggedSprite(), &target);
+    QCoreApplication::sendEvent(&anotherTarget, &releaseEvent);
+
+    // Stop dragging
+    QCoreApplication::sendEvent(&target, &releaseEvent);
+    ASSERT_EQ(std::round(sprite.x() * 100) / 100, 68.26);
+    ASSERT_EQ(std::round(sprite.y() * 100) / 100, -1.95);
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+}
+
 TEST_F(RenderedTargetTest, Engine)
 {
     RenderedTarget target;
