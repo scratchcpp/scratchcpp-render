@@ -37,6 +37,21 @@ void ProjectScene::setEngine(IEngine *newEngine)
     emit engineChanged();
 }
 
+double ProjectScene::stageScale() const
+{
+    return m_stageScale;
+}
+
+void ProjectScene::setStageScale(double newStageScale)
+{
+    if (qFuzzyCompare(m_stageScale, newStageScale))
+        return;
+
+    m_stageScale = newStageScale;
+    Q_ASSERT(m_stageScale > 0);
+    emit stageScaleChanged();
+}
+
 void ProjectScene::handleMouseMove(qreal x, qreal y)
 {
     if (m_engine) {

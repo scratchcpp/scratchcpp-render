@@ -8,7 +8,7 @@ using namespace scratchcppgui;
 
 using ::testing::Return;
 
-TEST(ProjectScene, Engine)
+TEST(ProjectSceneTest, Engine)
 {
     ProjectScene scene;
     ASSERT_EQ(scene.engine(), nullptr);
@@ -18,7 +18,16 @@ TEST(ProjectScene, Engine)
     ASSERT_EQ(scene.engine(), &engine);
 }
 
-TEST(ProjectScene, HandleMouseMove)
+TEST(ProjectSceneTest, StageScale)
+{
+    ProjectScene scene;
+    ASSERT_EQ(scene.stageScale(), 1);
+
+    scene.setStageScale(5.79);
+    ASSERT_EQ(scene.stageScale(), 5.79);
+}
+
+TEST(ProjectSceneTest, HandleMouseMove)
 {
     ProjectScene scene;
     EngineMock engine;
@@ -31,7 +40,7 @@ TEST(ProjectScene, HandleMouseMove)
     scene.handleMouseMove(46.9, -16.7);
 }
 
-TEST(ProjectScene, HandleMousePress)
+TEST(ProjectSceneTest, HandleMousePress)
 {
     ProjectScene scene;
     EngineMock engine;
@@ -44,7 +53,7 @@ TEST(ProjectScene, HandleMousePress)
     scene.handleMousePress();
 }
 
-TEST(ProjectScene, HandleMouseRelease)
+TEST(ProjectSceneTest, HandleMouseRelease)
 {
     ProjectScene scene;
     EngineMock engine;
@@ -57,7 +66,7 @@ TEST(ProjectScene, HandleMouseRelease)
     scene.handleMouseRelease();
 }
 
-TEST(ProjectScene, HandleKeyPressAndRelease)
+TEST(ProjectSceneTest, HandleKeyPressAndRelease)
 {
     static const std::unordered_map<Qt::Key, KeyEvent::Type> SPECIAL_KEY_MAP = {
         { Qt::Key_Space, KeyEvent::Type::Space }, { Qt::Key_Left, KeyEvent::Type::Left },    { Qt::Key_Up, KeyEvent::Type::Up },      { Qt::Key_Right, KeyEvent::Type::Right },
