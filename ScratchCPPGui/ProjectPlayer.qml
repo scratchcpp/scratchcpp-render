@@ -111,12 +111,13 @@ ProjectScene {
         }
     }
 
-    MouseArea {
+    SceneMouseArea {
         id: mouseArea
         anchors.fill: parent
-        hoverEnabled: true
-        onPositionChanged: root.handleMouseMove(mouseX, mouseY)
-        onPressed: root.handleMousePress()
-        onReleased: root.handleMouseRelease()
+        stage: stageTarget
+        spriteRepeater: sprites
+        onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
+        onMousePressed: root.handleMousePress()
+        onMouseReleased: root.handleMouseRelease()
     }
 }
