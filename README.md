@@ -132,7 +132,7 @@ Button {
 - [x] Mouse press events
 - [ ] Sprite click events
 - [ ] Clones
-- [ ] Sprite dragging
+- [x] Sprite dragging
 - [ ] Touching color blocks
 - [ ] Pen blocks
 - [ ] Monitors
