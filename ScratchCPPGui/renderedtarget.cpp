@@ -9,6 +9,7 @@
 #include "targetpainter.h"
 #include "stagemodel.h"
 #include "spritemodel.h"
+#include "scenemousearea.h"
 
 using namespace scratchcppgui;
 using namespace libscratchcpp;
@@ -196,6 +197,22 @@ Target *RenderedTarget::scratchTarget() const
         return nullptr;
 }
 
+SceneMouseArea *RenderedTarget::mouseArea() const
+{
+    return m_mouseArea;
+}
+
+void RenderedTarget::setMouseArea(SceneMouseArea *newMouseArea)
+{
+    if (m_mouseArea == newMouseArea)
+        return;
+
+    m_mouseArea = newMouseArea;
+    Q_ASSERT(m_mouseArea);
+    connect(m_mouseArea, &SceneMouseArea::mouseMoved, this, &RenderedTarget::handleSceneMouseMove);
+    emit mouseAreaChanged();
+}
+
 qreal RenderedTarget::width() const
 {
     return QNanoQuickItem::width();
@@ -224,6 +241,39 @@ QPointF RenderedTarget::mapFromScene(const QPointF &point) const
 QNanoQuickItemPainter *RenderedTarget::createItemPainter() const
 {
     return new TargetPainter();
+}
+
+void RenderedTarget::mousePressEvent(QMouseEvent *event)
+{
+    m_clicked = true;
+}
+
+void RenderedTarget::mouseReleaseEvent(QMouseEvent *event)
+{
+    m_clicked = false;
+    Q_ASSERT(m_mouseArea);
+
+    // Stop dragging
+    if (m_mouseArea->draggedSprite() == this)
+        m_mouseArea->setDraggedSprite(nullptr);
+}
+
+void RenderedTarget::mouseMoveEvent(QMouseEvent *event)
+{
+    Q_ASSERT((m_spriteModel && m_spriteModel->sprite()) || m_stageModel);
+    Q_ASSERT(m_mouseArea);
+
+    // Start dragging
+    if (m_clicked && !m_mouseArea->draggedSprite() && m_spriteModel && m_spriteModel->sprite()->draggable()) {
+        Q_ASSERT(m_engine);
+        Sprite *sprite = m_spriteModel->sprite();
+        m_dragDeltaX = m_engine->mouseX() - sprite->x();
+        m_dragDeltaY = m_engine->mouseY() - sprite->y();
+        m_mouseArea->setDraggedSprite(this);
+
+        // Move the sprite to the front layer
+        m_engine->moveSpriteToFront(sprite);
+    }
 }
 
 void RenderedTarget::updateCostumeData()
@@ -396,6 +446,19 @@ void RenderedTarget::calculateSize(Target *target, double costumeWidth, double c
             m_width = costumeWidth / bitmapRes;
             m_height = costumeHeight / bitmapRes;
         }
+    }
+}
+
+void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
+{
+    Q_ASSERT(m_mouseArea);
+
+    if (m_mouseArea->draggedSprite() == this) {
+        Q_ASSERT(m_spriteModel && m_spriteModel->sprite());
+        Q_ASSERT(m_engine);
+        Sprite *sprite = m_spriteModel->sprite();
+        sprite->setX(x - m_engine->stageWidth() / 2.0 - m_dragDeltaX);
+        sprite->setY(-y + m_engine->stageHeight() / 2.0 - m_dragDeltaY);
     }
 }
 

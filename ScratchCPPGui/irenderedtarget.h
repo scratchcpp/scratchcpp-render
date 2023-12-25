@@ -21,6 +21,7 @@ namespace scratchcppgui
 
 class StageModel;
 class SpriteModel;
+class SceneMouseArea;
 
 class IRenderedTarget : public QNanoQuickItem
 {
@@ -46,6 +47,9 @@ class IRenderedTarget : public QNanoQuickItem
         virtual void setSpriteModel(SpriteModel *newSpriteModel) = 0;
 
         virtual libscratchcpp::Target *scratchTarget() const = 0;
+
+        virtual SceneMouseArea *mouseArea() const = 0;
+        virtual void setMouseArea(SceneMouseArea *newMouseArea) = 0;
 
         virtual qreal width() const = 0;
         virtual void setWidth(qreal width) = 0;

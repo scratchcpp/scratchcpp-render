@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include <scratchcpp/sprite.h>
+
 #include "scenemousearea.h"
 #include "mouseeventhandler.h"
 
@@ -39,4 +41,15 @@ void SceneMouseArea::setSpriteRepeater(QQuickItem *newSpriteRepeater)
 {
     m_mouseHandler->setSpriteRepeater(newSpriteRepeater);
     emit spriteRepeaterChanged();
+}
+
+IRenderedTarget *SceneMouseArea::draggedSprite() const
+{
+    return m_draggedSprite;
+}
+
+void SceneMouseArea::setDraggedSprite(IRenderedTarget *sprite)
+{
+    Q_ASSERT(sprite);
+    m_draggedSprite = sprite;
 }

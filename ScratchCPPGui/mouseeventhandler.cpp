@@ -57,7 +57,13 @@ bool MouseEventHandler::eventFilter(QObject *obj, QEvent *event)
 
         case QEvent::MouseButtonRelease:
             emit mouseReleased();
-            forwardPointEvent(static_cast<QSinglePointEvent *>(event));
+
+            if (m_clickedItem) {
+                sendPointEventToItem(static_cast<QSinglePointEvent *>(event), m_clickedItem);
+                m_clickedItem = nullptr;
+            } else
+                forwardPointEvent(static_cast<QSinglePointEvent *>(event));
+
             return true;
 
         default:
@@ -137,6 +143,9 @@ void MouseEventHandler::sendPointEventToItem(QSinglePointEvent *event, QQuickIte
         case QEvent::MouseButtonPress:
         case QEvent::MouseButtonRelease:
         case QEvent::MouseMove: {
+            if (event->type() == QEvent::MouseButtonPress)
+                m_clickedItem = item;
+
             QMouseEvent itemEvent(
                 event->type(),
                 item->mapFromScene(event->scenePosition()),

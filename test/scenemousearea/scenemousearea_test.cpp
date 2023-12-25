@@ -37,3 +37,13 @@ TEST(SceneMouseAreaTest, SpriteRepeater)
     ASSERT_EQ(spy.count(), 1);
     ASSERT_EQ(mouseArea.spriteRepeater(), &item);
 }
+
+TEST(SceneMouseAreaTest, DraggedSprite)
+{
+    SceneMouseArea mouseArea;
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+
+    RenderedTargetMock sprite;
+    mouseArea.setDraggedSprite(&sprite);
+    ASSERT_EQ(mouseArea.draggedSprite(), &sprite);
+}

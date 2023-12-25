@@ -27,6 +27,9 @@ class RenderedTargetMock : public IRenderedTarget
 
         MOCK_METHOD(libscratchcpp::Target *, scratchTarget, (), (const, override));
 
+        MOCK_METHOD(SceneMouseArea *, mouseArea, (), (const, override));
+        MOCK_METHOD(void, setMouseArea, (SceneMouseArea *), (override));
+
         MOCK_METHOD(qreal, width, (), (const, override));
         MOCK_METHOD(void, setWidth, (qreal), (override));
 

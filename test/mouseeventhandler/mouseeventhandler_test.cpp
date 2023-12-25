@@ -303,14 +303,29 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     pressedSpy.clear();
     releasedSpy.clear();
 
-    // Send to stage (press)
+    // Send release (should be sent to sprite 1)
+    EXPECT_CALL(renderedTarget1, mouseReleaseEvent(_)).WillOnce(WithArgs<0>(Invoke(checkReleaseEvent)));
+    ASSERT_TRUE(handler.eventFilter(nullptr, &releaseEvent));
+    ASSERT_EQ(pressedSpy.count(), 0);
+    ASSERT_EQ(releasedSpy.count(), 1);
+    pressedSpy.clear();
+    releasedSpy.clear();
+
+    // Send to sprite 1 (press)
     EXPECT_CALL(renderedTarget3, contains(localPos)).WillOnce(Return(false));
-    EXPECT_CALL(renderedTarget1, contains(localPos)).WillOnce(Return(false));
-    EXPECT_CALL(renderedTarget2, contains(localPos)).WillOnce(Return(false));
-    EXPECT_CALL(stage, mousePressEvent(_)).WillOnce(WithArgs<0>(Invoke(checkPressEvent)));
+    EXPECT_CALL(renderedTarget1, contains(localPos)).WillOnce(Return(true));
+    EXPECT_CALL(renderedTarget1, mousePressEvent(_)).WillOnce(WithArgs<0>(Invoke(checkPressEvent)));
     ASSERT_TRUE(handler.eventFilter(nullptr, &pressEvent));
     ASSERT_EQ(pressedSpy.count(), 1);
     ASSERT_EQ(releasedSpy.count(), 0);
+    pressedSpy.clear();
+    releasedSpy.clear();
+
+    // Send release (should be sent to sprite 1)
+    EXPECT_CALL(renderedTarget1, mouseReleaseEvent(_)).WillOnce(WithArgs<0>(Invoke(checkReleaseEvent)));
+    ASSERT_TRUE(handler.eventFilter(nullptr, &releaseEvent));
+    ASSERT_EQ(pressedSpy.count(), 0);
+    ASSERT_EQ(releasedSpy.count(), 1);
     pressedSpy.clear();
     releasedSpy.clear();
 
@@ -324,10 +339,18 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     pressedSpy.clear();
     releasedSpy.clear();
 
-    // Send to stage (release)
+    // Send to stage (press)
     EXPECT_CALL(renderedTarget3, contains(localPos)).WillOnce(Return(false));
     EXPECT_CALL(renderedTarget1, contains(localPos)).WillOnce(Return(false));
     EXPECT_CALL(renderedTarget2, contains(localPos)).WillOnce(Return(false));
+    EXPECT_CALL(stage, mousePressEvent(_)).WillOnce(WithArgs<0>(Invoke(checkPressEvent)));
+    ASSERT_TRUE(handler.eventFilter(nullptr, &pressEvent));
+    ASSERT_EQ(pressedSpy.count(), 1);
+    ASSERT_EQ(releasedSpy.count(), 0);
+    pressedSpy.clear();
+    releasedSpy.clear();
+
+    // Send release (should be sent to stage)
     EXPECT_CALL(stage, mouseReleaseEvent(_)).WillOnce(WithArgs<0>(Invoke(checkReleaseEvent)));
     ASSERT_TRUE(handler.eventFilter(nullptr, &releaseEvent));
     ASSERT_EQ(pressedSpy.count(), 0);
