@@ -40,6 +40,7 @@ class MouseEventHandler : public QObject
 
         IRenderedTarget *m_stage = nullptr;
         QQuickItem *m_hoveredItem = nullptr;
+        QQuickItem *m_clickedItem = nullptr;
         QQuickItem *m_spriteRepeater = nullptr;
 };
 
