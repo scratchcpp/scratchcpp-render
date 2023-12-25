@@ -80,11 +80,15 @@ class RenderedTarget : public IRenderedTarget
 
     protected:
         QNanoQuickItemPainter *createItemPainter() const override;
+        void mousePressEvent(QMouseEvent *event) override;
+        void mouseReleaseEvent(QMouseEvent *event) override;
+        void mouseMoveEvent(QMouseEvent *event) override;
 
     private:
         void updateCostumeData();
         void doLoadCostume();
         void calculateSize(libscratchcpp::Target *target, double costumeWidth, double costumeHeight);
+        void handleSceneMouseMove(qreal x, qreal y);
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
@@ -115,6 +119,9 @@ class RenderedTarget : public IRenderedTarget
         qreal m_maximumWidth = std::numeric_limits<double>::infinity();
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();
         std::vector<QPointF> m_hullPoints;
+        bool m_clicked = false;
+        double m_dragDeltaX = 0;
+        double m_dragDeltaY = 0;
 };
 
 } // namespace scratchcppgui
