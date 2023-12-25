@@ -13,12 +13,11 @@ class KeyEventHandler : public QObject
     public:
         explicit KeyEventHandler(QObject *parent = nullptr);
 
+        bool eventFilter(QObject *obj, QEvent *event) override;
+
     signals:
         void keyPressed(Qt::Key key, const QString &text);
         void keyReleased(Qt::Key key, const QString &text);
-
-    protected:
-        bool eventFilter(QObject *obj, QEvent *event) override;
 };
 
 } // namespace scratchcppgui

@@ -216,6 +216,11 @@ void RenderedTarget::setHeight(qreal height)
     QNanoQuickItem::setHeight(height);
 }
 
+QPointF RenderedTarget::mapFromScene(const QPointF &point) const
+{
+    return QNanoQuickItem::mapFromScene(point);
+}
+
 QNanoQuickItemPainter *RenderedTarget::createItemPainter() const
 {
     return new TargetPainter();

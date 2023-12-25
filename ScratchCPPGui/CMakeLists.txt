@@ -22,6 +22,10 @@ qt_add_qml_module(libscratchcpp-gui
         renderedtarget.h
 	targetpainter.cpp
 	targetpainter.h
+	scenemousearea.cpp
+	scenemousearea.h
+	mouseeventhandler.cpp
+	mouseeventhandler.h
 	keyeventhandler.cpp
 	keyeventhandler.h
 )
