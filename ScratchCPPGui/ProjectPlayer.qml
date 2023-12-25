@@ -47,6 +47,7 @@ ProjectScene {
         id: stageTarget
         engine: loader.engine
         stageModel: loader.stage
+        mouseArea: sceneMouseArea
         onStageModelChanged: stageModel.renderedTarget = this
     }
 
@@ -66,6 +67,7 @@ ProjectScene {
             id: target
             engine: loader.engine
             spriteModel: modelData
+            mouseArea: sceneMouseArea
             transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
             Component.onCompleted: modelData.renderedTarget = this
         }
@@ -112,7 +114,7 @@ ProjectScene {
     }
 
     SceneMouseArea {
-        id: mouseArea
+        id: sceneMouseArea
         anchors.fill: parent
         stage: stageTarget
         spriteRepeater: sprites
