@@ -51,6 +51,9 @@ class IRenderedTarget : public QNanoQuickItem
         virtual SceneMouseArea *mouseArea() const = 0;
         virtual void setMouseArea(SceneMouseArea *newMouseArea) = 0;
 
+        virtual double stageScale() const = 0;
+        virtual void setStageScale(double scale) = 0;
+
         virtual qreal width() const = 0;
         virtual void setWidth(qreal width) = 0;
 

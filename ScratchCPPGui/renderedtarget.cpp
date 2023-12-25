@@ -213,6 +213,21 @@ void RenderedTarget::setMouseArea(SceneMouseArea *newMouseArea)
     emit mouseAreaChanged();
 }
 
+double RenderedTarget::stageScale() const
+{
+    return m_stageScale;
+}
+
+void RenderedTarget::setStageScale(double newStageScale)
+{
+    if (qFuzzyCompare(m_stageScale, newStageScale))
+        return;
+
+    m_stageScale = newStageScale;
+    Q_ASSERT(m_stageScale > 0);
+    emit stageScaleChanged();
+}
+
 qreal RenderedTarget::width() const
 {
     return QNanoQuickItem::width();

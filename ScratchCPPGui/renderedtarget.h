@@ -25,6 +25,7 @@ class RenderedTarget : public IRenderedTarget
         Q_PROPERTY(SpriteModel *spriteModel READ spriteModel WRITE setSpriteModel NOTIFY spriteModelChanged)
         Q_PROPERTY(bool mirrorHorizontally READ mirrorHorizontally NOTIFY mirrorHorizontallyChanged)
         Q_PROPERTY(SceneMouseArea *mouseArea READ mouseArea WRITE setMouseArea NOTIFY mouseAreaChanged)
+        Q_PROPERTY(double stageScale READ stageScale WRITE setStageScale NOTIFY stageScaleChanged)
 
     public:
         RenderedTarget(QNanoQuickItem *parent = nullptr);
@@ -46,6 +47,9 @@ class RenderedTarget : public IRenderedTarget
 
         SceneMouseArea *mouseArea() const override;
         void setMouseArea(SceneMouseArea *newMouseArea) override;
+
+        double stageScale() const override;
+        void setStageScale(double newStageScale) override;
 
         qreal width() const override;
         void setWidth(qreal width) override;
@@ -77,6 +81,7 @@ class RenderedTarget : public IRenderedTarget
         void spriteModelChanged();
         void mouseAreaChanged();
         void mirrorHorizontallyChanged();
+        void stageScaleChanged();
 
     protected:
         QNanoQuickItemPainter *createItemPainter() const override;
@@ -116,6 +121,7 @@ class RenderedTarget : public IRenderedTarget
         bool m_newMirrorHorizontally = false;
         double m_originX = 0;
         double m_originY = 0;
+        double m_stageScale = 1;
         qreal m_maximumWidth = std::numeric_limits<double>::infinity();
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();
         std::vector<QPointF> m_hullPoints;

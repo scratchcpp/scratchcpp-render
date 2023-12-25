@@ -603,3 +603,12 @@ TEST_F(RenderedTargetTest, MouseArea)
     target.setMouseArea(&mouseArea);
     ASSERT_EQ(target.mouseArea(), &mouseArea);
 }
+
+TEST_F(RenderedTargetTest, StageScale)
+{
+    RenderedTarget target;
+    ASSERT_EQ(target.stageScale(), 1);
+
+    target.setStageScale(6.4);
+    ASSERT_EQ(target.stageScale(), 6.4);
+}
