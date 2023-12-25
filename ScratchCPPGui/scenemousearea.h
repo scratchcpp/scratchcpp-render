@@ -26,6 +26,9 @@ class SceneMouseArea : public QQuickItem
         QQuickItem *spriteRepeater() const;
         void setSpriteRepeater(QQuickItem *newSpriteRepeater);
 
+        IRenderedTarget *draggedSprite() const;
+        void setDraggedSprite(IRenderedTarget *sprite);
+
     signals:
         void mouseMoved(qreal x, qreal y);
         void mousePressed();
@@ -35,6 +38,7 @@ class SceneMouseArea : public QQuickItem
 
     private:
         MouseEventHandler *m_mouseHandler = nullptr;
+        IRenderedTarget *m_draggedSprite = nullptr;
 };
 
 } // namespace scratchcppgui
