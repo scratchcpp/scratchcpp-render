@@ -11,6 +11,7 @@
 
 Q_MOC_INCLUDE("stagemodel.h");
 Q_MOC_INCLUDE("spritemodel.h");
+Q_MOC_INCLUDE("scenemousearea.h");
 
 namespace scratchcppgui
 {
@@ -23,6 +24,7 @@ class RenderedTarget : public IRenderedTarget
         Q_PROPERTY(StageModel *stageModel READ stageModel WRITE setStageModel NOTIFY stageModelChanged)
         Q_PROPERTY(SpriteModel *spriteModel READ spriteModel WRITE setSpriteModel NOTIFY spriteModelChanged)
         Q_PROPERTY(bool mirrorHorizontally READ mirrorHorizontally NOTIFY mirrorHorizontallyChanged)
+        Q_PROPERTY(SceneMouseArea *mouseArea READ mouseArea WRITE setMouseArea NOTIFY mouseAreaChanged)
 
     public:
         RenderedTarget(QNanoQuickItem *parent = nullptr);
@@ -41,6 +43,9 @@ class RenderedTarget : public IRenderedTarget
         void setSpriteModel(SpriteModel *newSpriteModel) override;
 
         libscratchcpp::Target *scratchTarget() const override;
+
+        SceneMouseArea *mouseArea() const override;
+        void setMouseArea(SceneMouseArea *newMouseArea) override;
 
         qreal width() const override;
         void setWidth(qreal width) override;
@@ -70,7 +75,7 @@ class RenderedTarget : public IRenderedTarget
         void engineChanged();
         void stageModelChanged();
         void spriteModelChanged();
-
+        void mouseAreaChanged();
         void mirrorHorizontallyChanged();
 
     protected:
@@ -85,6 +90,7 @@ class RenderedTarget : public IRenderedTarget
         libscratchcpp::Costume *m_costume = nullptr;
         StageModel *m_stageModel = nullptr;
         SpriteModel *m_spriteModel = nullptr;
+        SceneMouseArea *m_mouseArea = nullptr;
         QSvgRenderer m_svgRenderer;
         QBuffer m_bitmapBuffer;
         QString m_bitmapUniqueKey;

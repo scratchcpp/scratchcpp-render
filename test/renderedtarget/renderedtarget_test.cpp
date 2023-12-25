@@ -5,6 +5,7 @@
 #include <renderedtarget.h>
 #include <stagemodel.h>
 #include <spritemodel.h>
+#include <scenemousearea.h>
 #include <scratchcpp/stage.h>
 #include <scratchcpp/sprite.h>
 #include <scratchcpp/costume.h>
@@ -591,4 +592,14 @@ TEST_F(RenderedTargetTest, ScratchTarget)
     spriteModel.init(&sprite);
     target.setSpriteModel(&spriteModel);
     ASSERT_EQ(target.scratchTarget(), &sprite);
+}
+
+TEST_F(RenderedTargetTest, MouseArea)
+{
+    RenderedTarget target;
+    ASSERT_EQ(target.mouseArea(), nullptr);
+
+    SceneMouseArea mouseArea;
+    target.setMouseArea(&mouseArea);
+    ASSERT_EQ(target.mouseArea(), &mouseArea);
 }

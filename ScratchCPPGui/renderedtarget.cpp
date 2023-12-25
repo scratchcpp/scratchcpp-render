@@ -196,6 +196,20 @@ Target *RenderedTarget::scratchTarget() const
         return nullptr;
 }
 
+SceneMouseArea *RenderedTarget::mouseArea() const
+{
+    return m_mouseArea;
+}
+
+void RenderedTarget::setMouseArea(SceneMouseArea *newMouseArea)
+{
+    if (m_mouseArea == newMouseArea)
+        return;
+
+    m_mouseArea = newMouseArea;
+    emit mouseAreaChanged();
+}
+
 qreal RenderedTarget::width() const
 {
     return QNanoQuickItem::width();
