@@ -55,8 +55,8 @@ void ProjectScene::setStageScale(double newStageScale)
 void ProjectScene::handleMouseMove(qreal x, qreal y)
 {
     if (m_engine) {
-        m_engine->setMouseX(x - m_engine->stageWidth() / 2.0);
-        m_engine->setMouseY(-y + m_engine->stageHeight() / 2.0);
+        m_engine->setMouseX(x / m_stageScale - m_engine->stageWidth() / 2.0);
+        m_engine->setMouseY(-y / m_stageScale + m_engine->stageHeight() / 2.0);
     }
 }
 
