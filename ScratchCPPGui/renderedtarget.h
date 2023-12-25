@@ -119,7 +119,7 @@ class RenderedTarget : public IRenderedTarget
         qreal m_maximumWidth = std::numeric_limits<double>::infinity();
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();
         std::vector<QPointF> m_hullPoints;
-        bool m_clicked = false;
+        bool m_clicked = false; // left mouse button only!
         double m_dragDeltaX = 0;
         double m_dragDeltaY = 0;
 };

@@ -245,7 +245,8 @@ QNanoQuickItemPainter *RenderedTarget::createItemPainter() const
 
 void RenderedTarget::mousePressEvent(QMouseEvent *event)
 {
-    m_clicked = true;
+    if (event->button() == Qt::LeftButton)
+        m_clicked = true;
 }
 
 void RenderedTarget::mouseReleaseEvent(QMouseEvent *event)
