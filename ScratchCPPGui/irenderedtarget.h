@@ -53,6 +53,8 @@ class IRenderedTarget : public QNanoQuickItem
         virtual qreal height() const = 0;
         virtual void setHeight(qreal width) = 0;
 
+        virtual QPointF mapFromScene(const QPointF &point) const = 0;
+
         virtual QBuffer *bitmapBuffer() = 0;
         virtual const QString &bitmapUniqueKey() const = 0;
 

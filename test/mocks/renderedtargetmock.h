@@ -33,6 +33,8 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(qreal, height, (), (const, override));
         MOCK_METHOD(void, setHeight, (qreal), (override));
 
+        MOCK_METHOD(QPointF, mapFromScene, (const QPointF &), (const, override));
+
         MOCK_METHOD(QBuffer *, bitmapBuffer, (), (override));
         MOCK_METHOD(const QString &, bitmapUniqueKey, (), (const, override));
 
@@ -49,6 +51,12 @@ class RenderedTargetMock : public IRenderedTarget
 
         MOCK_METHOD(bool, contains, (const QPointF &), (const, override));
         MOCK_METHOD(QNanoQuickItemPainter *, createItemPainter, (), (const, override));
+        MOCK_METHOD(void, hoverEnterEvent, (QHoverEvent *), (override));
+        MOCK_METHOD(void, hoverLeaveEvent, (QHoverEvent *), (override));
+        MOCK_METHOD(void, hoverMoveEvent, (QHoverEvent *), (override));
+        MOCK_METHOD(void, mouseMoveEvent, (QMouseEvent *), (override));
+        MOCK_METHOD(void, mousePressEvent, (QMouseEvent *), (override));
+        MOCK_METHOD(void, mouseReleaseEvent, (QMouseEvent *), (override));
 };
 
 } // namespace scratchcppgui

@@ -48,6 +48,8 @@ class RenderedTarget : public IRenderedTarget
         qreal height() const override;
         void setHeight(qreal height) override;
 
+        QPointF mapFromScene(const QPointF &point) const override;
+
         QBuffer *bitmapBuffer() override;
         const QString &bitmapUniqueKey() const override;
 
