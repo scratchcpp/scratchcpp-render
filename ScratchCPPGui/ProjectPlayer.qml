@@ -17,6 +17,7 @@ ProjectScene {
     readonly property bool loading: priv.loading
     readonly property int downloadedAssets: loader.downloadedAssets
     readonly property int assetCount: loader.assetCount
+    readonly property Rectangle stageRect: contentRect
     signal loaded()
     signal failedToLoad()
 
@@ -54,6 +55,7 @@ ProjectScene {
     }
 
     Rectangle {
+        id: contentRect
         anchors.left: parent.left
         anchors.top: parent.top
         width: stageWidth * stageScale
