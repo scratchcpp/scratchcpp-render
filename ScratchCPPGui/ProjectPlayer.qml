@@ -53,11 +53,12 @@ ProjectScene {
         loader.stop();
     }
 
-    Item {
+    Rectangle {
         anchors.left: parent.left
         anchors.top: parent.top
         width: stageWidth * stageScale
         height: stageHeight * stageScale
+        color: priv.loading ? "transparent" : "white"
         clip: true
 
         RenderedTarget {
