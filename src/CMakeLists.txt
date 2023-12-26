@@ -1,10 +1,12 @@
-qt_add_library(libscratchcpp-gui STATIC)
+qt_add_library(scratchcpp-render STATIC)
 
-set_target_properties(libscratchcpp-gui PROPERTIES AUTOMOC ON)
+set_target_properties(scratchcpp-render PROPERTIES AUTOMOC ON)
 
-qt_add_qml_module(libscratchcpp-gui
-    URI ScratchCPPGui
+qt_add_qml_module(scratchcpp-render
+    URI ScratchCPP.Render
     VERSION 1.0
+    NO_PLUGIN
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ScratchCPP/Render
     QML_FILES
         ProjectPlayer.qml
     SOURCES
@@ -29,3 +31,7 @@ qt_add_qml_module(libscratchcpp-gui
 	keyeventhandler.cpp
 	keyeventhandler.h
 )
+
+list(APPEND QML_IMPORT_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+list(REMOVE_DUPLICATES QML_IMPORT_PATH)
+set(QML_IMPORT_PATH ${QML_IMPORT_PATH} CACHE STRING "" FORCE)

@@ -20,21 +20,21 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <!-- TODO: Add logo: <a href="https://github.com/scratchcpp/scratchcpp-gui">
+  <!-- TODO: Add logo: <a href="https://github.com/scratchcpp/scratchcpp-render">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a> -->
 
-<h3 align="center">ScratchCPP GUI</h3>
+<h3 align="center">ScratchCPP Render</h3>
 
   <p align="center">
     A Qt-based library which uses libscratchcpp and QNanoPainter to render running Scratch projects.
     <br />
-    <!-- TODO: Add link to documentation: <a href="https://github.com/scratchcpp/scratchcpp-gui"><strong>Explore the docs »</strong></a>
+    <!-- TODO: Add link to documentation: <a href="https://github.com/scratchcpp/scratchcpp-render"><strong>Explore the docs »</strong></a>
     <br /> -->
     <br />
-    <a href="https://github.com/scratchcpp/scratchcpp-gui/issues">Report Bug</a>
+    <a href="https://github.com/scratchcpp/scratchcpp-render/issues">Report Bug</a>
     ·
-    <a href="https://github.com/scratchcpp/scratchcpp-gui/issues">Request Feature</a>
+    <a href="https://github.com/scratchcpp/scratchcpp-render/issues">Request Feature</a>
   </p>
 </div>
 
@@ -62,7 +62,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-**scratchcpp-gui** is a library which provides a set of Qt Quick components that can be used to run Scratch projects.
+**scratchcpp-render** is a library which provides a set of Qt Quick components that can be used to run and render Scratch projects.
 
 It uses **QNanoPainter** on top of Qt for hardware accelerated rendering
 and **libscratchcpp** to read, run and maintain the state of Scratch projects.
@@ -88,10 +88,10 @@ We're working on the documentation, it'll be available soon.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-The most common way to get started is to use the `ProjectPlayer` component.
+Get started by using the `ProjectPlayer` component.
 ```qml
 import QtQuick
-import ScratchCPPGui
+import ScratchCPP.Render
 
 Window {
     width: 480
@@ -140,7 +140,7 @@ Button {
 - [ ] Speech and thought bubbles
 - [ ] Question text box ("ask and wait" block)
 
-See the [open issues](https://github.com/scratchcpp/scratchcpp-gui/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/scratchcpp/scratchcpp-render/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -176,13 +176,13 @@ Distributed under the GNU Lesser General Public License. See [LICENSE](LICENSE) 
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/scratchcpp/scratchcpp-gui.svg?style=for-the-badge
-[contributors-url]: https://github.com/scratchcpp/scratchcpp-gui/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/scratchcpp/scratchcpp-gui.svg?style=for-the-badge
-[forks-url]: https://github.com/scratchcpp/scratchcpp-gui/network/members
-[stars-shield]: https://img.shields.io/github/stars/scratchcpp/scratchcpp-gui.svg?style=for-the-badge
-[stars-url]: https://github.com/scratchcpp/scratchcpp-gui/stargazers
-[issues-shield]: https://img.shields.io/github/issues/scratchcpp/scratchcpp-gui.svg?style=for-the-badge
-[issues-url]: https://github.com/scratchcpp/scratchcpp-gui/issues
-[license-shield]: https://img.shields.io/github/license/scratchcpp/scratchcpp-gui.svg?style=for-the-badge
-[license-url]: https://github.com/scratchcpp/scratchcpp-gui/blob/master/LICENSE
+[contributors-shield]: https://img.shields.io/github/contributors/scratchcpp/scratchcpp-render.svg?style=for-the-badge
+[contributors-url]: https://github.com/scratchcpp/scratchcpp-render/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/scratchcpp/scratchcpp-render.svg?style=for-the-badge
+[forks-url]: https://github.com/scratchcpp/scratchcpp-render/network/members
+[stars-shield]: https://img.shields.io/github/stars/scratchcpp/scratchcpp-render.svg?style=for-the-badge
+[stars-url]: https://github.com/scratchcpp/scratchcpp-render/stargazers
+[issues-shield]: https://img.shields.io/github/issues/scratchcpp/scratchcpp-render.svg?style=for-the-badge
+[issues-url]: https://github.com/scratchcpp/scratchcpp-render/issues
+[license-shield]: https://img.shields.io/github/license/scratchcpp/scratchcpp-render.svg?style=for-the-badge
+[license-url]: https://github.com/scratchcpp/scratchcpp-render/blob/master/LICENSE

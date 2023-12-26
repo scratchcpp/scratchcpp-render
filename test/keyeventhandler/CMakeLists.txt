@@ -6,7 +6,7 @@ add_executable(
 target_link_libraries(
   keyeventhandler_test
   GTest::gtest_main
-  libscratchcpp-gui
+  scratchcpp-render
   ${QT_LIBS}
   Qt6::Test
 )

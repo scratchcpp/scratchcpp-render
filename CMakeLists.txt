@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(scratchcpp-gui VERSION 1.0.0 LANGUAGES CXX)
+project(scratchcpp-render VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
@@ -9,27 +9,25 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(SCRATCHCPPGUI_BUILD_UNIT_TESTS "Build unit tests" ON)
+option(SCRATCHCPPRENDER_BUILD_UNIT_TESTS "Build unit tests" ON)
 
 include(build/FindQt.cmake)
 
 qt_standard_project_setup(REQUIRES 6.6)
-add_subdirectory(ScratchCPPGui)
+add_subdirectory(src)
 
-set(QML_IMPORT_PATH "${QML_IMPORT_PATH};${PROJECT_SOURCE_DIR}/src/qml" PARENT_SCOPE)
+target_compile_definitions(scratchcpp-render PRIVATE SCRATCHCPPRENDER_LIBRARY)
 
-target_compile_definitions(libscratchcpp-gui PRIVATE SCRATCHCPPGUI_LIBRARY)
-
-linkQt(libscratchcpp-gui)
+linkQt(scratchcpp-render)
 
 include(build/SetUpLibscratchcpp.cmake)
-target_link_libraries(libscratchcpp-gui PRIVATE scratchcpp)
+target_link_libraries(scratchcpp-render PRIVATE scratchcpp)
 
 add_subdirectory(thirdparty/libqnanopainter)
-target_include_directories(libscratchcpp-gui PRIVATE thirdparty/libqnanopainter)
-target_link_libraries(libscratchcpp-gui PRIVATE qnanopainter)
+target_include_directories(scratchcpp-render PRIVATE thirdparty/libqnanopainter)
+target_link_libraries(scratchcpp-render PRIVATE qnanopainter)
 
-if (SCRATCHCPPGUI_BUILD_UNIT_TESTS)
+if (SCRATCHCPPRENDER_BUILD_UNIT_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif()

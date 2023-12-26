@@ -8,7 +8,7 @@ target_link_libraries(
   stagemodel_test
   GTest::gtest_main
   GTest::gmock_main
-  libscratchcpp-gui
+  scratchcpp-render
   scratchcppgui_mocks
   qnanopainter
   ${QT_LIBS}
@@ -28,7 +28,7 @@ target_link_libraries(
   spritemodel_test
   GTest::gtest_main
   GTest::gmock_main
-  libscratchcpp-gui
+  scratchcpp-render
   scratchcppgui_mocks
   qnanopainter
   ${QT_LIBS}

@@ -1,7 +1,7 @@
 find_package(Qt6 6.6 COMPONENTS Gui Qml Quick Svg REQUIRED)
 set(QT_LIBS Qt6::Gui Qt6::Qml Qt6::Quick Qt6::Svg)
 
-if (SCRATCHCPPGUI_BUILD_UNIT_TESTS)
+if (SCRATCHCPPRENDER_BUILD_UNIT_TESTS)
     find_package(Qt6 6.6 COMPONENTS Test REQUIRED)
 endif()
 

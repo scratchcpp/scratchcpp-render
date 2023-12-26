@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(libscratchcpp_test)
+project(scratchcpp-render_test)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,7 +14,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 include(GoogleTest)
 
 function(add_test TARGET)
-    target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/ScratchCPPGui)
+    target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
     target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/libqnanopainter)
 endfunction()
 

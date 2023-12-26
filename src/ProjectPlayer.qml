@@ -3,7 +3,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import ScratchCPPGui
+import ScratchCPP.Render
 
 ProjectScene {
     property string fileName

@@ -7,7 +7,7 @@ target_link_libraries(
   scenemousearea_test
   GTest::gtest_main
   GTest::gmock_main
-  libscratchcpp-gui
+  scratchcpp-render
   scratchcppgui_mocks
   ${QT_LIBS}
   Qt6::Test
