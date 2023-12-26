@@ -4,7 +4,7 @@
 
 #include <QObject>
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class KeyEventHandler : public QObject
@@ -20,4 +20,4 @@ class KeyEventHandler : public QObject
         void keyReleased(Qt::Key key, const QString &text);
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

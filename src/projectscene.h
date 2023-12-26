@@ -9,7 +9,7 @@ namespace libscratchcpp
 class IEngine;
 }
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class KeyEventHandler;
@@ -49,4 +49,4 @@ class ProjectScene : public QQuickItem
         KeyEventHandler *m_keyHandler = nullptr;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

@@ -9,7 +9,7 @@ class QQuickItem;
 class QSinglePointEvent;
 class QHoverEvent;
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class IRenderedTarget;
@@ -44,4 +44,4 @@ class MouseEventHandler : public QObject
         QQuickItem *m_spriteRepeater = nullptr;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

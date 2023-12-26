@@ -5,7 +5,7 @@
 
 #include "../common.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 TEST(SpriteModelTest, Constructors)

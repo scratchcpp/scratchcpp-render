@@ -7,7 +7,7 @@
 
 Q_MOC_INCLUDE("renderedtarget.h");
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class IRenderedTarget;
@@ -43,4 +43,4 @@ class StageModel
         IRenderedTarget *m_renderedTarget = nullptr;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

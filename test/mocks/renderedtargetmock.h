@@ -4,9 +4,9 @@
 #include <qnanoquickitem.h>
 #include <gmock/gmock.h>
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class RenderedTargetMock : public IRenderedTarget
@@ -65,4 +65,4 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(void, mouseReleaseEvent, (QMouseEvent *), (override));
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

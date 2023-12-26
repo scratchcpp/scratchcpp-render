@@ -11,7 +11,7 @@
 #include "spritemodel.h"
 #include "scenemousearea.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions are multiplied by this

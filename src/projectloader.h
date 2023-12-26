@@ -9,7 +9,7 @@
 
 #include "stagemodel.h"
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class SpriteModel;
@@ -126,4 +126,4 @@ class ProjectLoader : public QObject
         std::atomic<bool> m_stopLoading = false;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

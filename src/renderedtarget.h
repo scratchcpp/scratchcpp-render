@@ -13,7 +13,7 @@ Q_MOC_INCLUDE("stagemodel.h");
 Q_MOC_INCLUDE("spritemodel.h");
 Q_MOC_INCLUDE("scenemousearea.h");
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class RenderedTarget : public IRenderedTarget
@@ -130,4 +130,4 @@ class RenderedTarget : public IRenderedTarget
         double m_dragDeltaY = 0;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

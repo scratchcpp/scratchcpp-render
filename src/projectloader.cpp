@@ -9,7 +9,7 @@
 #include "spritemodel.h"
 #include "renderedtarget.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 void runEventLoop(IEngine *engine)

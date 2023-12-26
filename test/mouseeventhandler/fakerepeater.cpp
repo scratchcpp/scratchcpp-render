@@ -1,6 +1,6 @@
 #include "fakerepeater.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
 FakeRepeater::FakeRepeater(QQuickItem *parent) :
     QQuickItem(parent)

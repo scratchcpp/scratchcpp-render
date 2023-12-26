@@ -2,7 +2,7 @@
 
 #include <QQuickItem>
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class FakeRepeater : public QQuickItem
@@ -18,4 +18,4 @@ class FakeRepeater : public QQuickItem
         std::vector<QQuickItem *> items;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

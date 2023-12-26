@@ -4,7 +4,7 @@
 
 #include "../common.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
 using ::testing::Return;
 

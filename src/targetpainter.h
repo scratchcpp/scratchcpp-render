@@ -4,7 +4,7 @@
 
 #include <qnanoquickitempainter.h>
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class IRenderedTarget;
@@ -22,4 +22,4 @@ class TargetPainter : public QNanoQuickItemPainter
         IRenderedTarget *m_target = nullptr;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

@@ -5,7 +5,7 @@
 #include "stagemodel.h"
 #include "renderedtarget.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
 StageModel::StageModel(QObject *parent) :
     QObject(parent)

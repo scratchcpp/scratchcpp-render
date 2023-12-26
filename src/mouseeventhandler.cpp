@@ -6,7 +6,7 @@
 #include "mouseeventhandler.h"
 #include "renderedtarget.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
 MouseEventHandler::MouseEventHandler(QObject *parent) :
     QObject(parent)

@@ -16,7 +16,7 @@ class Target;
 
 } // namespace libscratchcpp
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class StageModel;
@@ -77,4 +77,4 @@ class IRenderedTarget : public QNanoQuickItem
         virtual const std::vector<QPointF> &hullPoints() const = 0;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

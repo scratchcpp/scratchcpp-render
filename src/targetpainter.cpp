@@ -7,7 +7,7 @@
 #include "irenderedtarget.h"
 #include "spritemodel.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
 TargetPainter::TargetPainter()
 {

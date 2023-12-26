@@ -7,7 +7,7 @@
 #include "projectscene.h"
 #include "keyeventhandler.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 static const std::unordered_map<Qt::Key, KeyEvent::Type> SPECIAL_KEY_MAP = {

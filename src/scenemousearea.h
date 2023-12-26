@@ -4,7 +4,7 @@
 
 #include <QQuickItem>
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class IRenderedTarget;
@@ -41,4 +41,4 @@ class SceneMouseArea : public QQuickItem
         IRenderedTarget *m_draggedSprite = nullptr;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

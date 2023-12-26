@@ -4,7 +4,7 @@
 
 #include "../common.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
 TEST(SceneMouseAreaTest, Constructors)
 {

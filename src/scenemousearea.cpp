@@ -5,7 +5,7 @@
 #include "scenemousearea.h"
 #include "mouseeventhandler.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
 SceneMouseArea::SceneMouseArea(QQuickItem *parent) :
     QQuickItem(parent)

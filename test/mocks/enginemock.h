@@ -5,7 +5,7 @@
 
 using namespace libscratchcpp;
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 using ScriptMap = std::unordered_map<std::shared_ptr<Block>, std::shared_ptr<Script>>;
@@ -112,4 +112,4 @@ class EngineMock : public IEngine
         MOCK_METHOD(const ScriptMap &, scripts, (), (const, override));
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

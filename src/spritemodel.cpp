@@ -5,7 +5,7 @@
 #include "spritemodel.h"
 #include "renderedtarget.h"
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 SpriteModel::SpriteModel(QObject *parent) :
@@ -80,4 +80,4 @@ void SpriteModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
     emit renderedTargetChanged();
 }
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender

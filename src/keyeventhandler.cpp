@@ -4,7 +4,7 @@
 
 #include "keyeventhandler.h"
 
-using namespace scratchcppgui;
+using namespace scratchcpprender;
 
 KeyEventHandler::KeyEventHandler(QObject *parent) :
     QObject(parent)

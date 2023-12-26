@@ -8,7 +8,7 @@
 
 Q_MOC_INCLUDE("renderedtarget.h");
 
-namespace scratchcppgui
+namespace scratchcpprender
 {
 
 class IRenderedTarget;
@@ -50,4 +50,4 @@ class SpriteModel
         IRenderedTarget *m_renderedTarget = nullptr;
 };
 
-} // namespace scratchcppgui
+} // namespace scratchcpprender
