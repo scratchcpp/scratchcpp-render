@@ -56,7 +56,7 @@ ProjectScene {
 
     Rectangle {
         id: contentRect
-        anchors.left: parent.left
+        anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         width: stageWidth * stageScale
         height: stageHeight * stageScale
