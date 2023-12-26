@@ -1,2 +1,2 @@
-add_library(scratchcppgui_mocks INTERFACE)
-target_include_directories(scratchcppgui_mocks INTERFACE .)
+add_library(scratchcpprender_mocks INTERFACE)
+target_include_directories(scratchcpprender_mocks INTERFACE .)

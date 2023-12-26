@@ -9,7 +9,7 @@ target_link_libraries(
   GTest::gtest_main
   GTest::gmock_main
   scratchcpp-render
-  scratchcppgui_mocks
+  scratchcpprender_mocks
   qnanopainter
   ${QT_LIBS}
   Qt6::Test
@@ -29,7 +29,7 @@ target_link_libraries(
   GTest::gtest_main
   GTest::gmock_main
   scratchcpp-render
-  scratchcppgui_mocks
+  scratchcpprender_mocks
   qnanopainter
   ${QT_LIBS}
   Qt6::Test
