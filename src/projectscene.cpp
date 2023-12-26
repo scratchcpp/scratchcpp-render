@@ -48,7 +48,6 @@ void ProjectScene::setStageScale(double newStageScale)
         return;
 
     m_stageScale = newStageScale;
-    Q_ASSERT(m_stageScale > 0);
     emit stageScaleChanged();
 }
 
