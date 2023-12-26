@@ -21,7 +21,6 @@ ProjectScene {
     signal failedToLoad()
 
     id: root
-	clip: true
     engine: loader.engine
     stageScale: (stageWidth == 0 || stageHeight == 0) ? 1 : Math.min(width / stageWidth, height / stageHeight)
     onFileNameChanged: priv.loading = true;
@@ -46,15 +45,6 @@ ProjectScene {
         }
     }
 
-    RenderedTarget {
-        id: stageTarget
-        engine: loader.engine
-        stageModel: loader.stage
-        mouseArea: sceneMouseArea
-        stageScale: root.stageScale
-        onStageModelChanged: stageModel.renderedTarget = this
-    }
-
     function start() {
         loader.start();
     }
@@ -63,68 +53,85 @@ ProjectScene {
         loader.stop();
     }
 
-    Repeater {
-        id: sprites
-        model: loader.sprites
+    Item {
+        anchors.left: parent.left
+        anchors.top: parent.top
+        width: stageWidth * stageScale
+        height: stageHeight * stageScale
+        clip: true
 
         RenderedTarget {
-            id: target
+            id: stageTarget
             engine: loader.engine
-            spriteModel: modelData
+            stageModel: loader.stage
             mouseArea: sceneMouseArea
             stageScale: root.stageScale
-            transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
-            Component.onCompleted: modelData.renderedTarget = this
+            onStageModelChanged: stageModel.renderedTarget = this
         }
-    }
 
-    Loader {
-        anchors.fill: parent
-        active: showLoadingProgress && loading
+        Repeater {
+            id: sprites
+            model: loader.sprites
 
-        sourceComponent: ColumnLayout {
+            RenderedTarget {
+                id: target
+                engine: loader.engine
+                spriteModel: modelData
+                mouseArea: sceneMouseArea
+                stageScale: root.stageScale
+                transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
+                Component.onCompleted: modelData.renderedTarget = this
+            }
+        }
+
+        Loader {
             anchors.fill: parent
+            active: showLoadingProgress && loading
 
-            Item { Layout.fillHeight: true }
+            sourceComponent: ColumnLayout {
+                anchors.fill: parent
 
-            BusyIndicator {
-                Layout.fillWidth: true
-                Layout.maximumWidth: 100
-                Layout.alignment: Qt.AlignHCenter
-                running: true
-            }
+                Item { Layout.fillHeight: true }
 
-            Label {
-                Layout.alignment: Qt.AlignHCenter
-                font.bold: true
-                font.pointSize: 12
-                text: {
-                    if(loading)
-                        return assetCount == downloadedAssets ? qsTr("Loading project...") : qsTr("Downloading assets... (%1 of %2)").arg(downloadedAssets).arg(assetCount);
-                    else
-                        return "";
+                BusyIndicator {
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 100
+                    Layout.alignment: Qt.AlignHCenter
+                    running: true
                 }
-            }
 
-            ProgressBar {
-                Layout.fillWidth: true
-                from: 0
-                to: assetCount
-                value: downloadedAssets
-                indeterminate: assetCount == downloadedAssets
-            }
+                Label {
+                    Layout.alignment: Qt.AlignHCenter
+                    font.bold: true
+                    font.pointSize: 12
+                    text: {
+                        if(loading)
+                            return assetCount == downloadedAssets ? qsTr("Loading project...") : qsTr("Downloading assets... (%1 of %2)").arg(downloadedAssets).arg(assetCount);
+                        else
+                            return "";
+                    }
+                }
 
-            Item { Layout.fillHeight: true }
+                ProgressBar {
+                    Layout.fillWidth: true
+                    from: 0
+                    to: assetCount
+                    value: downloadedAssets
+                    indeterminate: assetCount == downloadedAssets
+                }
+
+                Item { Layout.fillHeight: true }
+            }
         }
-    }
 
-    SceneMouseArea {
-        id: sceneMouseArea
-        anchors.fill: parent
-        stage: stageTarget
-        spriteRepeater: sprites
-        onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
-        onMousePressed: root.handleMousePress()
-        onMouseReleased: root.handleMouseRelease()
+        SceneMouseArea {
+            id: sceneMouseArea
+            anchors.fill: parent
+            stage: stageTarget
+            spriteRepeater: sprites
+            onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
+            onMousePressed: root.handleMousePress()
+            onMouseReleased: root.handleMouseRelease()
+        }
     }
 }
