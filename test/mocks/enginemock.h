@@ -18,13 +18,13 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(void, start, (), (override));
         MOCK_METHOD(void, stop, (), (override));
-        MOCK_METHOD(void, startScript, (std::shared_ptr<Block>, std::shared_ptr<Target>), (override));
+        MOCK_METHOD(VirtualMachine *, startScript, (std::shared_ptr<Block>, Target *), (override));
         MOCK_METHOD(void, broadcast, (unsigned int, VirtualMachine *, bool), (override));
         MOCK_METHOD(void, broadcastByPtr, (Broadcast *, VirtualMachine *, bool), (override));
         MOCK_METHOD(void, stopScript, (VirtualMachine *), (override));
         MOCK_METHOD(void, stopTarget, (Target *, VirtualMachine *), (override));
-        MOCK_METHOD(void, initClone, (Sprite *), (override));
-        MOCK_METHOD(void, deinitClone, (Sprite *), (override));
+        MOCK_METHOD(void, initClone, (std::shared_ptr<Sprite>), (override));
+        MOCK_METHOD(void, deinitClone, (std::shared_ptr<Sprite>), (override));
 
         MOCK_METHOD(void, run, (), (override));
         MOCK_METHOD(void, runEventLoop, (), (override));
@@ -42,6 +42,7 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(bool, keyPressed, (const std::string &), (const, override));
         MOCK_METHOD(void, setKeyState, (const std::string &, bool), (override));
+        MOCK_METHOD(void, setKeyState, (const KeyEvent &, bool), (override));
         MOCK_METHOD(void, setAnyKeyPressed, (bool), (override));
 
         MOCK_METHOD(double, mouseX, (), (const, override));
@@ -52,6 +53,8 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(bool, mousePressed, (), (const, override));
         MOCK_METHOD(void, setMousePressed, (bool), (override));
+
+        MOCK_METHOD(void, clickTarget, (Target *), (override));
 
         MOCK_METHOD(unsigned int, stageWidth, (), (const, override));
         MOCK_METHOD(void, setStageWidth, (unsigned int), (override));

@@ -25,6 +25,7 @@ class SpriteModel
         SpriteModel(QObject *parent = nullptr);
 
         void init(libscratchcpp::Sprite *sprite) override;
+        void deinitClone() override;
 
         void onCloned(libscratchcpp::Sprite *clone) override;
 
@@ -36,6 +37,11 @@ class SpriteModel
         void onSizeChanged(double size) override;
         void onDirectionChanged(double direction) override;
         void onRotationStyleChanged(libscratchcpp::Sprite::RotationStyle rotationStyle) override;
+
+        void onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value) override;
+        void onGraphicsEffectsCleared() override;
+
+        libscratchcpp::Rect boundingRect() const override;
 
         libscratchcpp::Sprite *sprite() const;
 

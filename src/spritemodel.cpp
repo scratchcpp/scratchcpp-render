@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include <scratchcpp/costume.h>
+#include <scratchcpp/rect.h>
 
 #include "spritemodel.h"
 #include "renderedtarget.h"
@@ -19,6 +20,10 @@ void SpriteModel::init(libscratchcpp::Sprite *sprite)
 
     if (m_renderedTarget && sprite)
         m_renderedTarget->loadCostume(sprite->currentCostume().get());
+}
+
+void SpriteModel::deinitClone()
+{
 }
 
 void SpriteModel::onCloned(libscratchcpp::Sprite *clone)
@@ -55,6 +60,19 @@ void SpriteModel::onDirectionChanged(double direction)
 
 void SpriteModel::onRotationStyleChanged(libscratchcpp::Sprite::RotationStyle rotationStyle)
 {
+}
+
+void SpriteModel::onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value)
+{
+}
+
+void SpriteModel::onGraphicsEffectsCleared()
+{
+}
+
+libscratchcpp::Rect SpriteModel::boundingRect() const
+{
+    return libscratchcpp::Rect();
 }
 
 libscratchcpp::Sprite *SpriteModel::sprite() const

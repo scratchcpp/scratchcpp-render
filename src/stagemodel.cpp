@@ -38,6 +38,14 @@ void StageModel::onVideoTransparencyChanged(int videoTransparency)
 {
 }
 
+void StageModel::onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value)
+{
+}
+
+void StageModel::onGraphicsEffectsCleared()
+{
+}
+
 libscratchcpp::Stage *StageModel::stage() const
 {
     return m_stage;

@@ -30,6 +30,9 @@ class StageModel
         void onVideoStateChanged(libscratchcpp::Stage::VideoState videoState) override;
         void onVideoTransparencyChanged(int videoTransparency) override;
 
+        void onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value) override;
+        void onGraphicsEffectsCleared() override;
+
         libscratchcpp::Stage *stage() const;
 
         IRenderedTarget *renderedTarget() const;
