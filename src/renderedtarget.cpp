@@ -339,7 +339,7 @@ void RenderedTarget::doLoadCostume()
 
         QImageReader reader(&m_bitmapBuffer);
         QSize size = reader.size();
-        calculateSize(target, size.width(), size.height());
+        calculateSize(target, std::max(0, size.width()), std::max(0, size.height()));
         m_bitmapBuffer.close();
     }
 
