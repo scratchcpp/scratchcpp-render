@@ -505,6 +505,8 @@ TEST_F(RenderedTargetTest, HullPoints)
     painter.endFrame();
 
     // Test hull points
+    target.setWidth(3);
+    target.setHeight(3);
     target.updateHullPoints(&fbo);
     ASSERT_EQ(target.hullPoints(), std::vector<QPointF>({ { 1, 1 }, { 2, 1 }, { 3, 1 }, { 1, 2 }, { 3, 2 }, { 1, 3 }, { 2, 3 }, { 3, 3 } }));
 

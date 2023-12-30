@@ -442,6 +442,9 @@ bool RenderedTarget::contains(const QPointF &point) const
     if (m_stageModel)
         return true; // the stage contains any point within the scene
 
+    if (!boundingRect().contains(point))
+        return false;
+
     for (const auto &hullPoint : m_hullPoints) {
         if (point.toPoint() == hullPoint.toPoint())
             return true;
