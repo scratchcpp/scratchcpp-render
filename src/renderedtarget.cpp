@@ -445,12 +445,18 @@ bool RenderedTarget::contains(const QPointF &point) const
     if (!boundingRect().contains(point))
         return false;
 
-    for (const auto &hullPoint : m_hullPoints) {
-        if (point.toPoint() == hullPoint.toPoint())
-            return true;
+    QPoint intPoint = point.toPoint();
+    auto it = std::lower_bound(m_hullPoints.begin(), m_hullPoints.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) {
+        return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x());
+    });
+
+    if (it == m_hullPoints.end()) {
+        // The point is beyond the last point in the convex hull
+        return false;
     }
 
-    return false;
+    // Check if the point is equal to the one found
+    return *it == intPoint;
 }
 
 void RenderedTarget::calculateSize(Target *target, double costumeWidth, double costumeHeight)
