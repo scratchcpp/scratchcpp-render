@@ -55,16 +55,19 @@ bool MouseEventHandler::eventFilter(QObject *obj, QEvent *event)
             forwardPointEvent(static_cast<QSinglePointEvent *>(event));
             return true;
 
-        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonRelease: {
             emit mouseReleased();
+            QQuickItem *oldClickedItem = m_clickedItem;
 
             if (m_clickedItem) {
                 sendPointEventToItem(static_cast<QSinglePointEvent *>(event), m_clickedItem);
                 m_clickedItem = nullptr;
-            } else
-                forwardPointEvent(static_cast<QSinglePointEvent *>(event));
+            }
+
+            forwardPointEvent(static_cast<QSinglePointEvent *>(event), oldClickedItem);
 
             return true;
+        }
 
         default:
             break;
@@ -73,7 +76,7 @@ bool MouseEventHandler::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void MouseEventHandler::forwardPointEvent(QSinglePointEvent *event)
+void MouseEventHandler::forwardPointEvent(QSinglePointEvent *event, QQuickItem *oldClickedItem)
 {
     Q_ASSERT(m_spriteRepeater);
 
@@ -97,22 +100,33 @@ void MouseEventHandler::forwardPointEvent(QSinglePointEvent *event)
     // Sort the list by layer order
     std::sort(sprites.begin(), sprites.end(), [](IRenderedTarget *t1, IRenderedTarget *t2) { return t1->scratchTarget()->layerOrder() > t2->scratchTarget()->layerOrder(); });
 
-    // Send the event to the hovered sprite
+    // Find hovered sprite
+    QQuickItem *hoveredItem = nullptr;
+
     for (IRenderedTarget *sprite : sprites) {
         // contains() expects position in the item's coordinate system
         QPointF localPos = sprite->mapFromScene(event->scenePosition());
 
         if (sprite->contains(localPos)) {
-            sendPointEventToItem(event, sprite);
-            return;
+            hoveredItem = sprite;
+            break;
         }
     }
 
     // If there wasn't any hovered sprite, send the event to the stage
-    Q_ASSERT(m_stage);
+    if (!hoveredItem) {
+        hoveredItem = m_stage;
+        Q_ASSERT(m_stage);
+    }
 
-    if (m_stage)
-        sendPointEventToItem(event, m_stage);
+    // Send the event to the item
+    if (hoveredItem) {
+        // Since both the hovered item and previously clicked item should receive mouse release event,
+        // avoid duplicate events by checking whether the previously clicked item is the hovered item.
+        if (!(event->type() == QEvent::MouseButtonRelease && hoveredItem == oldClickedItem)) {
+            sendPointEventToItem(event, hoveredItem);
+        }
+    }
 }
 
 void MouseEventHandler::sendPointEventToItem(QSinglePointEvent *event, QQuickItem *item)
