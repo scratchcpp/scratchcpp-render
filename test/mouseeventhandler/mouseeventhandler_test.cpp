@@ -304,6 +304,8 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     releasedSpy.clear();
 
     // Send release (should be sent to sprite 1)
+    EXPECT_CALL(renderedTarget3, contains(localPos)).WillOnce(Return(false));
+    EXPECT_CALL(renderedTarget1, contains(localPos)).WillOnce(Return(true));
     EXPECT_CALL(renderedTarget1, mouseReleaseEvent(_)).WillOnce(WithArgs<0>(Invoke(checkReleaseEvent)));
     ASSERT_TRUE(handler.eventFilter(nullptr, &releaseEvent));
     ASSERT_EQ(pressedSpy.count(), 0);
@@ -321,8 +323,10 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     pressedSpy.clear();
     releasedSpy.clear();
 
-    // Send release (should be sent to sprite 1)
+    // Send release while sprite 3 is hovered (should be sent to both sprites)
+    EXPECT_CALL(renderedTarget3, contains(localPos)).WillOnce(Return(true));
     EXPECT_CALL(renderedTarget1, mouseReleaseEvent(_)).WillOnce(WithArgs<0>(Invoke(checkReleaseEvent)));
+    EXPECT_CALL(renderedTarget3, mouseReleaseEvent(_)).WillOnce(WithArgs<0>(Invoke(checkReleaseEvent)));
     ASSERT_TRUE(handler.eventFilter(nullptr, &releaseEvent));
     ASSERT_EQ(pressedSpy.count(), 0);
     ASSERT_EQ(releasedSpy.count(), 1);
@@ -351,6 +355,9 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     releasedSpy.clear();
 
     // Send release (should be sent to stage)
+    EXPECT_CALL(renderedTarget3, contains(localPos)).WillOnce(Return(false));
+    EXPECT_CALL(renderedTarget1, contains(localPos)).WillOnce(Return(false));
+    EXPECT_CALL(renderedTarget2, contains(localPos)).WillOnce(Return(false));
     EXPECT_CALL(stage, mouseReleaseEvent(_)).WillOnce(WithArgs<0>(Invoke(checkReleaseEvent)));
     ASSERT_TRUE(handler.eventFilter(nullptr, &releaseEvent));
     ASSERT_EQ(pressedSpy.count(), 0);

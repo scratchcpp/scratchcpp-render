@@ -34,7 +34,7 @@ class MouseEventHandler : public QObject
         void mouseReleased();
 
     private:
-        void forwardPointEvent(QSinglePointEvent *event);
+        void forwardPointEvent(QSinglePointEvent *event, QQuickItem *oldClickedItem = nullptr);
         void sendPointEventToItem(QSinglePointEvent *event, QQuickItem *item);
         void sendHoverEventToItem(QHoverEvent *originalEvent, QEvent::Type newType, QQuickItem *item);
 
