@@ -56,32 +56,6 @@ TEST(SpriteModelTest, OnCostumeChanged)
     model.onCostumeChanged(&costume);
 }
 
-TEST(SpriteModelTest, OnSizeChanged)
-{
-    SpriteModel model;
-
-    Costume costume("", "", "");
-
-    Sprite sprite;
-    model.init(&sprite);
-    ASSERT_EQ(model.sprite(), &sprite);
-
-    auto c1 = std::make_shared<Costume>("", "", "");
-    auto c2 = std::make_shared<Costume>("", "", "");
-    auto c3 = std::make_shared<Costume>("", "", "");
-    sprite.addCostume(c1);
-    sprite.addCostume(c2);
-    sprite.addCostume(c3);
-    sprite.setCostumeIndex(1);
-
-    RenderedTargetMock renderedTarget;
-    EXPECT_CALL(renderedTarget, loadCostume(c2.get()));
-    model.setRenderedTarget(&renderedTarget);
-
-    EXPECT_CALL(renderedTarget, loadCostume(c2.get()));
-    model.onSizeChanged(150);
-}
-
 TEST(SpriteModelTest, RenderedTarget)
 {
     SpriteModel model;

@@ -50,8 +50,6 @@ void SpriteModel::onYChanged(double y)
 
 void SpriteModel::onSizeChanged(double size)
 {
-    if (m_renderedTarget)
-        m_renderedTarget->loadCostume(m_sprite->currentCostume().get());
 }
 
 void SpriteModel::onDirectionChanged(double direction)
