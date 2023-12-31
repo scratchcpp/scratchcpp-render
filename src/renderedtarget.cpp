@@ -265,16 +265,26 @@ void RenderedTarget::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
         m_clicked = true;
+
+    if (m_engine && (!m_spriteModel || !m_spriteModel->sprite()->draggable())) {
+        // Notify libscratchcpp about the click
+        m_engine->clickTarget(scratchTarget());
+    }
 }
 
 void RenderedTarget::mouseReleaseEvent(QMouseEvent *event)
 {
     m_clicked = false;
     Q_ASSERT(m_mouseArea);
+    Q_ASSERT(m_engine);
 
     // Stop dragging
     if (m_mouseArea->draggedSprite() == this)
         m_mouseArea->setDraggedSprite(nullptr);
+    else if (m_engine && m_spriteModel && m_spriteModel->sprite()->draggable()) {
+        // Notify libscratchcpp about the click
+        m_engine->clickTarget(scratchTarget());
+    }
 }
 
 void RenderedTarget::mouseMoveEvent(QMouseEvent *event)
