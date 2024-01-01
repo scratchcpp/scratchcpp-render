@@ -29,7 +29,6 @@ class ProjectLoader : public QObject
         Q_PROPERTY(unsigned int stageHeight READ stageHeight WRITE setStageHeight NOTIFY stageHeightChanged)
         Q_PROPERTY(int cloneLimit READ cloneLimit WRITE setCloneLimit NOTIFY cloneLimitChanged)
         Q_PROPERTY(bool spriteFencing READ spriteFencing WRITE setSpriteFencing NOTIFY spriteFencingChanged)
-        Q_PROPERTY(bool eventLoopEnabled READ eventLoopEnabled WRITE setEventLoopEnabled NOTIFY eventLoopEnabledChanged)
         Q_PROPERTY(unsigned int downloadedAssets READ downloadedAssets NOTIFY downloadedAssetsChanged)
         Q_PROPERTY(unsigned int assetCount READ assetCount NOTIFY assetCountChanged)
 
@@ -71,9 +70,6 @@ class ProjectLoader : public QObject
         bool spriteFencing() const;
         void setSpriteFencing(bool newSpriteFencing);
 
-        bool eventLoopEnabled() const;
-        void setEventLoopEnabled(bool newEventLoopEnabled);
-
         unsigned int downloadedAssets() const;
 
         unsigned int assetCount() const;
@@ -91,7 +87,6 @@ class ProjectLoader : public QObject
         void stageHeightChanged();
         void cloneLimitChanged();
         void spriteFencingChanged();
-        void eventLoopEnabledChanged();
         void downloadedAssetsChanged();
         void assetCountChanged();
 
@@ -102,7 +97,7 @@ class ProjectLoader : public QObject
         static void callLoad(ProjectLoader *loader);
         void load();
         void initTimer();
-        void emitTick();
+        void redraw();
 
         int m_timerId = -1;
         QString m_fileName;
@@ -113,14 +108,12 @@ class ProjectLoader : public QObject
         bool m_loadStatus = false;
         StageModel m_stage;
         QList<SpriteModel *> m_sprites;
-        QFuture<void> m_eventLoop;
         double m_fps = 30;
         bool m_turboMode = false;
         unsigned int m_stageWidth = 480;
         unsigned int m_stageHeight = 360;
         int m_cloneLimit = 300;
         bool m_spriteFencing = true;
-        bool m_eventLoopEnabled = true;
         std::atomic<unsigned int> m_downloadedAssets = 0;
         std::atomic<unsigned int> m_assetCount = 0;
         std::atomic<bool> m_stopLoading = false;

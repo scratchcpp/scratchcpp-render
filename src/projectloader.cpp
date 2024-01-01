@@ -12,11 +12,6 @@
 using namespace scratchcpprender;
 using namespace libscratchcpp;
 
-void runEventLoop(IEngine *engine)
-{
-    engine->runEventLoop();
-}
-
 ProjectLoader::ProjectLoader(QObject *parent) :
     QObject(parent)
 {
@@ -33,12 +28,6 @@ ProjectLoader::ProjectLoader(QObject *parent) :
     });
 
     initTimer();
-
-    // Update refresh rate when primary screen changes
-    connect(qApp, &QApplication::primaryScreenChanged, this, [this]() {
-        killTimer(m_timerId);
-        initTimer();
-    });
 }
 
 ProjectLoader::~ProjectLoader()
@@ -47,11 +36,6 @@ ProjectLoader::~ProjectLoader()
 
     if (m_loadThread.isRunning())
         m_loadThread.waitForFinished();
-
-    if (m_engine && m_eventLoopEnabled) {
-        m_engine->stopEventLoop();
-        m_eventLoop.waitForFinished();
-    }
 
     for (SpriteModel *sprite : m_sprites)
         sprite->deleteLater();
@@ -71,11 +55,6 @@ void ProjectLoader::setFileName(const QString &newFileName)
         return;
 
     m_fileName = newFileName;
-
-    if (m_engine) {
-        m_engine->stopEventLoop();
-        m_eventLoop.waitForFinished();
-    }
 
     m_project.setScratchVersion(ScratchVersion::Scratch3);
     m_project.setFileName(m_fileName.toStdString());
@@ -164,17 +143,8 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
     if (m_loadThread.isRunning())
         return;
 
-    auto stageRenderedTarget = m_stage.renderedTarget();
-
-    if (stageRenderedTarget)
-        stageRenderedTarget->updateProperties();
-
-    for (auto sprite : m_sprites) {
-        auto renderedTarget = sprite->renderedTarget();
-
-        if (renderedTarget)
-            renderedTarget->updateProperties();
-    }
+    if (m_engine)
+        m_engine->step();
 
     event->accept();
 }
@@ -213,7 +183,7 @@ void ProjectLoader::load()
     m_engine->setCloneLimit(m_cloneLimit);
     m_engine->setSpriteFencingEnabled(m_spriteFencing);
 
-    auto handler = std::bind(&ProjectLoader::emitTick, this);
+    auto handler = std::bind(&ProjectLoader::redraw, this);
     m_engine->setRedrawHandler(std::function<void()>(handler));
 
     // Load targets
@@ -240,12 +210,6 @@ void ProjectLoader::load()
         return;
     }
 
-    // Run event loop
-    m_engine->setSpriteFencingEnabled(false);
-
-    if (m_eventLoopEnabled)
-        m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
-
     m_engineMutex.unlock();
 
     emit loadStatusChanged();
@@ -257,28 +221,15 @@ void ProjectLoader::load()
 
 void ProjectLoader::initTimer()
 {
-    QScreen *screen = qApp->primaryScreen();
-
-    if (screen)
-        m_timerId = startTimer(1000 / screen->refreshRate());
+    m_timerId = startTimer(1000 / m_fps);
 }
 
-void ProjectLoader::emitTick()
+void ProjectLoader::redraw()
 {
     if (m_loadThread.isRunning())
         m_loadThread.waitForFinished();
 
-    auto stageRenderedTarget = m_stage.renderedTarget();
-
-    if (stageRenderedTarget)
-        stageRenderedTarget->loadProperties();
-
-    for (auto sprite : m_sprites) {
-        auto renderedTarget = sprite->renderedTarget();
-
-        if (renderedTarget)
-            renderedTarget->loadProperties();
-    }
+    // TODO: Call beforeRedraw() of targets
 }
 
 double ProjectLoader::fps() const
@@ -298,6 +249,9 @@ void ProjectLoader::setFps(double newFps)
         m_fps = m_engine->fps();
     } else
         m_fps = newFps;
+
+    killTimer(m_timerId);
+    initTimer();
 
     m_engineMutex.unlock();
     emit fpsChanged();
@@ -403,32 +357,6 @@ void ProjectLoader::setSpriteFencing(bool newSpriteFencing)
 
     m_engineMutex.unlock();
     emit spriteFencingChanged();
-}
-
-bool ProjectLoader::eventLoopEnabled() const
-{
-    return m_eventLoopEnabled;
-}
-
-void ProjectLoader::setEventLoopEnabled(bool newEventLoopEnabled)
-{
-    if (m_eventLoopEnabled == newEventLoopEnabled)
-        return;
-
-    m_eventLoopEnabled = newEventLoopEnabled;
-    m_engineMutex.lock();
-
-    if (m_engine) {
-        if (m_eventLoopEnabled)
-            m_eventLoop = QtConcurrent::run(&runEventLoop, m_engine);
-        else {
-            m_engine->stopEventLoop();
-            m_eventLoop.waitForFinished();
-        }
-    }
-
-    m_engineMutex.unlock();
-    emit eventLoopEnabledChanged();
 }
 
 unsigned int ProjectLoader::downloadedAssets() const

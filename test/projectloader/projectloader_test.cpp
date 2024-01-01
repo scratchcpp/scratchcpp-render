@@ -17,7 +17,6 @@ class ProjectLoaderTest : public testing::Test
         {
             static const std::chrono::milliseconds timeout(5000);
             auto startTime = std::chrono::steady_clock::now();
-            loader->setEventLoopEnabled(false);
             QSignalSpy fileNameSpy(loader, &ProjectLoader::fileNameChanged);
             QSignalSpy loadStatusSpy(loader, &ProjectLoader::loadStatusChanged);
             QSignalSpy loadingFinishedSpy(loader, &ProjectLoader::loadingFinished);
@@ -89,10 +88,20 @@ TEST_F(ProjectLoaderTest, StartStop)
     loader.stop();
 }
 
+TEST_F(ProjectLoaderTest, TimerEvent)
+{
+    ProjectLoader loader;
+    EngineMock engine;
+    loader.setEngine(&engine);
+    QTimerEvent event(0);
+
+    EXPECT_CALL(engine, step());
+    QCoreApplication::sendEvent(&loader, &event);
+}
+
 TEST_F(ProjectLoaderTest, Fps)
 {
     ProjectLoader loader;
-    loader.setEventLoopEnabled(false);
     EngineMock engine;
     loader.setEngine(&engine);
     ASSERT_EQ(loader.fps(), 30);
@@ -114,7 +123,6 @@ TEST_F(ProjectLoaderTest, Fps)
 TEST_F(ProjectLoaderTest, TurboMode)
 {
     ProjectLoader loader;
-    loader.setEventLoopEnabled(false);
     EngineMock engine;
     loader.setEngine(&engine);
     ASSERT_FALSE(loader.turboMode());
@@ -135,7 +143,6 @@ TEST_F(ProjectLoaderTest, TurboMode)
 TEST_F(ProjectLoaderTest, StageWidth)
 {
     ProjectLoader loader;
-    loader.setEventLoopEnabled(false);
     EngineMock engine;
     loader.setEngine(&engine);
     ASSERT_EQ(loader.stageWidth(), 480);
@@ -150,7 +157,6 @@ TEST_F(ProjectLoaderTest, StageWidth)
 TEST_F(ProjectLoaderTest, StageHeight)
 {
     ProjectLoader loader;
-    loader.setEventLoopEnabled(false);
     EngineMock engine;
     loader.setEngine(&engine);
     ASSERT_EQ(loader.stageHeight(), 360);
@@ -165,7 +171,6 @@ TEST_F(ProjectLoaderTest, StageHeight)
 TEST_F(ProjectLoaderTest, CloneLimit)
 {
     ProjectLoader loader;
-    loader.setEventLoopEnabled(false);
     EngineMock engine;
     loader.setEngine(&engine);
     ASSERT_EQ(loader.cloneLimit(), 300);
@@ -187,7 +192,6 @@ TEST_F(ProjectLoaderTest, CloneLimit)
 TEST_F(ProjectLoaderTest, SpriteFencing)
 {
     ProjectLoader loader;
-    loader.setEventLoopEnabled(false);
     EngineMock engine;
     loader.setEngine(&engine);
     ASSERT_TRUE(loader.spriteFencing());
@@ -203,30 +207,4 @@ TEST_F(ProjectLoaderTest, SpriteFencing)
     loader.setSpriteFencing(true);
     ASSERT_EQ(spy.count(), 1);
     ASSERT_TRUE(loader.spriteFencing());
-}
-
-TEST_F(ProjectLoaderTest, EventLoopEnabled)
-{
-    ProjectLoader loader;
-    EngineMock engine;
-    loader.setEngine(&engine);
-    ASSERT_TRUE(loader.eventLoopEnabled());
-
-    EXPECT_CALL(engine, stopEventLoop());
-    QSignalSpy spy(&loader, SIGNAL(eventLoopEnabledChanged()));
-    loader.setEventLoopEnabled(false);
-    ASSERT_EQ(spy.count(), 1);
-    ASSERT_FALSE(loader.eventLoopEnabled());
-
-    EXPECT_CALL(engine, runEventLoop());
-    spy.clear();
-    loader.setEventLoopEnabled(true);
-    ASSERT_EQ(spy.count(), 1);
-    ASSERT_TRUE(loader.eventLoopEnabled());
-
-    EXPECT_CALL(engine, stopEventLoop());
-    spy.clear();
-    loader.setEventLoopEnabled(false);
-    ASSERT_EQ(spy.count(), 1);
-    ASSERT_FALSE(loader.eventLoopEnabled());
 }
