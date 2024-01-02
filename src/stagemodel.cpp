@@ -15,9 +15,6 @@ StageModel::StageModel(QObject *parent) :
 void StageModel::init(libscratchcpp::Stage *stage)
 {
     m_stage = stage;
-
-    if (m_renderedTarget && stage)
-        m_renderedTarget->loadCostume(stage->currentCostume().get());
 }
 
 void StageModel::onCostumeChanged(libscratchcpp::Costume *costume)
@@ -46,6 +43,14 @@ void StageModel::onGraphicsEffectsCleared()
 {
 }
 
+void StageModel::loadCostume()
+{
+    if (m_renderedTarget && m_stage) {
+        if (m_stage)
+            m_renderedTarget->loadCostume(m_stage->currentCostume().get());
+    }
+}
+
 libscratchcpp::Stage *StageModel::stage() const
 {
     return m_stage;
@@ -62,9 +67,7 @@ void StageModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
         return;
 
     m_renderedTarget = newRenderedTarget;
-
-    if (m_renderedTarget && m_stage)
-        m_renderedTarget->loadCostume(m_stage->currentCostume().get());
+    loadCostume();
 
     emit renderedTargetChanged();
 }

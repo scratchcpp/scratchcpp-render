@@ -17,9 +17,6 @@ SpriteModel::SpriteModel(QObject *parent) :
 void SpriteModel::init(libscratchcpp::Sprite *sprite)
 {
     m_sprite = sprite;
-
-    if (m_renderedTarget && sprite)
-        m_renderedTarget->loadCostume(sprite->currentCostume().get());
 }
 
 void SpriteModel::deinitClone()
@@ -38,26 +35,44 @@ void SpriteModel::onCostumeChanged(libscratchcpp::Costume *costume)
 
 void SpriteModel::onVisibleChanged(bool visible)
 {
+    if (m_renderedTarget)
+        m_renderedTarget->updateVisibility(visible);
 }
 
 void SpriteModel::onXChanged(double x)
 {
+    if (m_renderedTarget)
+        m_renderedTarget->updateX(x);
 }
 
 void SpriteModel::onYChanged(double y)
 {
+    if (m_renderedTarget)
+        m_renderedTarget->updateY(y);
 }
 
 void SpriteModel::onSizeChanged(double size)
 {
+    if (m_renderedTarget)
+        m_renderedTarget->updateSize(size);
 }
 
 void SpriteModel::onDirectionChanged(double direction)
 {
+    if (m_renderedTarget)
+        m_renderedTarget->updateDirection(direction);
 }
 
 void SpriteModel::onRotationStyleChanged(libscratchcpp::Sprite::RotationStyle rotationStyle)
 {
+    if (m_renderedTarget)
+        m_renderedTarget->updateRotationStyle(rotationStyle);
+}
+
+void SpriteModel::onLayerOrderChanged(int layerOrder)
+{
+    if (m_renderedTarget)
+        m_renderedTarget->updateLayerOrder(layerOrder);
 }
 
 void SpriteModel::onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value)
@@ -89,10 +104,6 @@ void SpriteModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
         return;
 
     m_renderedTarget = newRenderedTarget;
-
-    if (m_renderedTarget && m_sprite)
-        m_renderedTarget->loadCostume(m_sprite->currentCostume().get());
-
     emit renderedTargetChanged();
 }
 

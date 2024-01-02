@@ -37,6 +37,7 @@ class SpriteModel
         void onSizeChanged(double size) override;
         void onDirectionChanged(double direction) override;
         void onRotationStyleChanged(libscratchcpp::Sprite::RotationStyle rotationStyle) override;
+        void onLayerOrderChanged(int layerOrder) override;
 
         void onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value) override;
         void onGraphicsEffectsCleared() override;

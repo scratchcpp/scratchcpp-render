@@ -6,6 +6,7 @@
 #include <QBuffer>
 #include <QMutex>
 #include <QtSvg/QSvgRenderer>
+#include <QImage>
 
 #include "irenderedtarget.h"
 
@@ -30,9 +31,17 @@ class RenderedTarget : public IRenderedTarget
     public:
         RenderedTarget(QNanoQuickItem *parent = nullptr);
 
-        Q_INVOKABLE void loadProperties() override;
+        void updateVisibility(bool visible) override;
+        void updateX(double x) override;
+        void updateY(double y) override;
+        void updateSize(double size) override;
+        void updateDirection(double direction) override;
+        void updateRotationStyle(libscratchcpp::Sprite::RotationStyle style) override;
+        void updateLayerOrder(int layerOrder) override;
+
         void loadCostume(libscratchcpp::Costume *costume) override;
-        Q_INVOKABLE void updateProperties() override;
+
+        void beforeRedraw() override;
 
         libscratchcpp::IEngine *engine() const override;
         void setEngine(libscratchcpp::IEngine *newEngine) override;
@@ -90,9 +99,9 @@ class RenderedTarget : public IRenderedTarget
         void mouseMoveEvent(QMouseEvent *event) override;
 
     private:
-        void updateCostumeData();
-        void doLoadCostume();
-        void calculateSize(libscratchcpp::Target *target, double costumeWidth, double costumeHeight);
+        void calculatePos();
+        void calculateRotation();
+        void calculateSize();
         void handleSceneMouseMove(qreal x, qreal y);
 
         libscratchcpp::IEngine *m_engine = nullptr;
@@ -101,26 +110,23 @@ class RenderedTarget : public IRenderedTarget
         SpriteModel *m_spriteModel = nullptr;
         SceneMouseArea *m_mouseArea = nullptr;
         QSvgRenderer m_svgRenderer;
+        QImage m_costumeBitmap;
         QBuffer m_bitmapBuffer;
         QString m_bitmapUniqueKey;
         QMutex m_costumeMutex;
         QMutex mutex;
-        bool m_loadCostume = false;
-        bool m_costumeChanged = false;
-        bool m_imageChanged = false;
-        bool m_visible = true;
         double m_size = 1;
+        double m_clampedSize = 1;
         double m_maxSize = 1;
+        unsigned int m_costumeWidth = 0;
+        unsigned int m_costumeHeight = 0;
         double m_x = 0;
         double m_y = 0;
-        double m_z = 0;
         double m_width = 0;
         double m_height = 0;
-        double m_rotation = 0;
+        double m_direction = 90;
+        libscratchcpp::Sprite::RotationStyle m_rotationStyle = libscratchcpp::Sprite::RotationStyle::AllAround;
         bool m_mirrorHorizontally = false;
-        bool m_newMirrorHorizontally = false;
-        double m_originX = 0;
-        double m_originY = 0;
         double m_stageScale = 1;
         qreal m_maximumWidth = std::numeric_limits<double>::infinity();
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();

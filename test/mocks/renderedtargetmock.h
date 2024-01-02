@@ -12,9 +12,17 @@ namespace scratchcpprender
 class RenderedTargetMock : public IRenderedTarget
 {
     public:
-        MOCK_METHOD(void, loadProperties, (), (override));
+        MOCK_METHOD(void, updateVisibility, (bool), (override));
+        MOCK_METHOD(void, updateX, (double), (override));
+        MOCK_METHOD(void, updateY, (double), (override));
+        MOCK_METHOD(void, updateSize, (double), (override));
+        MOCK_METHOD(void, updateDirection, (double), (override));
+        MOCK_METHOD(void, updateRotationStyle, (libscratchcpp::Sprite::RotationStyle), (override));
+        MOCK_METHOD(void, updateLayerOrder, (int), (override));
+
+        MOCK_METHOD(void, beforeRedraw, (), (override));
+
         MOCK_METHOD(void, loadCostume, (libscratchcpp::Costume *), (override));
-        MOCK_METHOD(void, updateProperties, (), (override));
 
         MOCK_METHOD(libscratchcpp::IEngine *, engine, (), (const, override));
         MOCK_METHOD(void, setEngine, (libscratchcpp::IEngine *), (override));

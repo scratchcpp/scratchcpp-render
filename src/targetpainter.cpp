@@ -19,6 +19,11 @@ TargetPainter::~TargetPainter()
 
 void TargetPainter::paint(QNanoPainter *painter)
 {
+    if (QThread::currentThread() != qApp->thread()) {
+        qFatal("Error: Rendering must happen in the GUI thread to work correctly. Please disable threaded render loop using qputenv(\"QSG_RENDER_LOOP\", \"basic\") before constructing your "
+               "application object.");
+    }
+
     m_target->lockCostume();
     double width = m_target->width();
     double height = m_target->height();
