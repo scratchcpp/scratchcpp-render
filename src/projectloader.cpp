@@ -229,7 +229,17 @@ void ProjectLoader::redraw()
     if (m_loadThread.isRunning())
         m_loadThread.waitForFinished();
 
-    // TODO: Call beforeRedraw() of targets
+    auto stage = m_stage.renderedTarget();
+
+    if (stage)
+        stage->beforeRedraw();
+
+    for (auto sprite : m_sprites) {
+        auto renderedTarget = sprite->renderedTarget();
+
+        if (renderedTarget)
+            renderedTarget->beforeRedraw();
+    }
 }
 
 double ProjectLoader::fps() const

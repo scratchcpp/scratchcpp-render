@@ -48,9 +48,10 @@ TEST_F(RenderedTargetTest, Constructors)
     ASSERT_EQ(target2.parentItem(), &target1);
 }
 
-TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
+TEST_F(RenderedTargetTest, UpdateMethods)
 {
-    RenderedTarget target;
+    RenderedTarget parent; // a parent item is needed for setVisible() to work
+    RenderedTarget target(&parent);
     QSignalSpy mirrorHorizontallySpy(&target, &RenderedTarget::mirrorHorizontallyChanged);
 
     // Stage
@@ -63,38 +64,21 @@ TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
     costume.setData(costumeData.size(), static_cast<void *>(costumeData.data()));
     costume.setRotationCenterX(-23);
     costume.setRotationCenterY(72);
+    costume.setBitmapResolution(2.5);
     EngineMock engine;
-    target.loadCostume(&costume);
     target.setEngine(&engine);
 
-    target.setWidth(14.3);
-    target.setHeight(5.8);
-    target.setX(64.5);
-    target.setY(-43.7);
-    target.setZ(2.5);
-    target.setRotation(-78.05);
-    target.setTransformOriginPoint(QPointF(3.4, 9.7));
-    target.setStageScale(3.5);
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(249));
-    target.loadProperties();
-    ASSERT_EQ(target.width(), 14.3);
-    ASSERT_EQ(target.height(), 5.8);
-    ASSERT_EQ(target.x(), 64.5);
-    ASSERT_EQ(target.y(), -43.7);
-    ASSERT_EQ(target.z(), 2.5);
-    ASSERT_EQ(target.rotation(), -78.05);
-    ASSERT_EQ(target.transformOriginPoint(), QPointF(3.4, 9.7));
-
-    target.updateProperties();
-    ASSERT_EQ(target.width(), 14);
-    ASSERT_EQ(target.height(), 21);
-    ASSERT_EQ(target.x(), 1032.5);
-    ASSERT_EQ(target.y(), 183.75);
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.loadCostume(&costume);
+    target.beforeRedraw();
+    ASSERT_EQ(target.width(), 1.6);
+    ASSERT_EQ(target.height(), 2.4);
+    ASSERT_EQ(target.x(), 249.2);
+    ASSERT_EQ(target.y(), 151.2);
     ASSERT_EQ(target.z(), 0);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(target.transformOriginPoint(), QPointF(-23, 72));
+    ASSERT_EQ(target.transformOriginPoint(), QPointF(-9.2, 28.8));
 
     target.setStageModel(nullptr);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
@@ -110,74 +94,93 @@ TEST_F(RenderedTargetTest, LoadAndUpdateProperties)
     sprite.setLayerOrder(3);
     SpriteModel spriteModel;
     sprite.setInterface(&spriteModel);
+
+    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).Times(3).WillRepeatedly(Return(360));
     target.setSpriteModel(&spriteModel);
+    target.beforeRedraw();
 
-    target.setWidth(14.3);
-    target.setHeight(5.8);
-    target.setX(64.5);
-    target.setY(-43.7);
-    target.setZ(2.5);
-    target.setRotation(-78.05);
-    target.setTransformOriginPoint(QPointF(3.4, 9.7));
-    target.setStageScale(5.23);
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(249));
-    target.loadProperties();
-    ASSERT_EQ(target.width(), 14.3);
-    ASSERT_EQ(target.height(), 5.8);
-    ASSERT_EQ(target.x(), 64.5);
-    ASSERT_EQ(target.y(), -43.7);
-    ASSERT_EQ(target.z(), 2.5);
-    ASSERT_EQ(target.rotation(), -78.05);
-    ASSERT_EQ(target.transformOriginPoint(), QPointF(3.4, 9.7));
-
-    target.updateProperties();
-    ASSERT_EQ(std::round(target.width() * 100) / 100, 30.12);
-    ASSERT_EQ(std::round(target.height() * 100) / 100, 45.18);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 1240.43);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -527.84);
+    ASSERT_EQ(std::round(target.width() * 100) / 100, 2.3);
+    ASSERT_EQ(std::round(target.height() * 100) / 100, 3.46);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 185.31);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 16.77);
     ASSERT_EQ(target.z(), 3);
     ASSERT_EQ(target.rotation(), -157.16);
-    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -173.19);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 542.17);
+    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -13.25);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 41.47);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
 
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(249));
-    sprite.setRotationStyle(Sprite::RotationStyle::LeftRight);
-    target.loadProperties();
-    ASSERT_EQ(target.mirrorHorizontally(), false);
-    ASSERT_EQ(target.rotation(), -157.16);
+    // Visibility
+    target.updateVisibility(false);
+    ASSERT_FALSE(target.isVisible());
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateVisibility(true);
+    ASSERT_TRUE(target.isVisible());
+
+    // X
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateX(12.5);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 265.75);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 16.77);
+
+    // Y
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateY(-76.09);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 265.75);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 214.62);
+
+    // Size
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateSize(56.2);
+    target.beforeRedraw();
+    ASSERT_EQ(std::round(target.width() * 100) / 100, 0.9);
+    ASSERT_EQ(std::round(target.height() * 100) / 100, 1.35);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 257.67);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 239.9);
+    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -5.17);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 16.19);
+
+    // Direction
+    target.updateDirection(123.8);
+    ASSERT_EQ(target.rotation(), 33.8);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
 
-    target.updateProperties();
-    ASSERT_EQ(target.mirrorHorizontally(), true);
-    ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(mirrorHorizontallySpy.count(), 1);
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(249));
-    sprite.setDirection(134.89);
-    target.loadProperties();
-    ASSERT_EQ(target.mirrorHorizontally(), true);
-    ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(mirrorHorizontallySpy.count(), 1);
-
-    target.updateProperties();
+    // Rotation style
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
     ASSERT_EQ(target.mirrorHorizontally(), false);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(mirrorHorizontallySpy.count(), 2);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 257.67);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 239.9);
+    ASSERT_TRUE(mirrorHorizontallySpy.empty());
 
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(544));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(249));
-    sprite.setRotationStyle(Sprite::RotationStyle::DoNotRotate);
-    target.loadProperties();
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateDirection(-15);
+    ASSERT_EQ(target.mirrorHorizontally(), true);
+    ASSERT_EQ(target.rotation(), 0);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 247.33);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 239.9);
+    ASSERT_EQ(mirrorHorizontallySpy.count(), 1);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateDirection(134.89);
     ASSERT_EQ(target.mirrorHorizontally(), false);
     ASSERT_EQ(target.rotation(), 0);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 257.67);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 239.9);
     ASSERT_EQ(mirrorHorizontallySpy.count(), 2);
 
-    target.updateProperties();
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateRotationStyle(Sprite::RotationStyle::DoNotRotate);
     ASSERT_EQ(target.mirrorHorizontally(), false);
     ASSERT_EQ(target.rotation(), 0);
     ASSERT_EQ(mirrorHorizontallySpy.count(), 2);
@@ -191,57 +194,12 @@ TEST_F(RenderedTargetTest, LoadJpegCostume)
     costume.setBitmapResolution(3);
 
     RenderedTarget target;
-
     target.loadCostume(&costume);
     ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
-    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
-    target.bitmapBuffer()->close();
-
-    EngineMock engine;
-    SpriteModel spriteModel;
-    Sprite sprite;
-    sprite.setSize(196.5);
-    spriteModel.init(&sprite);
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.setEngine(&engine);
-    target.setSpriteModel(&spriteModel);
-    target.loadProperties();
-    ASSERT_FALSE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
     ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-    target.bitmapBuffer()->close();
-    target.bitmapBuffer()->open(QBuffer::WriteOnly); // clear the buffer
-    target.bitmapBuffer()->close();
-
-    StageModel stageModel;
-    Stage stage;
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.setSpriteModel(nullptr);
-    target.setStageModel(&stageModel);
-    target.loadProperties();
-    ASSERT_FALSE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
-    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-    target.bitmapBuffer()->close();
-
-    target.updateProperties();
-    ASSERT_FALSE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
-    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-    target.bitmapBuffer()->close();
 }
 
 TEST_F(RenderedTargetTest, LoadPngCostume)
@@ -252,57 +210,12 @@ TEST_F(RenderedTargetTest, LoadPngCostume)
     costume.setBitmapResolution(3);
 
     RenderedTarget target;
-
     target.loadCostume(&costume);
     ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
-    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
-    target.bitmapBuffer()->close();
-
-    EngineMock engine;
-    SpriteModel spriteModel;
-    Sprite sprite;
-    sprite.setSize(196.5);
-    spriteModel.init(&sprite);
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.setEngine(&engine);
-    target.setSpriteModel(&spriteModel);
-    target.loadProperties();
-    ASSERT_FALSE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
     ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
     ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-    target.bitmapBuffer()->close();
-    target.bitmapBuffer()->open(QBuffer::WriteOnly); // clear the buffer
-    target.bitmapBuffer()->close();
-
-    StageModel stageModel;
-    Stage stage;
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.setSpriteModel(nullptr);
-    target.setStageModel(&stageModel);
-    target.loadProperties();
-    ASSERT_FALSE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
-    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-    target.bitmapBuffer()->close();
-
-    target.updateProperties();
-    ASSERT_FALSE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
-    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-    target.bitmapBuffer()->close();
 }
 
 TEST_F(RenderedTargetTest, LoadSvgCostume)
@@ -341,19 +254,12 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
 
     RenderedTarget target;
     target.setEngine(&engine);
-    target.setSpriteModel(&model);
-
-    target.loadCostume(costume.get());
-    ASSERT_TRUE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
-    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
-    target.bitmapBuffer()->close();
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.loadProperties();
+    target.setSpriteModel(&model);
+    target.loadCostume(costume.get());
+    target.beforeRedraw();
     ASSERT_TRUE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
@@ -361,16 +267,8 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
     ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
     target.bitmapBuffer()->close();
 
-    target.updateProperties();
-    ASSERT_TRUE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
-    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
-    target.bitmapBuffer()->close();
-
-    ASSERT_EQ(std::round(target.width() * 100) / 100, maxWidth);
-    ASSERT_EQ(std::round(target.height() * 100) / 100, maxHeight);
+    ASSERT_EQ(std::round(target.width() * 100) / 100, 1548.09);
+    ASSERT_EQ(std::round(target.height() * 100) / 100, 1548.09);
     ASSERT_EQ(target.scale(), 1);
     ASSERT_EQ(std::round(target.x() * 100) / 100, 11126.36);
     ASSERT_EQ(std::round(target.y() * 100) / 100, -6593.27);
@@ -378,42 +276,18 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
     ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 6837.42);
 
     // Test scale limit
-    sprite.setSize(maxSize * 250);
+    EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).Times(2).WillRepeatedly(Return(360));
+    target.updateSize(maxSize * 250);
     target.setStageScale(3.89);
 
-    target.loadCostume(costume.get());
-    ASSERT_TRUE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
-    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
-    target.bitmapBuffer()->close();
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.loadProperties();
-    ASSERT_TRUE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
-    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
-    target.bitmapBuffer()->close();
-
-    target.updateProperties();
-    ASSERT_TRUE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
-    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
-    target.bitmapBuffer()->close();
-
-    ASSERT_EQ(std::round(target.width() * 100) / 100, maxWidth);
-    ASSERT_EQ(std::round(target.height() * 100) / 100, maxHeight);
-    ASSERT_EQ(std::round(target.scale() * 100) / 100, 9.73);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 11963.59);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -5887.67);
-    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -10836.66);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 6837.42);
+    ASSERT_EQ(std::round(target.width() * 100) / 100, 1548.09);
+    ASSERT_EQ(std::round(target.height() * 100) / 100, 1548.09);
+    ASSERT_EQ(std::round(target.scale() * 100) / 100, 9.19);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 12595.73);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, -6286.52);
+    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -11468.8);
+    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 7236.27);
 }
 
 TEST_F(RenderedTargetTest, PaintSvg)
@@ -436,8 +310,7 @@ TEST_F(RenderedTargetTest, PaintSvg)
     target.setEngine(&engine);
     target.setSpriteModel(&model);
     target.loadCostume(&costume);
-    target.loadProperties();
-    target.updateProperties();
+    target.beforeRedraw();
 
     // Create OpenGL context
     QOpenGLContext context;

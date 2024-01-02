@@ -3,18 +3,11 @@
 #pragma once
 
 #include <qnanoquickitem.h>
+#include <scratchcpp/sprite.h>
 
 class QBuffer;
 class QNanoPainter;
-
-namespace libscratchcpp
-{
-
-class Costume;
-class IEngine;
-class Target;
-
-} // namespace libscratchcpp
+class QOpenGLContext;
 
 namespace scratchcpprender
 {
@@ -33,9 +26,17 @@ class IRenderedTarget : public QNanoQuickItem
 
         virtual ~IRenderedTarget() { }
 
-        virtual void loadProperties() = 0;
+        virtual void updateVisibility(bool visible) = 0;
+        virtual void updateX(double x) = 0;
+        virtual void updateY(double y) = 0;
+        virtual void updateSize(double size) = 0;
+        virtual void updateDirection(double direction) = 0;
+        virtual void updateRotationStyle(libscratchcpp::Sprite::RotationStyle style) = 0;
+        virtual void updateLayerOrder(int layerOrder) = 0;
+
         virtual void loadCostume(libscratchcpp::Costume *costume) = 0;
-        virtual void updateProperties() = 0;
+
+        virtual void beforeRedraw() = 0;
 
         virtual libscratchcpp::IEngine *engine() const = 0;
         virtual void setEngine(libscratchcpp::IEngine *newEngine) = 0;

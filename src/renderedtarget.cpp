@@ -40,113 +40,113 @@ RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
     }
 }
 
-void RenderedTarget::loadProperties()
+void RenderedTarget::updateVisibility(bool visible)
 {
-    Q_ASSERT(!(m_spriteModel && m_stageModel));
-    if (!m_engine || !m_costume)
+    if (visible == isVisible())
         return;
 
-    if (m_spriteModel) {
-        mutex.lock();
-        Sprite *sprite = m_spriteModel->sprite();
+    setVisible(visible);
+    calculatePos();
+}
 
-        // Visibility
-        m_visible = sprite->visible();
+void RenderedTarget::updateX(double x)
+{
+    if (x == m_x)
+        return;
 
-        m_size = sprite->size() / 100;
-        updateCostumeData();
+    m_x = x;
+    calculatePos();
+}
 
-        if (m_visible) {
-            // Direction
-            switch (sprite->rotationStyle()) {
-                case Sprite::RotationStyle::AllAround:
-                    m_rotation = sprite->direction() - 90;
-                    m_newMirrorHorizontally = false;
+void RenderedTarget::updateY(double y)
+{
+    if (y == m_y)
+        return;
 
-                    break;
+    m_y = y;
+    calculatePos();
+}
 
-                case Sprite::RotationStyle::LeftRight: {
-                    m_rotation = 0;
-                    m_newMirrorHorizontally = (sprite->direction() < 0);
+void RenderedTarget::updateSize(double size)
+{
+    if (size / 100 == m_size)
+        return;
 
-                    break;
-                }
+    m_size = size / 100;
+    calculateSize();
+    calculatePos();
+}
 
-                case Sprite::RotationStyle::DoNotRotate:
-                    m_rotation = 0;
-                    m_newMirrorHorizontally = false;
-                    break;
-            }
+void RenderedTarget::updateDirection(double direction)
+{
+    if (direction == m_direction)
+        return;
 
-            // Coordinates
-            double clampedSize = std::min(m_size, m_maxSize);
-            double stageWidth = m_engine->stageWidth();
-            double stageHeight = m_engine->stageHeight();
-            m_x = m_stageScale * (stageWidth / 2 + sprite->x() - m_costume->rotationCenterX() * clampedSize / m_costume->bitmapResolution() * (m_newMirrorHorizontally ? -1 : 1));
-            m_y = m_stageScale * (stageHeight / 2 - sprite->y() - m_costume->rotationCenterY() * clampedSize / m_costume->bitmapResolution());
-            m_originX = m_costume->rotationCenterX() * clampedSize * m_stageScale / m_costume->bitmapResolution();
-            m_originY = m_costume->rotationCenterY() * clampedSize * m_stageScale / m_costume->bitmapResolution();
+    m_direction = direction;
+    calculateRotation();
 
-            // Layer
-            m_z = sprite->layerOrder();
-        }
+    if (m_rotationStyle == libscratchcpp::Sprite::RotationStyle::LeftRight)
+        calculatePos();
+}
 
-        mutex.unlock();
-    } else if (m_stageModel) {
-        updateCostumeData();
-        double stageWidth = m_engine->stageWidth();
-        double stageHeight = m_engine->stageHeight();
-        m_x = m_stageScale * (stageWidth / 2 - m_costume->rotationCenterX() / m_costume->bitmapResolution());
-        m_y = m_stageScale * (stageHeight / 2 - m_costume->rotationCenterY() / m_costume->bitmapResolution());
-        m_originX = m_costume->rotationCenterX() / m_costume->bitmapResolution();
-        m_originY = m_costume->rotationCenterY() / m_costume->bitmapResolution();
-    }
+void RenderedTarget::updateRotationStyle(libscratchcpp::Sprite::RotationStyle style)
+{
+    if (style == m_rotationStyle)
+        return;
+
+    m_rotationStyle = style;
+    calculateRotation();
+    calculatePos();
+}
+
+void RenderedTarget::updateLayerOrder(int layerOrder)
+{
+    setZ(layerOrder);
 }
 
 void RenderedTarget::loadCostume(Costume *costume)
 {
-    if (!costume)
+    if (!costume || costume == m_costume)
         return;
 
     m_costumeMutex.lock();
-    m_loadCostume = true;
-    m_costumeChanged = (costume != m_costume);
     m_costume = costume;
-    m_costumeMutex.unlock();
-}
 
-void RenderedTarget::updateProperties()
-{
-    mutex.lock();
-    setVisible(m_visible);
+    if (m_costume->dataFormat() == "svg") {
+        m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(m_costume->data()), m_costume->dataSize()));
+        QRectF rect = m_svgRenderer.viewBoxF();
+        m_costumeWidth = rect.width();
+        m_costumeHeight = rect.height();
+    } else {
+        m_bitmapBuffer.open(QBuffer::WriteOnly);
+        m_bitmapBuffer.write(static_cast<const char *>(m_costume->data()), m_costume->dataSize());
+        m_bitmapBuffer.close();
+        m_bitmapUniqueKey = QString::fromStdString(m_costume->id());
+        const char *format;
 
-    if (m_visible) {
-        if (m_imageChanged) {
-            update();
-            m_imageChanged = false;
+        {
+            QImageReader reader(&m_bitmapBuffer);
+            format = reader.format();
         }
 
-        setX(m_x);
-        setY(m_y);
-        setZ(m_z);
-        setWidth(m_width);
-        setHeight(m_height);
-        setRotation(m_rotation);
-        setTransformOriginPoint(QPointF(m_originX, m_originY));
-        Q_ASSERT(m_maxSize > 0);
-
-        if (!m_stageModel && (m_size > m_maxSize) && (m_maxSize != 0))
-            setScale(m_size / m_maxSize);
-        else
-            setScale(1);
-
-        if (m_newMirrorHorizontally != m_mirrorHorizontally) {
-            m_mirrorHorizontally = m_newMirrorHorizontally;
-            emit mirrorHorizontallyChanged();
-        }
+        m_bitmapBuffer.close();
+        m_costumeBitmap.load(&m_bitmapBuffer, format);
+        QSize size = m_costumeBitmap.size();
+        m_costumeWidth = std::max(0, size.width());
+        m_costumeHeight = std::max(0, size.height());
+        m_bitmapBuffer.close();
     }
 
-    mutex.unlock();
+    m_costumeMutex.unlock();
+
+    calculateSize();
+    calculatePos();
+}
+
+void RenderedTarget::beforeRedraw()
+{
+    setWidth(m_width);
+    setHeight(m_height);
 }
 
 IEngine *RenderedTarget::engine() const
@@ -174,6 +174,14 @@ void RenderedTarget::setStageModel(StageModel *newStageModel)
         return;
 
     m_stageModel = newStageModel;
+
+    if (m_stageModel) {
+        Stage *stage = m_stageModel->stage();
+
+        if (stage)
+            loadCostume(stage->currentCostume().get());
+    }
+
     emit stageModelChanged();
 }
 
@@ -188,6 +196,21 @@ void RenderedTarget::setSpriteModel(SpriteModel *newSpriteModel)
         return;
 
     m_spriteModel = newSpriteModel;
+
+    if (m_spriteModel) {
+        Sprite *sprite = m_spriteModel->sprite();
+
+        if (sprite) {
+            loadCostume(sprite->currentCostume().get());
+            updateVisibility(sprite->visible());
+            updateX(sprite->x());
+            updateY(sprite->y());
+            updateSize(sprite->size());
+            updateDirection(sprite->direction());
+            updateRotationStyle(sprite->rotationStyle());
+            updateLayerOrder(sprite->layerOrder());
+        }
+    }
     emit spriteModelChanged();
 }
 
@@ -228,6 +251,8 @@ void RenderedTarget::setStageScale(double newStageScale)
         return;
 
     m_stageScale = newStageScale;
+    calculateSize();
+    calculatePos();
     emit stageScaleChanged();
 }
 
@@ -303,57 +328,6 @@ void RenderedTarget::mouseMoveEvent(QMouseEvent *event)
         // Move the sprite to the front layer
         m_engine->moveSpriteToFront(sprite);
     }
-}
-
-void RenderedTarget::updateCostumeData()
-{
-    // Costume
-    m_costumeMutex.lock();
-
-    if (m_loadCostume) {
-        m_loadCostume = false;
-        m_imageChanged = true;
-
-        if (m_costumeChanged) {
-            m_costumeChanged = false;
-            assert(m_costume);
-
-            if (m_costume->dataFormat() == "svg")
-                m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(m_costume->data()), m_costume->dataSize()));
-        }
-    }
-
-    m_costumeMutex.unlock();
-    doLoadCostume();
-}
-
-void RenderedTarget::doLoadCostume()
-{
-    m_costumeMutex.lock();
-
-    if (!m_costume) {
-        m_costumeMutex.unlock();
-        return;
-    }
-
-    Target *target = scratchTarget();
-
-    if (m_costume->dataFormat() == "svg") {
-        QRectF rect = m_svgRenderer.viewBoxF();
-        calculateSize(target, rect.width(), rect.height());
-    } else {
-        m_bitmapBuffer.open(QBuffer::WriteOnly);
-        m_bitmapBuffer.write(static_cast<const char *>(m_costume->data()), m_costume->dataSize());
-        m_bitmapBuffer.close();
-        m_bitmapUniqueKey = QString::fromStdString(m_costume->id());
-
-        QImageReader reader(&m_bitmapBuffer);
-        QSize size = reader.size();
-        calculateSize(target, std::max(0, size.width()), std::max(0, size.height()));
-        m_bitmapBuffer.close();
-    }
-
-    m_costumeMutex.unlock();
 }
 
 void RenderedTarget::paintSvg(QNanoPainter *painter)
@@ -469,22 +443,89 @@ bool RenderedTarget::contains(const QPointF &point) const
     return *it == intPoint;
 }
 
-void RenderedTarget::calculateSize(Target *target, double costumeWidth, double costumeHeight)
+void RenderedTarget::calculatePos()
+{
+    if (!m_costume || !m_engine)
+        return;
+
+    if (m_spriteModel) {
+        if (isVisible()) {
+            double stageWidth = m_engine->stageWidth();
+            double stageHeight = m_engine->stageHeight();
+            setX(m_stageScale * (stageWidth / 2 + m_x - m_costume->rotationCenterX() * m_clampedSize / m_costume->bitmapResolution() * (m_mirrorHorizontally ? -1 : 1)));
+            setY(m_stageScale * (stageHeight / 2 - m_y - m_costume->rotationCenterY() * m_clampedSize / m_costume->bitmapResolution()));
+            qreal originX = m_costume->rotationCenterX() * m_clampedSize * m_stageScale / m_costume->bitmapResolution();
+            qreal originY = m_costume->rotationCenterY() * m_clampedSize * m_stageScale / m_costume->bitmapResolution();
+            setTransformOriginPoint(QPointF(originX, originY));
+        }
+    } else {
+        double stageWidth = m_engine->stageWidth();
+        double stageHeight = m_engine->stageHeight();
+        setX(m_stageScale * (stageWidth / 2 - m_costume->rotationCenterX() / m_costume->bitmapResolution()));
+        setY(m_stageScale * (stageHeight / 2 - m_costume->rotationCenterY() / m_costume->bitmapResolution()));
+        qreal originX = m_costume->rotationCenterX() / m_costume->bitmapResolution();
+        qreal originY = m_costume->rotationCenterY() / m_costume->bitmapResolution();
+        setTransformOriginPoint(QPointF(originX, originY));
+    }
+}
+
+void RenderedTarget::calculateRotation()
+{
+    if (isVisible()) {
+        // Direction
+        bool oldMirrorHorizontally = m_mirrorHorizontally;
+
+        switch (m_rotationStyle) {
+            case Sprite::RotationStyle::AllAround:
+                setRotation(m_direction - 90);
+                m_mirrorHorizontally = (false);
+
+                break;
+
+            case Sprite::RotationStyle::LeftRight: {
+                setRotation(0);
+                m_mirrorHorizontally = (m_direction < 0);
+
+                break;
+            }
+
+            case Sprite::RotationStyle::DoNotRotate:
+                setRotation(0);
+                m_mirrorHorizontally = false;
+                break;
+        }
+
+        if (m_mirrorHorizontally != oldMirrorHorizontally)
+            emit mirrorHorizontallyChanged();
+    }
+}
+
+void RenderedTarget::calculateSize()
 {
     if (m_costume) {
         double bitmapRes = m_costume->bitmapResolution();
-        m_maxSize = std::min(m_maximumWidth / (costumeWidth * m_stageScale), m_maximumHeight / (costumeHeight * m_stageScale));
-        Sprite *sprite = dynamic_cast<Sprite *>(target);
 
-        if (sprite) {
-            double clampedSize = std::min(m_size, m_maxSize);
-            m_width = costumeWidth * clampedSize * m_stageScale / bitmapRes;
-            m_height = costumeHeight * clampedSize * m_stageScale / bitmapRes;
+        if (m_costumeWidth == 0 || m_costumeHeight == 0)
+            m_maxSize = 1;
+        else
+            m_maxSize = std::min(m_maximumWidth / (m_costumeWidth * m_stageScale), m_maximumHeight / (m_costumeHeight * m_stageScale));
+
+        if (m_spriteModel) {
+            m_clampedSize = std::min(m_size, m_maxSize);
+            m_width = m_costumeWidth * m_clampedSize * m_stageScale / bitmapRes;
+            m_height = m_height = m_costumeHeight * m_clampedSize * m_stageScale / bitmapRes;
         } else {
-            m_width = costumeWidth * m_stageScale / bitmapRes;
-            m_height = costumeHeight * m_stageScale / bitmapRes;
+            m_width = m_costumeWidth * m_stageScale / bitmapRes;
+            m_height = m_height = m_costumeHeight * m_stageScale / bitmapRes;
         }
     }
+
+    Q_ASSERT(m_maxSize > 0);
+
+    if (!m_stageModel && (m_size > m_maxSize) && (m_maxSize != 0))
+        setScale(m_size / m_maxSize);
+    else
+        setScale(1);
 }
 
 void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)

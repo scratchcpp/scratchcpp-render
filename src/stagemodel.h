@@ -33,6 +33,8 @@ class StageModel
         void onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value) override;
         void onGraphicsEffectsCleared() override;
 
+        Q_INVOKABLE void loadCostume();
+
         libscratchcpp::Stage *stage() const;
 
         IRenderedTarget *renderedTarget() const;

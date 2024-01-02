@@ -44,6 +44,7 @@ ProjectScene {
             else
                 failedToLoad();
         }
+        onStageChanged: stage.loadCostume();
     }
 
     function start() {

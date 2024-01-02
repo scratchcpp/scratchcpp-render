@@ -23,24 +23,6 @@ TEST(StageModelTest, Init)
     Stage stage;
     model.init(&stage);
     ASSERT_EQ(model.stage(), &stage);
-
-    auto c1 = std::make_shared<Costume>("", "", "");
-    auto c2 = std::make_shared<Costume>("", "", "");
-    auto c3 = std::make_shared<Costume>("", "", "");
-    stage.addCostume(c1);
-    stage.addCostume(c2);
-    stage.addCostume(c3);
-    stage.setCostumeIndex(1);
-
-    RenderedTargetMock renderedTarget;
-    QSignalSpy spy(&model, &StageModel::renderedTargetChanged);
-    EXPECT_CALL(renderedTarget, loadCostume(c2.get()));
-    model.setRenderedTarget(&renderedTarget);
-    ASSERT_EQ(spy.count(), 1);
-    ASSERT_EQ(model.renderedTarget(), &renderedTarget);
-
-    EXPECT_CALL(renderedTarget, loadCostume(c2.get()));
-    model.init(&stage);
 }
 
 TEST(StageModelTest, OnCostumeChanged)
@@ -60,10 +42,25 @@ TEST(StageModelTest, RenderedTarget)
 {
     StageModel model;
     ASSERT_EQ(model.renderedTarget(), nullptr);
+    Stage stage;
+    model.init(&stage);
+
+    auto c1 = std::make_shared<Costume>("", "", "");
+    auto c2 = std::make_shared<Costume>("", "", "");
+    auto c3 = std::make_shared<Costume>("", "", "");
+    stage.addCostume(c1);
+    stage.addCostume(c2);
+    stage.addCostume(c3);
+    stage.setCostumeIndex(1);
 
     RenderedTargetMock renderedTarget;
     QSignalSpy spy(&model, &StageModel::renderedTargetChanged);
+    EXPECT_CALL(renderedTarget, loadCostume(c2.get()));
     model.setRenderedTarget(&renderedTarget);
     ASSERT_EQ(spy.count(), 1);
     ASSERT_EQ(model.renderedTarget(), &renderedTarget);
+
+    EXPECT_CALL(renderedTarget, loadCostume(c3.get()));
+    stage.setCostumeIndex(2);
+    model.loadCostume();
 }
