@@ -73,9 +73,8 @@ ProjectScene {
             onStageModelChanged: stageModel.renderedTarget = this
         }
 
-        Repeater {
-            id: sprites
-            model: loader.sprites
+        Component {
+            id: renderedSprite
 
             RenderedTarget {
                 id: target
@@ -86,6 +85,12 @@ ProjectScene {
                 transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
                 Component.onCompleted: modelData.renderedTarget = this
             }
+        }
+
+        Repeater {
+            id: sprites
+            model: loader.sprites
+            delegate: renderedSprite
         }
 
         Loader {
