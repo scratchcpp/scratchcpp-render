@@ -14,6 +14,7 @@ namespace scratchcpprender
 
 class IRenderedTarget;
 class ProjectLoader;
+class SpriteModel;
 
 class MouseEventHandler : public QObject
 {
@@ -35,11 +36,15 @@ class MouseEventHandler : public QObject
         void mouseReleased();
 
     private:
+        void getSprites();
+        void addClone(SpriteModel *model);
+        void removeClone(SpriteModel *model);
         void forwardPointEvent(QSinglePointEvent *event, QQuickItem *oldClickedItem = nullptr);
         void sendPointEventToItem(QSinglePointEvent *event, QQuickItem *item);
         void sendHoverEventToItem(QHoverEvent *originalEvent, QEvent::Type newType, QQuickItem *item);
 
         IRenderedTarget *m_stage = nullptr;
+        std::vector<IRenderedTarget *> m_sprites;
         QQuickItem *m_hoveredItem = nullptr;
         QQuickItem *m_clickedItem = nullptr;
         ProjectLoader *m_projectLoader = nullptr;
