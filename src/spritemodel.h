@@ -51,10 +51,12 @@ class SpriteModel
 
     signals:
         void renderedTargetChanged();
+        void cloned(SpriteModel *cloneModel);
 
     private:
         libscratchcpp::Sprite *m_sprite = nullptr;
         IRenderedTarget *m_renderedTarget = nullptr;
+        SpriteModel *m_cloneRoot = nullptr;
 };
 
 } // namespace scratchcpprender
