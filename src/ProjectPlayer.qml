@@ -36,6 +36,7 @@ ProjectScene {
         fileName: root.fileName
         stageWidth: root.stageWidth
         stageHeight: root.stageHeight
+
         onLoadingFinished: {
             priv.loading = false;
 
@@ -44,7 +45,25 @@ ProjectScene {
             else
                 failedToLoad();
         }
+
         onStageChanged: stage.loadCostume();
+
+        onCloneCreated: (cloneModel)=> clones.model.append({"spriteModel": cloneModel})
+
+        onCloneDeleted: (cloneModel)=> {
+            // TODO: Removing the clone from C++ would probably be faster
+            let i;
+
+            for(i = 0; i < clones.model.count; i++) {
+                if(clones.model.get(i).spriteModel === cloneModel)
+                    break;
+            }
+
+            if(i === clones.model.count)
+                console.error("error: deleted clone doesn't exist");
+            else
+                clones.model.remove(i);
+        }
     }
 
     function start() {
@@ -78,18 +97,26 @@ ProjectScene {
 
             RenderedTarget {
                 id: target
-                engine: loader.engine
-                spriteModel: modelData
                 mouseArea: sceneMouseArea
                 stageScale: root.stageScale
                 transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
-                Component.onCompleted: modelData.renderedTarget = this
+                Component.onCompleted: {
+                    engine = loader.engine;
+                    spriteModel = modelData;
+                    spriteModel.renderedTarget = this;
+                }
             }
         }
 
         Repeater {
             id: sprites
             model: loader.sprites
+            delegate: renderedSprite
+        }
+
+        Repeater {
+            id: clones
+            model: ListModel {}
             delegate: renderedSprite
         }
 
