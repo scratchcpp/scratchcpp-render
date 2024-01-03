@@ -16,7 +16,6 @@ class SceneMouseArea : public QQuickItem
         Q_OBJECT
         QML_ELEMENT
         Q_PROPERTY(IRenderedTarget *stage WRITE setStage NOTIFY stageChanged)
-        Q_PROPERTY(QQuickItem *spriteRepeater READ spriteRepeater WRITE setSpriteRepeater NOTIFY spriteRepeaterChanged)
         Q_PROPERTY(ProjectLoader *projectLoader READ projectLoader WRITE setProjectLoader NOTIFY projectLoaderChanged)
 
     public:
@@ -24,9 +23,6 @@ class SceneMouseArea : public QQuickItem
 
         IRenderedTarget *stage() const;
         void setStage(IRenderedTarget *newStage);
-
-        QQuickItem *spriteRepeater() const;
-        void setSpriteRepeater(QQuickItem *newSpriteRepeater);
 
         IRenderedTarget *draggedSprite() const;
         void setDraggedSprite(IRenderedTarget *sprite);
@@ -39,7 +35,6 @@ class SceneMouseArea : public QQuickItem
         void mousePressed();
         void mouseReleased();
         void stageChanged();
-        void spriteRepeaterChanged();
         void projectLoaderChanged();
 
     private:

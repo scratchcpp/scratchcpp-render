@@ -27,18 +27,6 @@ TEST(SceneMouseAreaTest, Stage)
     ASSERT_EQ(mouseArea.stage(), &stage);
 }
 
-TEST(SceneMouseAreaTest, SpriteRepeater)
-{
-    SceneMouseArea mouseArea;
-    QSignalSpy spy(&mouseArea, &SceneMouseArea::spriteRepeaterChanged);
-    ASSERT_EQ(mouseArea.spriteRepeater(), nullptr);
-
-    QQuickItem item;
-    mouseArea.setSpriteRepeater(&item);
-    ASSERT_EQ(spy.count(), 1);
-    ASSERT_EQ(mouseArea.spriteRepeater(), &item);
-}
-
 TEST(SceneMouseAreaTest, ProjectLoader)
 {
     SceneMouseArea mouseArea;

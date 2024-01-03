@@ -137,7 +137,6 @@ ProjectScene {
             id: sceneMouseArea
             anchors.fill: parent
             stage: stageTarget
-            spriteRepeater: sprites
             projectLoader: loader
             onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
             onMousePressed: root.handleMousePress()
