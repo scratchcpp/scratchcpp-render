@@ -1,8 +1,6 @@
 add_executable(
   mouseeventhandler_test
   mouseeventhandler_test.cpp
-  fakerepeater.cpp
-  fakerepeater.h
 )
 
 target_link_libraries(

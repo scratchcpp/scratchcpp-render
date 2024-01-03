@@ -5,6 +5,8 @@
 
 #include "mouseeventhandler.h"
 #include "renderedtarget.h"
+#include "projectloader.h"
+#include "spritemodel.h"
 
 using namespace scratchcpprender;
 
@@ -88,23 +90,23 @@ bool MouseEventHandler::eventFilter(QObject *obj, QEvent *event)
 
 void MouseEventHandler::forwardPointEvent(QSinglePointEvent *event, QQuickItem *oldClickedItem)
 {
-    Q_ASSERT(m_spriteRepeater);
+    Q_ASSERT(m_projectLoader);
 
-    if (!m_spriteRepeater)
+    if (!m_projectLoader)
         return;
 
     // Create list of sprites
+    const auto &spriteModels = m_projectLoader->spriteList();
     std::vector<IRenderedTarget *> sprites;
-    int count = m_spriteRepeater->property("count").toInt();
+    auto count = spriteModels.size();
     sprites.reserve(count);
 
     for (int i = 0; i < count; i++) {
-        QQuickItem *sprite = nullptr;
-        QMetaObject::invokeMethod(m_spriteRepeater, "itemAt", Qt::DirectConnection, Q_RETURN_ARG(QQuickItem *, sprite), Q_ARG(int, i));
+        Q_ASSERT(spriteModels[i]);
+        IRenderedTarget *sprite = spriteModels[i]->renderedTarget();
         Q_ASSERT(sprite);
-        Q_ASSERT(dynamic_cast<IRenderedTarget *>(sprite));
-        Q_ASSERT(dynamic_cast<IRenderedTarget *>(sprite)->scratchTarget());
-        sprites.push_back(dynamic_cast<IRenderedTarget *>(sprite));
+        Q_ASSERT(sprite->scratchTarget());
+        sprites.push_back(sprite);
     }
 
     // Sort the list by layer order

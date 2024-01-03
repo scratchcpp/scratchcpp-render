@@ -2,10 +2,10 @@
 #include <scratchcpp/sprite.h>
 #include <mouseeventhandler.h>
 #include <projectloader.h>
+#include <spritemodel.h>
 #include <renderedtargetmock.h>
 
 #include "../common.h"
-#include "fakerepeater.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -56,14 +56,21 @@ TEST(MouseEventHandlerTest, HoverEnterLeaveEvent)
 {
     MouseEventHandler handler;
     RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
+    SpriteModel model1, model2, model3;
+    model1.setRenderedTarget(&renderedTarget1);
+    model2.setRenderedTarget(&renderedTarget2);
+    model3.setRenderedTarget(&renderedTarget3);
     Sprite sprite1, sprite2, sprite3;
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
-    FakeRepeater repeater;
-    repeater.items = { &renderedTarget1, &renderedTarget2, &renderedTarget3 };
+    ProjectLoader loader;
+    auto sprites = loader.sprites();
+    sprites.append(&sprites, &model1);
+    sprites.append(&sprites, &model2);
+    sprites.append(&sprites, &model3);
     handler.setStage(&stage);
-    handler.setSpriteRepeater(&repeater);
+    handler.setProjectLoader(&loader);
     QPointingDevice dev;
 
     static const QPointF localPos(8.5, 2.9);
@@ -117,14 +124,21 @@ TEST(MouseEventHandlerTest, HoverMoveEvent)
 {
     MouseEventHandler handler;
     RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
+    SpriteModel model1, model2, model3;
+    model1.setRenderedTarget(&renderedTarget1);
+    model2.setRenderedTarget(&renderedTarget2);
+    model3.setRenderedTarget(&renderedTarget3);
     Sprite sprite1, sprite2, sprite3;
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
-    FakeRepeater repeater;
-    repeater.items = { &renderedTarget1, &renderedTarget2, &renderedTarget3 };
+    ProjectLoader loader;
+    auto sprites = loader.sprites();
+    sprites.append(&sprites, &model1);
+    sprites.append(&sprites, &model2);
+    sprites.append(&sprites, &model3);
     handler.setStage(&stage);
-    handler.setSpriteRepeater(&repeater);
+    handler.setProjectLoader(&loader);
     QPointingDevice dev;
 
     static const QPointF localPos(8.5, 2.9);
@@ -201,14 +215,21 @@ TEST(MouseEventHandlerTest, MouseMoveEvent)
 {
     MouseEventHandler handler;
     RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
+    SpriteModel model1, model2, model3;
+    model1.setRenderedTarget(&renderedTarget1);
+    model2.setRenderedTarget(&renderedTarget2);
+    model3.setRenderedTarget(&renderedTarget3);
     Sprite sprite1, sprite2, sprite3;
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
-    FakeRepeater repeater;
-    repeater.items = { &renderedTarget1, &renderedTarget2, &renderedTarget3 };
+    ProjectLoader loader;
+    auto sprites = loader.sprites();
+    sprites.append(&sprites, &model1);
+    sprites.append(&sprites, &model2);
+    sprites.append(&sprites, &model3);
     handler.setStage(&stage);
-    handler.setSpriteRepeater(&repeater);
+    handler.setProjectLoader(&loader);
     QPointingDevice dev;
 
     static const QPointF localPos(8.5, 2.9);
@@ -261,14 +282,21 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
 {
     MouseEventHandler handler;
     RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
+    SpriteModel model1, model2, model3;
+    model1.setRenderedTarget(&renderedTarget1);
+    model2.setRenderedTarget(&renderedTarget2);
+    model3.setRenderedTarget(&renderedTarget3);
     Sprite sprite1, sprite2, sprite3;
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
-    FakeRepeater repeater;
-    repeater.items = { &renderedTarget1, &renderedTarget2, &renderedTarget3 };
+    ProjectLoader loader;
+    auto sprites = loader.sprites();
+    sprites.append(&sprites, &model1);
+    sprites.append(&sprites, &model2);
+    sprites.append(&sprites, &model3);
     handler.setStage(&stage);
-    handler.setSpriteRepeater(&repeater);
+    handler.setProjectLoader(&loader);
     QPointingDevice dev;
 
     static const QPointF localPos(8.5, 2.9);
