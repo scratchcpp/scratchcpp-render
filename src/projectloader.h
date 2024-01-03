@@ -9,6 +9,8 @@
 
 #include "stagemodel.h"
 
+Q_MOC_INCLUDE("spritemodel.h");
+
 namespace scratchcpprender
 {
 
@@ -23,6 +25,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine NOTIFY engineChanged)
         Q_PROPERTY(StageModel *stage READ stage NOTIFY stageChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
+        Q_PROPERTY(QQmlListProperty<SpriteModel> clones READ clones NOTIFY clonesChanged)
         Q_PROPERTY(double fps READ fps WRITE setFps NOTIFY fpsChanged)
         Q_PROPERTY(bool turboMode READ turboMode WRITE setTurboMode NOTIFY turboModeChanged)
         Q_PROPERTY(unsigned int stageWidth READ stageWidth WRITE setStageWidth NOTIFY stageWidthChanged)
@@ -48,6 +51,9 @@ class ProjectLoader : public QObject
 
         QQmlListProperty<SpriteModel> sprites();
         const QList<SpriteModel *> &spriteList() const;
+
+        QQmlListProperty<SpriteModel> clones();
+        const QList<SpriteModel *> &cloneList() const;
 
         Q_INVOKABLE void start();
         Q_INVOKABLE void stop();
@@ -81,6 +87,7 @@ class ProjectLoader : public QObject
         void engineChanged();
         void stageChanged();
         void spritesChanged();
+        void clonesChanged();
         void fpsChanged();
         void turboModeChanged();
         void stageWidthChanged();
@@ -89,6 +96,8 @@ class ProjectLoader : public QObject
         void spriteFencingChanged();
         void downloadedAssetsChanged();
         void assetCountChanged();
+        void cloneCreated(SpriteModel *model);
+        void cloneDeleted(SpriteModel *model);
 
     protected:
         void timerEvent(QTimerEvent *event) override;
@@ -98,6 +107,8 @@ class ProjectLoader : public QObject
         void load();
         void initTimer();
         void redraw();
+        void addClone(SpriteModel *model);
+        void deleteClone(SpriteModel *model);
 
         int m_timerId = -1;
         QString m_fileName;
@@ -108,6 +119,7 @@ class ProjectLoader : public QObject
         bool m_loadStatus = false;
         StageModel m_stage;
         QList<SpriteModel *> m_sprites;
+        QList<SpriteModel *> m_clones;
         double m_fps = 30;
         bool m_turboMode = false;
         unsigned int m_stageWidth = 480;
