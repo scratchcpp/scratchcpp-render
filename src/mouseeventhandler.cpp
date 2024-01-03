@@ -33,6 +33,16 @@ void MouseEventHandler::setSpriteRepeater(QQuickItem *repeater)
     m_spriteRepeater = repeater;
 }
 
+ProjectLoader *MouseEventHandler::projectLoader() const
+{
+    return m_projectLoader;
+}
+
+void MouseEventHandler::setProjectLoader(ProjectLoader *newProjectLoader)
+{
+    m_projectLoader = newProjectLoader;
+}
+
 bool MouseEventHandler::eventFilter(QObject *obj, QEvent *event)
 {
     switch (event->type()) {

@@ -13,6 +13,7 @@ namespace scratchcpprender
 {
 
 class IRenderedTarget;
+class ProjectLoader;
 
 class MouseEventHandler : public QObject
 {
@@ -28,6 +29,9 @@ class MouseEventHandler : public QObject
 
         bool eventFilter(QObject *obj, QEvent *event) override;
 
+        ProjectLoader *projectLoader() const;
+        void setProjectLoader(ProjectLoader *newProjectLoader);
+
     signals:
         void mouseMoved(qreal x, qreal y);
         void mousePressed();
@@ -42,6 +46,7 @@ class MouseEventHandler : public QObject
         QQuickItem *m_hoveredItem = nullptr;
         QQuickItem *m_clickedItem = nullptr;
         QQuickItem *m_spriteRepeater = nullptr;
+        ProjectLoader *m_projectLoader = nullptr;
 };
 
 } // namespace scratchcpprender

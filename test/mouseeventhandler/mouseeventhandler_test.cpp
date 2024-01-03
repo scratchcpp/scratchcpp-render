@@ -1,6 +1,7 @@
 #include <QtTest/QSignalSpy>
 #include <scratchcpp/sprite.h>
 #include <mouseeventhandler.h>
+#include <projectloader.h>
 #include <renderedtargetmock.h>
 
 #include "../common.h"
@@ -39,6 +40,16 @@ TEST(MouseEventHandlerTest, SpriteRepeater)
     QQuickItem item;
     handler.setSpriteRepeater(&item);
     ASSERT_EQ(handler.spriteRepeater(), &item);
+}
+
+TEST(MouseEventHandlerTest, ProjectLoader)
+{
+    MouseEventHandler handler;
+    ASSERT_EQ(handler.projectLoader(), nullptr);
+
+    ProjectLoader loader;
+    handler.setProjectLoader(&loader);
+    ASSERT_EQ(handler.projectLoader(), &loader);
 }
 
 TEST(MouseEventHandlerTest, HoverEnterLeaveEvent)
