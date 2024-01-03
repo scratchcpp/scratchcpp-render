@@ -25,6 +25,18 @@ TEST(SpriteModelTest, Init)
     ASSERT_EQ(model.sprite(), &sprite);
 }
 
+TEST(SpriteModelTest, DeInitClone)
+{
+    SpriteModel model;
+    QSignalSpy spy(&model, &SpriteModel::cloneDeleted);
+    model.deinitClone();
+    ASSERT_EQ(spy.count(), 1);
+    QList<QVariant> args = spy.takeFirst();
+    ASSERT_EQ(args.size(), 1);
+    SpriteModel *modelPtr = args.at(0).value<SpriteModel *>();
+    ASSERT_EQ(modelPtr, &model);
+}
+
 TEST(SpriteModelTest, OnCloned)
 {
     SpriteModel model;

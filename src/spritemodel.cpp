@@ -21,6 +21,7 @@ void SpriteModel::init(libscratchcpp::Sprite *sprite)
 
 void SpriteModel::deinitClone()
 {
+    emit cloneDeleted(this);
 }
 
 void SpriteModel::onCloned(libscratchcpp::Sprite *clone)

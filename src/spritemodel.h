@@ -52,6 +52,7 @@ class SpriteModel
     signals:
         void renderedTargetChanged();
         void cloned(SpriteModel *cloneModel);
+        void cloneDeleted(SpriteModel *clone);
 
     private:
         libscratchcpp::Sprite *m_sprite = nullptr;
