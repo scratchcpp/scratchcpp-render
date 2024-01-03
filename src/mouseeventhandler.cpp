@@ -25,16 +25,6 @@ void MouseEventHandler::setStage(IRenderedTarget *stage)
     m_stage = stage;
 }
 
-QQuickItem *MouseEventHandler::spriteRepeater() const
-{
-    return m_spriteRepeater;
-}
-
-void MouseEventHandler::setSpriteRepeater(QQuickItem *repeater)
-{
-    m_spriteRepeater = repeater;
-}
-
 ProjectLoader *MouseEventHandler::projectLoader() const
 {
     return m_projectLoader;

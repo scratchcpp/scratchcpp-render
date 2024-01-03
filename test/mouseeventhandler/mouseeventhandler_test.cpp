@@ -32,16 +32,6 @@ TEST(MouseEventHandlerTest, Stage)
     ASSERT_EQ(handler.stage(), &stage);
 }
 
-TEST(MouseEventHandlerTest, SpriteRepeater)
-{
-    MouseEventHandler handler;
-    ASSERT_EQ(handler.spriteRepeater(), nullptr);
-
-    QQuickItem item;
-    handler.setSpriteRepeater(&item);
-    ASSERT_EQ(handler.spriteRepeater(), &item);
-}
-
 TEST(MouseEventHandlerTest, ProjectLoader)
 {
     MouseEventHandler handler;

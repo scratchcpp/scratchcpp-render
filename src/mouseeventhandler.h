@@ -24,9 +24,6 @@ class MouseEventHandler : public QObject
         IRenderedTarget *stage() const;
         void setStage(IRenderedTarget *stage);
 
-        QQuickItem *spriteRepeater() const;
-        void setSpriteRepeater(QQuickItem *repeater);
-
         bool eventFilter(QObject *obj, QEvent *event) override;
 
         ProjectLoader *projectLoader() const;
@@ -45,7 +42,6 @@ class MouseEventHandler : public QObject
         IRenderedTarget *m_stage = nullptr;
         QQuickItem *m_hoveredItem = nullptr;
         QQuickItem *m_clickedItem = nullptr;
-        QQuickItem *m_spriteRepeater = nullptr;
         ProjectLoader *m_projectLoader = nullptr;
 };
 
