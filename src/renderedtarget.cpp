@@ -149,6 +149,16 @@ void RenderedTarget::beforeRedraw()
     setHeight(m_height);
 }
 
+void RenderedTarget::deinitClone()
+{
+    // Do not process mouse move events after the clone has been deleted
+    disconnect(m_mouseArea, &SceneMouseArea::mouseMoved, this, &RenderedTarget::handleSceneMouseMove);
+
+    // Release drag lock
+    if (m_mouseArea->draggedSprite() == this)
+        m_mouseArea->setDraggedSprite(nullptr);
+}
+
 IEngine *RenderedTarget::engine() const
 {
     return m_engine;

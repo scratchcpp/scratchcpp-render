@@ -38,6 +38,8 @@ class IRenderedTarget : public QNanoQuickItem
 
         virtual void beforeRedraw() = 0;
 
+        virtual void deinitClone() = 0;
+
         virtual libscratchcpp::IEngine *engine() const = 0;
         virtual void setEngine(libscratchcpp::IEngine *newEngine) = 0;
 

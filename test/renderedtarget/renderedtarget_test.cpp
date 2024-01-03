@@ -290,6 +290,21 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
     ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 7236.27);
 }
 
+TEST_F(RenderedTargetTest, DeinitClone)
+{
+    RenderedTarget target1, target2;
+    SceneMouseArea mouseArea;
+    target1.setMouseArea(&mouseArea);
+
+    mouseArea.setDraggedSprite(&target2);
+    target1.deinitClone();
+    ASSERT_EQ(mouseArea.draggedSprite(), &target2);
+
+    mouseArea.setDraggedSprite(&target1);
+    target1.deinitClone();
+    ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
+}
+
 TEST_F(RenderedTargetTest, PaintSvg)
 {
     std::string str = readFileStr("image.svg");
