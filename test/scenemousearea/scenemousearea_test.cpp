@@ -1,5 +1,6 @@
 #include <QtTest/QSignalSpy>
 #include <scenemousearea.h>
+#include <projectloader.h>
 #include <renderedtargetmock.h>
 
 #include "../common.h"
@@ -36,6 +37,18 @@ TEST(SceneMouseAreaTest, SpriteRepeater)
     mouseArea.setSpriteRepeater(&item);
     ASSERT_EQ(spy.count(), 1);
     ASSERT_EQ(mouseArea.spriteRepeater(), &item);
+}
+
+TEST(SceneMouseAreaTest, ProjectLoader)
+{
+    SceneMouseArea mouseArea;
+    QSignalSpy spy(&mouseArea, &SceneMouseArea::projectLoaderChanged);
+    ASSERT_EQ(mouseArea.projectLoader(), nullptr);
+
+    ProjectLoader loader;
+    mouseArea.setProjectLoader(&loader);
+    ASSERT_EQ(spy.count(), 1);
+    ASSERT_EQ(mouseArea.projectLoader(), &loader);
 }
 
 TEST(SceneMouseAreaTest, DraggedSprite)

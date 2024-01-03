@@ -52,3 +52,14 @@ void SceneMouseArea::setDraggedSprite(IRenderedTarget *sprite)
 {
     m_draggedSprite = sprite;
 }
+
+ProjectLoader *SceneMouseArea::projectLoader() const
+{
+    return m_mouseHandler->projectLoader();
+}
+
+void SceneMouseArea::setProjectLoader(ProjectLoader *newProjectLoader)
+{
+    m_mouseHandler->setProjectLoader(newProjectLoader);
+    emit projectLoaderChanged();
+}
