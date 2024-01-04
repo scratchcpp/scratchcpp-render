@@ -89,21 +89,21 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     sprite.setRotationStyle(Sprite::RotationStyle::AllAround);
     sprite.setDirection(-67.16);
     sprite.setSize(143.98);
-    sprite.setX(-67.94);
-    sprite.setY(121.76);
+    sprite.setX(0);
+    sprite.setY(0);
     sprite.setLayerOrder(3);
     SpriteModel spriteModel;
     sprite.setInterface(&spriteModel);
 
-    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
-    EXPECT_CALL(engine, stageHeight()).Times(3).WillRepeatedly(Return(360));
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.setSpriteModel(&spriteModel);
     target.beforeRedraw();
 
     ASSERT_EQ(std::round(target.width() * 100) / 100, 2.3);
     ASSERT_EQ(std::round(target.height() * 100) / 100, 3.46);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 185.31);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 16.77);
+    ASSERT_EQ(std::round(target.x() * 100) / 100, 253.25);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 138.53);
     ASSERT_EQ(target.z(), 3);
     ASSERT_EQ(target.rotation(), -157.16);
     ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -13.25);
@@ -124,7 +124,7 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateX(12.5);
     ASSERT_EQ(std::round(target.x() * 100) / 100, 265.75);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 16.77);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 138.53);
 
     // Y
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));

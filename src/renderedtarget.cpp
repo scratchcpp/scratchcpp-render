@@ -211,14 +211,17 @@ void RenderedTarget::setSpriteModel(SpriteModel *newSpriteModel)
         Sprite *sprite = m_spriteModel->sprite();
 
         if (sprite) {
+            m_x = sprite->x();
+            m_y = sprite->y();
+            m_size = sprite->size() / 100;
+            m_direction = sprite->direction();
+            m_rotationStyle = sprite->rotationStyle();
             loadCostume(sprite->currentCostume().get());
             updateVisibility(sprite->visible());
-            updateX(sprite->x());
-            updateY(sprite->y());
-            updateSize(sprite->size());
-            updateDirection(sprite->direction());
-            updateRotationStyle(sprite->rotationStyle());
             updateLayerOrder(sprite->layerOrder());
+            calculateSize();
+            calculatePos();
+            calculateRotation();
         }
     }
     emit spriteModelChanged();
