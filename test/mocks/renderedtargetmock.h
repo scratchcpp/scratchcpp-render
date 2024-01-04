@@ -24,6 +24,8 @@ class RenderedTargetMock : public IRenderedTarget
 
         MOCK_METHOD(void, loadCostume, (libscratchcpp::Costume *), (override));
 
+        MOCK_METHOD(void, deinitClone, (), (override));
+
         MOCK_METHOD(libscratchcpp::IEngine *, engine, (), (const, override));
         MOCK_METHOD(void, setEngine, (libscratchcpp::IEngine *), (override));
 

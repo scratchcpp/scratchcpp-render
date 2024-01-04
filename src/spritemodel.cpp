@@ -21,10 +21,18 @@ void SpriteModel::init(libscratchcpp::Sprite *sprite)
 
 void SpriteModel::deinitClone()
 {
+    emit cloneDeleted(this);
 }
 
 void SpriteModel::onCloned(libscratchcpp::Sprite *clone)
 {
+    if (!m_cloneRoot)
+        m_cloneRoot = this;
+
+    SpriteModel *cloneModel = new SpriteModel(m_cloneRoot);
+    cloneModel->m_cloneRoot = m_cloneRoot;
+    clone->setInterface(cloneModel);
+    emit cloned(cloneModel);
 }
 
 void SpriteModel::onCostumeChanged(libscratchcpp::Costume *costume)

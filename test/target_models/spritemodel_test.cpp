@@ -25,6 +25,59 @@ TEST(SpriteModelTest, Init)
     ASSERT_EQ(model.sprite(), &sprite);
 }
 
+TEST(SpriteModelTest, DeInitClone)
+{
+    SpriteModel model;
+    QSignalSpy spy(&model, &SpriteModel::cloneDeleted);
+    model.deinitClone();
+    ASSERT_EQ(spy.count(), 1);
+    QList<QVariant> args = spy.takeFirst();
+    ASSERT_EQ(args.size(), 1);
+    SpriteModel *modelPtr = args.at(0).value<SpriteModel *>();
+    ASSERT_EQ(modelPtr, &model);
+}
+
+TEST(SpriteModelTest, OnCloned)
+{
+    SpriteModel model;
+
+    Sprite clone1;
+    QSignalSpy spy1(&model, &SpriteModel::cloned);
+    model.onCloned(&clone1);
+    ASSERT_EQ(spy1.count(), 1);
+
+    QList<QVariant> args = spy1.takeFirst();
+    ASSERT_EQ(args.size(), 1);
+    SpriteModel *cloneModel = args.at(0).value<SpriteModel *>();
+    ASSERT_TRUE(cloneModel);
+    ASSERT_EQ(cloneModel->parent(), &model);
+    ASSERT_EQ(cloneModel->sprite(), &clone1);
+    spy1.clear();
+
+    Sprite clone2;
+    model.onCloned(&clone2);
+    ASSERT_EQ(spy1.count(), 1);
+
+    args = spy1.takeFirst();
+    ASSERT_EQ(args.size(), 1);
+    cloneModel = args.at(0).value<SpriteModel *>();
+    ASSERT_TRUE(cloneModel);
+    ASSERT_EQ(cloneModel->parent(), &model);
+    ASSERT_EQ(cloneModel->sprite(), &clone2);
+
+    Sprite clone3;
+    QSignalSpy spy2(cloneModel, &SpriteModel::cloned);
+    cloneModel->onCloned(&clone3);
+    ASSERT_EQ(spy2.count(), 1);
+
+    args = spy2.takeFirst();
+    ASSERT_EQ(args.size(), 1);
+    cloneModel = args.at(0).value<SpriteModel *>();
+    ASSERT_TRUE(cloneModel);
+    ASSERT_EQ(cloneModel->parent(), &model);
+    ASSERT_EQ(cloneModel->sprite(), &clone3);
+}
+
 TEST(SpriteModelTest, OnCostumeChanged)
 {
     SpriteModel model;

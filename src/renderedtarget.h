@@ -43,6 +43,8 @@ class RenderedTarget : public IRenderedTarget
 
         void beforeRedraw() override;
 
+        void deinitClone() override;
+
         libscratchcpp::IEngine *engine() const override;
         void setEngine(libscratchcpp::IEngine *newEngine) override;
 

@@ -2,6 +2,7 @@
 #include <projectloader.h>
 #include <spritemodel.h>
 #include <enginemock.h>
+#include <renderedtargetmock.h>
 
 #include "../common.h"
 
@@ -71,6 +72,44 @@ TEST_F(ProjectLoaderTest, Load)
     ASSERT_EQ(sprites.size(), 2);
     ASSERT_EQ(sprites[0]->sprite(), engine->targetAt(1));
     ASSERT_EQ(sprites[1]->sprite(), engine->targetAt(2));
+}
+
+TEST_F(ProjectLoaderTest, Clones)
+{
+    ProjectLoader loader;
+    QSignalSpy cloneCreatedSpy(&loader, &ProjectLoader::cloneCreated);
+    QSignalSpy cloneDeletedSpy(&loader, &ProjectLoader::cloneDeleted);
+    QSignalSpy clonesChangedSpy(&loader, &ProjectLoader::clonesChanged);
+    load(&loader, "clones.sb3");
+    ASSERT_TRUE(cloneCreatedSpy.empty());
+    ASSERT_TRUE(cloneDeletedSpy.empty());
+    ASSERT_TRUE(clonesChangedSpy.empty());
+
+    auto engine = loader.engine();
+    engine->run();
+    ASSERT_EQ(cloneCreatedSpy.count(), 3);
+    ASSERT_EQ(cloneDeletedSpy.count(), 0);
+    ASSERT_EQ(clonesChangedSpy.count(), 3);
+
+    const auto &sprites = loader.spriteList();
+    const auto &clones = loader.cloneList();
+    ASSERT_EQ(sprites.size(), 1);
+    ASSERT_EQ(clones.size(), 3);
+    ASSERT_EQ(clones[0]->sprite()->cloneSprite(), sprites[0]->sprite());
+    ASSERT_EQ(clones[1]->sprite()->cloneSprite(), sprites[0]->sprite());
+    ASSERT_EQ(clones[2]->sprite()->cloneSprite(), sprites[0]->sprite());
+
+    RenderedTargetMock target1, target2, target3;
+    clones[0]->setRenderedTarget(&target1);
+    clones[1]->setRenderedTarget(&target2);
+    clones[2]->setRenderedTarget(&target3);
+
+    EXPECT_CALL(target2, deinitClone());
+    clones[1]->sprite()->deleteClone();
+    ASSERT_EQ(cloneCreatedSpy.count(), 3);
+    ASSERT_EQ(cloneDeletedSpy.count(), 1);
+    ASSERT_EQ(clonesChangedSpy.count(), 4);
+    ASSERT_EQ(clones.size(), 2);
 }
 
 TEST_F(ProjectLoaderTest, StartStop)

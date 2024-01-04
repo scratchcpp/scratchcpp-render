@@ -1,10 +1,11 @@
 #include <QtTest/QSignalSpy>
 #include <scratchcpp/sprite.h>
 #include <mouseeventhandler.h>
+#include <projectloader.h>
+#include <spritemodel.h>
 #include <renderedtargetmock.h>
 
 #include "../common.h"
-#include "fakerepeater.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -31,34 +32,49 @@ TEST(MouseEventHandlerTest, Stage)
     ASSERT_EQ(handler.stage(), &stage);
 }
 
-TEST(MouseEventHandlerTest, SpriteRepeater)
+TEST(MouseEventHandlerTest, ProjectLoader)
 {
     MouseEventHandler handler;
-    ASSERT_EQ(handler.spriteRepeater(), nullptr);
+    ASSERT_EQ(handler.projectLoader(), nullptr);
 
-    QQuickItem item;
-    handler.setSpriteRepeater(&item);
-    ASSERT_EQ(handler.spriteRepeater(), &item);
+    ProjectLoader loader;
+    handler.setProjectLoader(&loader);
+    ASSERT_EQ(handler.projectLoader(), &loader);
 }
 
 TEST(MouseEventHandlerTest, HoverEnterLeaveEvent)
 {
     MouseEventHandler handler;
-    RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
-    Sprite sprite1, sprite2, sprite3;
+    RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3, renderedTarget4;
+    SpriteModel model1, model2, model3, model4;
+    model1.setRenderedTarget(&renderedTarget1);
+    model2.setRenderedTarget(&renderedTarget2);
+    model3.setRenderedTarget(&renderedTarget3);
+    model4.setRenderedTarget(&renderedTarget4);
+    Sprite sprite1, sprite2, sprite3, sprite4; // sprite1, sprite3 and sprite4 are clones here
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
-    FakeRepeater repeater;
-    repeater.items = { &renderedTarget1, &renderedTarget2, &renderedTarget3 };
+    sprite4.setLayerOrder(4);
+    ProjectLoader loader;
+    auto sprites = loader.sprites();
+    sprites.append(&sprites, &model2);
     handler.setStage(&stage);
-    handler.setSpriteRepeater(&repeater);
+    handler.setProjectLoader(&loader);
     QPointingDevice dev;
 
     static const QPointF localPos(8.5, 2.9);
     static const QPointF scenePos(10.5, 4.9);
     static const QPointF globalPos(11.5, 5.9);
     static const QPointF oldPos(9.5, 3.9);
+
+    EXPECT_CALL(renderedTarget2, scratchTarget()).WillOnce(Return(&sprite2));
+    emit loader.spritesChanged();
+
+    emit loader.cloneCreated(&model1);
+    emit loader.cloneCreated(&model3);
+    emit loader.cloneCreated(&model4);
+    emit loader.cloneDeleted(&model4); // sprite4 was deleted
 
     EXPECT_CALL(renderedTarget1, scratchTarget()).WillRepeatedly(Return(&sprite1));
     EXPECT_CALL(renderedTarget2, scratchTarget()).WillRepeatedly(Return(&sprite2));
@@ -106,14 +122,21 @@ TEST(MouseEventHandlerTest, HoverMoveEvent)
 {
     MouseEventHandler handler;
     RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
+    SpriteModel model1, model2, model3;
+    model1.setRenderedTarget(&renderedTarget1);
+    model2.setRenderedTarget(&renderedTarget2);
+    model3.setRenderedTarget(&renderedTarget3);
     Sprite sprite1, sprite2, sprite3;
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
-    FakeRepeater repeater;
-    repeater.items = { &renderedTarget1, &renderedTarget2, &renderedTarget3 };
+    ProjectLoader loader;
+    auto sprites = loader.sprites();
+    sprites.append(&sprites, &model1);
+    sprites.append(&sprites, &model2);
+    sprites.append(&sprites, &model3);
     handler.setStage(&stage);
-    handler.setSpriteRepeater(&repeater);
+    handler.setProjectLoader(&loader);
     QPointingDevice dev;
 
     static const QPointF localPos(8.5, 2.9);
@@ -124,6 +147,7 @@ TEST(MouseEventHandlerTest, HoverMoveEvent)
     EXPECT_CALL(renderedTarget1, scratchTarget()).WillRepeatedly(Return(&sprite1));
     EXPECT_CALL(renderedTarget2, scratchTarget()).WillRepeatedly(Return(&sprite2));
     EXPECT_CALL(renderedTarget3, scratchTarget()).WillRepeatedly(Return(&sprite3));
+    emit loader.spritesChanged();
 
     EXPECT_CALL(renderedTarget1, mapFromScene(scenePos)).WillRepeatedly(Return(localPos));
     EXPECT_CALL(renderedTarget2, mapFromScene(scenePos)).WillRepeatedly(Return(localPos));
@@ -190,14 +214,21 @@ TEST(MouseEventHandlerTest, MouseMoveEvent)
 {
     MouseEventHandler handler;
     RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
+    SpriteModel model1, model2, model3;
+    model1.setRenderedTarget(&renderedTarget1);
+    model2.setRenderedTarget(&renderedTarget2);
+    model3.setRenderedTarget(&renderedTarget3);
     Sprite sprite1, sprite2, sprite3;
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
-    FakeRepeater repeater;
-    repeater.items = { &renderedTarget1, &renderedTarget2, &renderedTarget3 };
+    ProjectLoader loader;
+    auto sprites = loader.sprites();
+    sprites.append(&sprites, &model1);
+    sprites.append(&sprites, &model2);
+    sprites.append(&sprites, &model3);
     handler.setStage(&stage);
-    handler.setSpriteRepeater(&repeater);
+    handler.setProjectLoader(&loader);
     QPointingDevice dev;
 
     static const QPointF localPos(8.5, 2.9);
@@ -208,6 +239,7 @@ TEST(MouseEventHandlerTest, MouseMoveEvent)
     EXPECT_CALL(renderedTarget1, scratchTarget()).WillRepeatedly(Return(&sprite1));
     EXPECT_CALL(renderedTarget2, scratchTarget()).WillRepeatedly(Return(&sprite2));
     EXPECT_CALL(renderedTarget3, scratchTarget()).WillRepeatedly(Return(&sprite3));
+    emit loader.spritesChanged();
 
     EXPECT_CALL(renderedTarget1, mapFromScene(scenePos)).WillRepeatedly(Return(localPos));
     EXPECT_CALL(renderedTarget2, mapFromScene(scenePos)).WillRepeatedly(Return(localPos));
@@ -250,14 +282,21 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
 {
     MouseEventHandler handler;
     RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
+    SpriteModel model1, model2, model3;
+    model1.setRenderedTarget(&renderedTarget1);
+    model2.setRenderedTarget(&renderedTarget2);
+    model3.setRenderedTarget(&renderedTarget3);
     Sprite sprite1, sprite2, sprite3;
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
-    FakeRepeater repeater;
-    repeater.items = { &renderedTarget1, &renderedTarget2, &renderedTarget3 };
+    ProjectLoader loader;
+    auto sprites = loader.sprites();
+    sprites.append(&sprites, &model1);
+    sprites.append(&sprites, &model2);
+    sprites.append(&sprites, &model3);
     handler.setStage(&stage);
-    handler.setSpriteRepeater(&repeater);
+    handler.setProjectLoader(&loader);
     QPointingDevice dev;
 
     static const QPointF localPos(8.5, 2.9);
@@ -268,6 +307,7 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     EXPECT_CALL(renderedTarget1, scratchTarget()).WillRepeatedly(Return(&sprite1));
     EXPECT_CALL(renderedTarget2, scratchTarget()).WillRepeatedly(Return(&sprite2));
     EXPECT_CALL(renderedTarget3, scratchTarget()).WillRepeatedly(Return(&sprite3));
+    emit loader.spritesChanged();
 
     EXPECT_CALL(renderedTarget1, mapFromScene(scenePos)).WillRepeatedly(Return(localPos));
     EXPECT_CALL(renderedTarget2, mapFromScene(scenePos)).WillRepeatedly(Return(localPos));

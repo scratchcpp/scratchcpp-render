@@ -32,17 +32,6 @@ void SceneMouseArea::setStage(IRenderedTarget *newStage)
     emit stageChanged();
 }
 
-QQuickItem *SceneMouseArea::spriteRepeater() const
-{
-    return m_mouseHandler->spriteRepeater();
-}
-
-void SceneMouseArea::setSpriteRepeater(QQuickItem *newSpriteRepeater)
-{
-    m_mouseHandler->setSpriteRepeater(newSpriteRepeater);
-    emit spriteRepeaterChanged();
-}
-
 IRenderedTarget *SceneMouseArea::draggedSprite() const
 {
     return m_draggedSprite;
@@ -51,4 +40,15 @@ IRenderedTarget *SceneMouseArea::draggedSprite() const
 void SceneMouseArea::setDraggedSprite(IRenderedTarget *sprite)
 {
     m_draggedSprite = sprite;
+}
+
+ProjectLoader *SceneMouseArea::projectLoader() const
+{
+    return m_mouseHandler->projectLoader();
+}
+
+void SceneMouseArea::setProjectLoader(ProjectLoader *newProjectLoader)
+{
+    m_mouseHandler->setProjectLoader(newProjectLoader);
+    emit projectLoaderChanged();
 }

@@ -116,6 +116,16 @@ const QList<SpriteModel *> &ProjectLoader::spriteList() const
     return m_sprites;
 }
 
+QQmlListProperty<SpriteModel> ProjectLoader::clones()
+{
+    return QQmlListProperty<SpriteModel>(this, &m_clones);
+}
+
+const QList<SpriteModel *> &ProjectLoader::cloneList() const
+{
+    return m_clones;
+}
+
 void ProjectLoader::start()
 {
     if (m_loadThread.isRunning())
@@ -196,6 +206,7 @@ void ProjectLoader::load()
             SpriteModel *sprite = new SpriteModel;
             sprite->moveToThread(qApp->thread());
             dynamic_cast<Sprite *>(target.get())->setInterface(sprite);
+            connect(sprite, &SpriteModel::cloned, this, &ProjectLoader::addClone);
             m_sprites.push_back(sprite);
         }
     }
@@ -240,6 +251,31 @@ void ProjectLoader::redraw()
         if (renderedTarget)
             renderedTarget->beforeRedraw();
     }
+
+    for (auto sprite : m_clones) {
+        auto renderedTarget = sprite->renderedTarget();
+
+        if (renderedTarget)
+            renderedTarget->beforeRedraw();
+    }
+}
+
+void ProjectLoader::addClone(SpriteModel *model)
+{
+    connect(model, &SpriteModel::cloneDeleted, this, &ProjectLoader::deleteClone);
+    m_clones.push_back(model);
+    emit cloneCreated(model);
+    emit clonesChanged();
+}
+
+void ProjectLoader::deleteClone(SpriteModel *model)
+{
+    m_clones.removeAll(model);
+    emit cloneDeleted(model);
+    Q_ASSERT(model->renderedTarget());
+    model->renderedTarget()->deinitClone();
+    model->deleteLater();
+    emit clonesChanged();
 }
 
 double ProjectLoader::fps() const

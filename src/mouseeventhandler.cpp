@@ -5,6 +5,8 @@
 
 #include "mouseeventhandler.h"
 #include "renderedtarget.h"
+#include "projectloader.h"
+#include "spritemodel.h"
 
 using namespace scratchcpprender;
 
@@ -23,14 +25,20 @@ void MouseEventHandler::setStage(IRenderedTarget *stage)
     m_stage = stage;
 }
 
-QQuickItem *MouseEventHandler::spriteRepeater() const
+ProjectLoader *MouseEventHandler::projectLoader() const
 {
-    return m_spriteRepeater;
+    return m_projectLoader;
 }
 
-void MouseEventHandler::setSpriteRepeater(QQuickItem *repeater)
+void MouseEventHandler::setProjectLoader(ProjectLoader *newProjectLoader)
 {
-    m_spriteRepeater = repeater;
+    m_projectLoader = newProjectLoader;
+
+    if (m_projectLoader) {
+        connect(m_projectLoader, &ProjectLoader::spritesChanged, this, &MouseEventHandler::getSprites);
+        connect(m_projectLoader, &ProjectLoader::cloneCreated, this, &MouseEventHandler::addClone);
+        connect(m_projectLoader, &ProjectLoader::cloneDeleted, this, &MouseEventHandler::removeClone);
+    }
 }
 
 bool MouseEventHandler::eventFilter(QObject *obj, QEvent *event)
@@ -76,34 +84,64 @@ bool MouseEventHandler::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void MouseEventHandler::forwardPointEvent(QSinglePointEvent *event, QQuickItem *oldClickedItem)
+void scratchcpprender::MouseEventHandler::getSprites()
 {
-    Q_ASSERT(m_spriteRepeater);
+    Q_ASSERT(m_projectLoader);
 
-    if (!m_spriteRepeater)
+    if (!m_projectLoader)
         return;
 
-    // Create list of sprites
-    std::vector<IRenderedTarget *> sprites;
-    int count = m_spriteRepeater->property("count").toInt();
-    sprites.reserve(count);
+    m_sprites.clear();
+    const auto &spriteModels = m_projectLoader->spriteList();
 
-    for (int i = 0; i < count; i++) {
-        QQuickItem *sprite = nullptr;
-        QMetaObject::invokeMethod(m_spriteRepeater, "itemAt", Qt::DirectConnection, Q_RETURN_ARG(QQuickItem *, sprite), Q_ARG(int, i));
+    for (SpriteModel *model : spriteModels) {
+        Q_ASSERT(model);
+        IRenderedTarget *sprite = model->renderedTarget();
         Q_ASSERT(sprite);
-        Q_ASSERT(dynamic_cast<IRenderedTarget *>(sprite));
-        Q_ASSERT(dynamic_cast<IRenderedTarget *>(sprite)->scratchTarget());
-        sprites.push_back(dynamic_cast<IRenderedTarget *>(sprite));
+        Q_ASSERT(sprite->scratchTarget());
+        m_sprites.push_back(sprite);
     }
+}
 
-    // Sort the list by layer order
-    std::sort(sprites.begin(), sprites.end(), [](IRenderedTarget *t1, IRenderedTarget *t2) { return t1->scratchTarget()->layerOrder() > t2->scratchTarget()->layerOrder(); });
+void scratchcpprender::MouseEventHandler::addClone(SpriteModel *model)
+{
+    Q_ASSERT(model);
+    IRenderedTarget *sprite = model->renderedTarget();
+    Q_ASSERT(sprite);
+    Q_ASSERT(std::find_if(m_sprites.begin(), m_sprites.end(), [sprite](IRenderedTarget *renderedTarget) { return renderedTarget == sprite; }) == m_sprites.end());
+    m_sprites.push_back(sprite);
+}
+
+void scratchcpprender::MouseEventHandler::removeClone(SpriteModel *model)
+{
+    Q_ASSERT(model);
+    IRenderedTarget *sprite = model->renderedTarget();
+    Q_ASSERT(sprite);
+    m_sprites.erase(std::remove_if(m_sprites.begin(), m_sprites.end(), [sprite](IRenderedTarget *renderedTarget) { return renderedTarget == sprite; }), m_sprites.end());
+    Q_ASSERT(std::find_if(m_sprites.begin(), m_sprites.end(), [sprite](IRenderedTarget *renderedTarget) { return renderedTarget == sprite; }) == m_sprites.end());
+
+    // Make sure the pointer is never used again after it becomes "dangling"
+    if (m_clickedItem == sprite)
+        m_clickedItem = nullptr;
+
+    if (m_hoveredItem == sprite)
+        m_hoveredItem = nullptr;
+}
+
+void MouseEventHandler::forwardPointEvent(QSinglePointEvent *event, QQuickItem *oldClickedItem)
+{
+    Q_ASSERT(m_projectLoader);
+
+    if (!m_projectLoader)
+        return;
+
+    // Sort sprite list by layer order
+    std::sort(m_sprites.begin(), m_sprites.end(), [](IRenderedTarget *t1, IRenderedTarget *t2) { return t1->scratchTarget()->layerOrder() > t2->scratchTarget()->layerOrder(); });
 
     // Find hovered sprite
     QQuickItem *hoveredItem = nullptr;
 
-    for (IRenderedTarget *sprite : sprites) {
+    for (IRenderedTarget *sprite : m_sprites) {
         // contains() expects position in the item's coordinate system
         QPointF localPos = sprite->mapFromScene(event->scenePosition());
 

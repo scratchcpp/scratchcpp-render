@@ -13,6 +13,8 @@ namespace scratchcpprender
 {
 
 class IRenderedTarget;
+class ProjectLoader;
+class SpriteModel;
 
 class MouseEventHandler : public QObject
 {
@@ -23,10 +25,10 @@ class MouseEventHandler : public QObject
         IRenderedTarget *stage() const;
         void setStage(IRenderedTarget *stage);
 
-        QQuickItem *spriteRepeater() const;
-        void setSpriteRepeater(QQuickItem *repeater);
-
         bool eventFilter(QObject *obj, QEvent *event) override;
+
+        ProjectLoader *projectLoader() const;
+        void setProjectLoader(ProjectLoader *newProjectLoader);
 
     signals:
         void mouseMoved(qreal x, qreal y);
@@ -34,14 +36,18 @@ class MouseEventHandler : public QObject
         void mouseReleased();
 
     private:
+        void getSprites();
+        void addClone(SpriteModel *model);
+        void removeClone(SpriteModel *model);
         void forwardPointEvent(QSinglePointEvent *event, QQuickItem *oldClickedItem = nullptr);
         void sendPointEventToItem(QSinglePointEvent *event, QQuickItem *item);
         void sendHoverEventToItem(QHoverEvent *originalEvent, QEvent::Type newType, QQuickItem *item);
 
         IRenderedTarget *m_stage = nullptr;
+        std::vector<IRenderedTarget *> m_sprites;
         QQuickItem *m_hoveredItem = nullptr;
         QQuickItem *m_clickedItem = nullptr;
-        QQuickItem *m_spriteRepeater = nullptr;
+        ProjectLoader *m_projectLoader = nullptr;
 };
 
 } // namespace scratchcpprender
