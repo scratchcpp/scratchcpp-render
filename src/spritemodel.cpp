@@ -93,7 +93,7 @@ void SpriteModel::onGraphicsEffectsCleared()
 
 libscratchcpp::Rect SpriteModel::boundingRect() const
 {
-    return libscratchcpp::Rect();
+    return libscratchcpp::Rect(m_sprite->x(), m_sprite->y(), m_sprite->x(), m_sprite->y());
 }
 
 libscratchcpp::Sprite *SpriteModel::sprite() const
