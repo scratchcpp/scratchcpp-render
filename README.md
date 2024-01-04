@@ -137,8 +137,8 @@ qputenv("QSG_RENDER_LOOP", "basic");
 - [x] Mouse position
 - [x] Key press events
 - [x] Mouse press events
-- [ ] Sprite click events
-- [ ] Clones
+- [x] Sprite click events
+- [x] Clones
 - [x] Sprite dragging
 - [ ] Touching color blocks
 - [ ] Pen blocks
