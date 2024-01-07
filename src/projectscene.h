@@ -3,6 +3,7 @@
 #pragma once
 
 #include <QQuickPaintedItem>
+#include <unordered_set>
 
 namespace libscratchcpp
 {
@@ -47,6 +48,7 @@ class ProjectScene : public QQuickItem
         libscratchcpp::IEngine *m_engine = nullptr;
         double m_stageScale = 1;
         KeyEventHandler *m_keyHandler = nullptr;
+        std::unordered_set<Qt::Key> m_pressedKeys;
 };
 
 } // namespace scratchcpprender

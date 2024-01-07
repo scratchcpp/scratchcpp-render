@@ -73,29 +73,42 @@ void ProjectScene::handleMouseRelease()
 
 void ProjectScene::handleKeyPress(Qt::Key key, const QString &text)
 {
-    if (m_engine) {
-        auto it = SPECIAL_KEY_MAP.find(key);
+    m_pressedKeys.insert(key);
 
-        if (it == SPECIAL_KEY_MAP.cend())
-            m_engine->setKeyState(text.toStdString(), true);
-        else {
-            KeyEvent event(it->second);
-            m_engine->setKeyState(event.name(), true);
+    if (m_engine) {
+        if (!text.isEmpty()) {
+            auto it = SPECIAL_KEY_MAP.find(key);
+
+            if (it == SPECIAL_KEY_MAP.cend())
+                m_engine->setKeyState(text.toStdString(), true);
+            else {
+                KeyEvent event(it->second);
+                m_engine->setKeyState(event.name(), true);
+            }
         }
+
+        m_engine->setAnyKeyPressed(!m_pressedKeys.empty());
     }
 }
 
 void ProjectScene::handleKeyRelease(Qt::Key key, const QString &text)
 {
-    if (m_engine) {
-        auto it = SPECIAL_KEY_MAP.find(key);
+    m_pressedKeys.erase(key);
 
-        if (it == SPECIAL_KEY_MAP.cend())
-            m_engine->setKeyState(text.toStdString(), false);
-        else {
-            KeyEvent event(it->second);
-            m_engine->setKeyState(event.name(), false);
+    if (m_engine) {
+        if (!text.isEmpty()) {
+            auto it = SPECIAL_KEY_MAP.find(key);
+
+            if (it == SPECIAL_KEY_MAP.cend())
+                m_engine->setKeyState(text.toStdString(), false);
+            else {
+                KeyEvent event(it->second);
+                m_engine->setKeyState(event.name(), false);
+            }
         }
+
+        if (m_pressedKeys.empty()) // avoid setting 'true' when a key is released
+            m_engine->setAnyKeyPressed(false);
     }
 }
 

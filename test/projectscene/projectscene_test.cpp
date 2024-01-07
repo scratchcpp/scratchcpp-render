@@ -81,21 +81,41 @@ TEST(ProjectSceneTest, HandleKeyPressAndRelease)
     for (const auto &[qtKey, scratchKey] : SPECIAL_KEY_MAP) {
         KeyEvent event(scratchKey);
         EXPECT_CALL(engine, setKeyState(event.name(), true));
+        EXPECT_CALL(engine, setAnyKeyPressed(true));
         scene.handleKeyPress(qtKey, "test");
 
         EXPECT_CALL(engine, setKeyState(event.name(), false));
+        EXPECT_CALL(engine, setAnyKeyPressed(false));
         scene.handleKeyRelease(qtKey, "test");
     }
 
     EXPECT_CALL(engine, setKeyState("a", true));
+    EXPECT_CALL(engine, setAnyKeyPressed(true));
     scene.handleKeyPress(Qt::Key_A, "a");
 
     EXPECT_CALL(engine, setKeyState("a", false));
+    EXPECT_CALL(engine, setAnyKeyPressed(false));
     scene.handleKeyRelease(Qt::Key_A, "a");
 
     EXPECT_CALL(engine, setKeyState("0", true));
+    EXPECT_CALL(engine, setAnyKeyPressed(true));
     scene.handleKeyPress(Qt::Key_0, "0");
 
     EXPECT_CALL(engine, setKeyState("0", false));
+    EXPECT_CALL(engine, setAnyKeyPressed(false));
     scene.handleKeyRelease(Qt::Key_0, "0");
+
+    EXPECT_CALL(engine, setAnyKeyPressed(true));
+    scene.handleKeyPress(Qt::Key_Control, "");
+
+    EXPECT_CALL(engine, setKeyState("a", true));
+    EXPECT_CALL(engine, setAnyKeyPressed(true));
+    scene.handleKeyPress(Qt::Key_A, "a");
+
+    EXPECT_CALL(engine, setKeyState("a", false));
+    EXPECT_CALL(engine, setAnyKeyPressed).Times(0);
+    scene.handleKeyRelease(Qt::Key_A, "a");
+
+    EXPECT_CALL(engine, setAnyKeyPressed(false));
+    scene.handleKeyRelease(Qt::Key_Control, "");
 }
