@@ -61,7 +61,7 @@ Rectangle {
                     Layout.minimumWidth: 40
 
                     Rectangle {
-                        color: model.color
+                        color: model ? model.color : "green"
                         radius: 5
                         anchors.fill: parent
                         anchors.margins: 0
