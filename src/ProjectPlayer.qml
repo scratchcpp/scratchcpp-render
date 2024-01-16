@@ -120,6 +120,16 @@ ProjectScene {
             delegate: renderedSprite
         }
 
+        SceneMouseArea {
+            id: sceneMouseArea
+            anchors.fill: parent
+            stage: stageTarget
+            projectLoader: loader
+            onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
+            onMousePressed: root.handleMousePress()
+            onMouseReleased: root.handleMouseRelease()
+        }
+
         Loader {
             anchors.fill: parent
             active: showLoadingProgress && loading
@@ -158,16 +168,6 @@ ProjectScene {
 
                 Item { Layout.fillHeight: true }
             }
-        }
-
-        SceneMouseArea {
-            id: sceneMouseArea
-            anchors.fill: parent
-            stage: stageTarget
-            projectLoader: loader
-            onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
-            onMousePressed: root.handleMousePress()
-            onMouseReleased: root.handleMouseRelease()
         }
     }
 }
