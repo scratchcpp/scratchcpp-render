@@ -18,6 +18,8 @@ qt_add_qml_module(scratchcpp-render
 	stagemodel.h
 	spritemodel.cpp
 	spritemodel.h
+	monitormodel.cpp
+	monitormodel.h
 	irenderedtarget.h
         renderedtarget.cpp
         renderedtarget.h
