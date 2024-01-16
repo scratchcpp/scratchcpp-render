@@ -20,6 +20,8 @@ qt_add_qml_module(scratchcpp-render
 	spritemodel.h
 	monitormodel.cpp
 	monitormodel.h
+	valuemonitormodel.cpp
+	valuemonitormodel.h
 	irenderedtarget.h
         renderedtarget.cpp
         renderedtarget.h
