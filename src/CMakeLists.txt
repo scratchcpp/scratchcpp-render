@@ -8,6 +8,9 @@ qt_add_qml_module(scratchcpp-render
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ScratchCPP/Render
     QML_FILES
         ProjectPlayer.qml
+    RESOURCES
+        internal/ValueMonitor.qml
+	internal/MonitorSlider.qml
     SOURCES
         global.h
 	projectloader.cpp
