@@ -25,6 +25,8 @@ qt_add_qml_module(scratchcpp-render
 	monitormodel.h
 	valuemonitormodel.cpp
 	valuemonitormodel.h
+	listmonitorlistmodel.cpp
+	listmonitorlistmodel.h
 	irenderedtarget.h
         renderedtarget.cpp
         renderedtarget.h
