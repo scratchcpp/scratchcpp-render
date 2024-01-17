@@ -13,10 +13,10 @@ Slider {
     QtObject {
         id: priv
         readonly property color bgColor: Qt.rgba(0.94, 0.94, 0.94, 1)
-        readonly property color currentBgColor: control.pressed ? Qt.rgba(0.96, 0.96, 0.96, 1) : (hoverHandler.hovered ? Qt.darker(bgColor, 1.28) : bgColor)
+        readonly property color currentBgColor: control.pressed ? Qt.rgba(0.96, 0.96, 0.96, 1) : (hoverHandler.hovered ? Qt.darker(bgColor, 1.05) : bgColor)
 
         readonly property color bgBorderColor: Qt.rgba(0.7, 0.7, 0.7, 1)
-        readonly property color currentBgBorderColor: control.pressed ? Qt.rgba(0.77, 0.77, 0.77, 1) : (hoverHandler.hovered ? Qt.darker(bgBorderColor, 1.28) : bgBorderColor)
+        readonly property color currentBgBorderColor: control.pressed ? Qt.rgba(0.77, 0.77, 0.77, 1) : (hoverHandler.hovered ? Qt.darker(bgBorderColor, 1.1) : bgBorderColor)
 
         readonly property color sliderColor: Qt.rgba(0, 0.46, 1, 1)
         readonly property color currentSliderColor: control.pressed ? Qt.rgba(0.22, 0.58, 1, 1) : (hoverHandler.hovered ? Qt.darker(sliderColor, 1.28) : sliderColor)
