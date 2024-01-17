@@ -25,7 +25,7 @@ Slider {
         readonly property color currentPositionBorderColor: control.pressed ? Qt.rgba(0.37, 0.56, 0.79, 1) : (hoverHandler.hovered ? Qt.darker(positionBorderColor, 1.28) : positionBorderColor)
     }
 
-    stepSize: discrete ? 1 : 0
+    stepSize: discrete ? 1 : 0.1
     snapMode: Slider.SnapAlways
     implicitWidth: 119
     implicitHeight: 16
