@@ -2,6 +2,7 @@
 #include <projectloader.h>
 #include <spritemodel.h>
 #include <valuemonitormodel.h>
+#include <listmonitormodel.h>
 #include <enginemock.h>
 #include <renderedtargetmock.h>
 
@@ -81,15 +82,15 @@ TEST_F(ProjectLoaderTest, Load)
     ASSERT_EQ(sprites[1]->sprite(), engine->targetAt(2));
 
     const auto &monitors = loader.monitorList();
-    ASSERT_EQ(monitors.size(), 7);
+    ASSERT_EQ(monitors.size(), 10);
 
-    ValueMonitorModel *monitorModel = dynamic_cast<ValueMonitorModel *>(monitors[0]);
-    ASSERT_EQ(monitorModel->monitor(), engine->monitors().at(3).get());
-    ASSERT_EQ(monitorModel->color(), QColor::fromString("#FF8C1A"));
+    ListMonitorModel *listMonitorModel = dynamic_cast<ListMonitorModel *>(monitors[0]);
+    ASSERT_EQ(listMonitorModel->monitor(), engine->monitors().at(0).get());
+    ASSERT_EQ(listMonitorModel->color(), QColor::fromString("#FF661A"));
 
-    monitorModel = dynamic_cast<ValueMonitorModel *>(monitors[1]);
-    ASSERT_EQ(monitorModel->monitor(), engine->monitors().at(4).get());
-    ASSERT_EQ(monitorModel->color(), QColor::fromString("#FF8C1A"));
+    ValueMonitorModel *valueMonitorModel = dynamic_cast<ValueMonitorModel *>(monitors[3]);
+    ASSERT_EQ(valueMonitorModel->monitor(), engine->monitors().at(3).get());
+    ASSERT_EQ(valueMonitorModel->color(), QColor::fromString("#FF8C1A"));
 }
 
 TEST_F(ProjectLoaderTest, Clones)

@@ -9,6 +9,7 @@
 #include "projectloader.h"
 #include "spritemodel.h"
 #include "valuemonitormodel.h"
+#include "listmonitormodel.h"
 #include "renderedtarget.h"
 
 using namespace scratchcpprender;
@@ -315,7 +316,7 @@ void ProjectLoader::addMonitor(Monitor *monitor)
 
     switch (monitor->mode()) {
         case Monitor::Mode::List:
-            // TODO: Add support for list monitors
+            model = new ListMonitorModel(section.get());
             break;
 
         default:
