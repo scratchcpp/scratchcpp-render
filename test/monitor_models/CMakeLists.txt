@@ -50,3 +50,22 @@ target_link_libraries(
 
 add_test(listmonitorlistmodel_test)
 gtest_discover_tests(listmonitorlistmodel_test)
+
+# listmonitormodel
+add_executable(
+  listmonitormodel_test
+  listmonitormodel_test.cpp
+)
+
+target_link_libraries(
+  listmonitormodel_test
+  GTest::gtest_main
+  GTest::gmock_main
+  scratchcpp-render
+  scratchcpprender_mocks
+  ${QT_LIBS}
+  Qt6::Test
+)
+
+add_test(listmonitormodel_test)
+gtest_discover_tests(listmonitormodel_test)
