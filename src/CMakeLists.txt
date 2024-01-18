@@ -8,6 +8,10 @@ qt_add_qml_module(scratchcpp-render
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ScratchCPP/Render
     QML_FILES
         ProjectPlayer.qml
+    RESOURCES
+        internal/ValueMonitor.qml
+	internal/MonitorSlider.qml
+	internal/ListMonitor.qml
     SOURCES
         global.h
 	projectloader.cpp
@@ -18,6 +22,14 @@ qt_add_qml_module(scratchcpp-render
 	stagemodel.h
 	spritemodel.cpp
 	spritemodel.h
+	monitormodel.cpp
+	monitormodel.h
+	valuemonitormodel.cpp
+	valuemonitormodel.h
+	listmonitormodel.cpp
+	listmonitormodel.h
+	listmonitorlistmodel.cpp
+	listmonitorlistmodel.h
 	irenderedtarget.h
         renderedtarget.cpp
         renderedtarget.h

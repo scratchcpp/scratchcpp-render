@@ -5,6 +5,8 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import ScratchCPP.Render
 
+import "internal"
+
 ProjectScene {
     property string fileName
     property int stageWidth: 480
@@ -64,6 +66,21 @@ ProjectScene {
             else
                 clones.model.remove(i);
         }
+
+        onMonitorAdded: (monitorModel)=> monitors.model.append({"monitorModel": monitorModel})
+
+        onMonitorRemoved: (monitorModel)=> {
+            // TODO: Removing the monitor from C++ would probably be faster
+            let i;
+
+            for(i = 0; i < monitors.model.count; i++) {
+                if(monitors.model.get(i).monitorModel === monitorModel)
+                    break;
+            }
+
+            if(i !== monitors.model.count)
+                monitors.model.remove(i);
+        }
     }
 
     function start() {
@@ -120,6 +137,57 @@ ProjectScene {
             delegate: renderedSprite
         }
 
+        SceneMouseArea {
+            id: sceneMouseArea
+            anchors.fill: parent
+            stage: stageTarget
+            projectLoader: loader
+            onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
+            onMousePressed: root.handleMousePress()
+            onMouseReleased: root.handleMouseRelease()
+        }
+
+        Component {
+            id: renderedValueMonitor
+
+            ValueMonitor {
+                model: parent.model
+                scale: root.stageScale
+                transformOrigin: Item.TopLeft
+                x: model.x * scale
+                y: model.y * scale
+            }
+        }
+
+        Component {
+            id: renderedListMonitor
+
+            ListMonitor {
+                model: parent.model
+                scale: root.stageScale
+                transformOrigin: Item.TopLeft
+                x: model.x * scale
+                y: model.y * scale
+            }
+        }
+
+        Component {
+            id: renderedMonitor
+
+            Loader {
+                readonly property MonitorModel model: monitorModel
+                sourceComponent: monitorModel ? (monitorModel.type === MonitorModel.Value ? renderedValueMonitor : renderedListMonitor) : null
+                active: sourceComponent != null
+                z: loader.sprites.length + loader.clones.length + 1 // above all sprites
+            }
+        }
+
+        Repeater {
+            id: monitors
+            model: ListModel {}
+            delegate: renderedMonitor
+        }
+
         Loader {
             anchors.fill: parent
             active: showLoadingProgress && loading
@@ -158,16 +226,6 @@ ProjectScene {
 
                 Item { Layout.fillHeight: true }
             }
-        }
-
-        SceneMouseArea {
-            id: sceneMouseArea
-            anchors.fill: parent
-            stage: stageTarget
-            projectLoader: loader
-            onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
-            onMousePressed: root.handleMousePress()
-            onMouseReleased: root.handleMouseRelease()
         }
     }
 }

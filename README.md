@@ -143,7 +143,7 @@ qputenv("QSG_RENDER_LOOP", "basic");
 - [ ] Touching sprite block
 - [ ] Touching color blocks
 - [ ] Pen blocks
-- [ ] Monitors
+- [x] Monitors
 - [ ] Graphics effects (maybe using shaders)
 - [ ] Speech and thought bubbles
 - [ ] Question text box ("ask and wait" block)

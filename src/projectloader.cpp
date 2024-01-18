@@ -2,11 +2,14 @@
 
 #include <scratchcpp/iengine.h>
 #include <scratchcpp/value.h>
+#include <scratchcpp/monitor.h>
 #include <QtConcurrent/QtConcurrent>
 #include <QApplication>
 
 #include "projectloader.h"
 #include "spritemodel.h"
+#include "valuemonitormodel.h"
+#include "listmonitormodel.h"
 #include "renderedtarget.h"
 
 using namespace scratchcpprender;
@@ -126,6 +129,16 @@ const QList<SpriteModel *> &ProjectLoader::cloneList() const
     return m_clones;
 }
 
+QQmlListProperty<MonitorModel> ProjectLoader::monitors()
+{
+    return QQmlListProperty<MonitorModel>(this, &m_monitors);
+}
+
+const QList<MonitorModel *> &ProjectLoader::monitorList() const
+{
+    return m_monitors;
+}
+
 void ProjectLoader::start()
 {
     if (m_loadThread.isRunning())
@@ -193,8 +206,14 @@ void ProjectLoader::load()
     m_engine->setCloneLimit(m_cloneLimit);
     m_engine->setSpriteFencingEnabled(m_spriteFencing);
 
-    auto handler = std::bind(&ProjectLoader::redraw, this);
-    m_engine->setRedrawHandler(std::function<void()>(handler));
+    auto redrawHandler = std::bind(&ProjectLoader::redraw, this);
+    m_engine->setRedrawHandler(std::function<void()>(redrawHandler));
+
+    auto addMonitorHandler = std::bind(&ProjectLoader::addMonitor, this, std::placeholders::_1);
+    m_engine->setAddMonitorHandler(std::function<void(Monitor *)>(addMonitorHandler));
+
+    auto removeMonitorHandler = std::bind(&ProjectLoader::removeMonitor, this, std::placeholders::_1, std::placeholders::_2);
+    m_engine->setRemoveMonitorHandler(std::function<void(Monitor *, IMonitorHandler *)>(removeMonitorHandler));
 
     // Load targets
     const auto &targets = m_engine->targets();
@@ -210,6 +229,12 @@ void ProjectLoader::load()
             m_sprites.push_back(sprite);
         }
     }
+
+    // Load monitors
+    const auto &monitors = m_engine->monitors();
+
+    for (auto monitor : monitors)
+        addMonitor(monitor.get());
 
     if (m_stopLoading) {
         m_engineMutex.unlock();
@@ -258,6 +283,8 @@ void ProjectLoader::redraw()
         if (renderedTarget)
             renderedTarget->beforeRedraw();
     }
+
+    m_engine->updateMonitors();
 }
 
 void ProjectLoader::addClone(SpriteModel *model)
@@ -276,6 +303,48 @@ void ProjectLoader::deleteClone(SpriteModel *model)
     model->renderedTarget()->deinitClone();
     model->deleteLater();
     emit clonesChanged();
+}
+
+void ProjectLoader::addMonitor(Monitor *monitor)
+{
+    auto section = monitor->blockSection();
+
+    if (!section)
+        return;
+
+    MonitorModel *model = nullptr;
+
+    switch (monitor->mode()) {
+        case Monitor::Mode::List:
+            model = new ListMonitorModel(section.get());
+            break;
+
+        default:
+            model = new ValueMonitorModel(section.get());
+            break;
+    }
+
+    if (!model)
+        return;
+
+    model->moveToThread(qApp->thread());
+    model->setParent(this);
+    monitor->setInterface(model);
+    m_monitors.push_back(model);
+    emit monitorAdded(model);
+    emit monitorsChanged();
+}
+
+void ProjectLoader::removeMonitor(Monitor *monitor, IMonitorHandler *iface)
+{
+    MonitorModel *model = dynamic_cast<MonitorModel *>(iface);
+
+    if (!model)
+        return;
+
+    m_monitors.removeAll(model);
+    emit monitorRemoved(model);
+    emit monitorsChanged();
 }
 
 double ProjectLoader::fps() const

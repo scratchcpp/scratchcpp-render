@@ -1,6 +1,8 @@
 #include <QtTest/QSignalSpy>
 #include <projectloader.h>
 #include <spritemodel.h>
+#include <valuemonitormodel.h>
+#include <listmonitormodel.h>
 #include <enginemock.h>
 #include <renderedtargetmock.h>
 
@@ -24,6 +26,8 @@ class ProjectLoaderTest : public testing::Test
             QSignalSpy engineSpy(loader, &ProjectLoader::engineChanged);
             QSignalSpy stageSpy(loader, &ProjectLoader::stageChanged);
             QSignalSpy spritesSpy(loader, &ProjectLoader::spritesChanged);
+            QSignalSpy monitorsSpy(loader, &ProjectLoader::monitorsChanged);
+            QSignalSpy monitorAddedSpy(loader, &ProjectLoader::monitorAdded);
 
             loader->setFileName(fileName);
 
@@ -33,6 +37,8 @@ class ProjectLoaderTest : public testing::Test
             ASSERT_TRUE(engineSpy.empty());
             ASSERT_TRUE(stageSpy.empty());
             ASSERT_TRUE(spritesSpy.empty());
+            ASSERT_TRUE(monitorsSpy.empty());
+            ASSERT_TRUE(monitorAddedSpy.empty());
             ASSERT_EQ(loader->fileName(), fileName);
             ASSERT_FALSE(loader->loadStatus());
 
@@ -46,6 +52,8 @@ class ProjectLoaderTest : public testing::Test
             ASSERT_EQ(engineSpy.count(), 1);
             ASSERT_EQ(stageSpy.count(), 1);
             ASSERT_EQ(spritesSpy.count(), 1);
+            ASSERT_EQ(monitorsSpy.count(), loader->monitorList().size());
+            ASSERT_EQ(monitorAddedSpy.count(), loader->monitorList().size());
         }
 };
 
@@ -72,6 +80,17 @@ TEST_F(ProjectLoaderTest, Load)
     ASSERT_EQ(sprites.size(), 2);
     ASSERT_EQ(sprites[0]->sprite(), engine->targetAt(1));
     ASSERT_EQ(sprites[1]->sprite(), engine->targetAt(2));
+
+    const auto &monitors = loader.monitorList();
+    ASSERT_EQ(monitors.size(), 10);
+
+    ListMonitorModel *listMonitorModel = dynamic_cast<ListMonitorModel *>(monitors[0]);
+    ASSERT_EQ(listMonitorModel->monitor(), engine->monitors().at(0).get());
+    ASSERT_EQ(listMonitorModel->color(), QColor::fromString("#FF661A"));
+
+    ValueMonitorModel *valueMonitorModel = dynamic_cast<ValueMonitorModel *>(monitors[3]);
+    ASSERT_EQ(valueMonitorModel->monitor(), engine->monitors().at(3).get());
+    ASSERT_EQ(valueMonitorModel->color(), QColor::fromString("#FF8C1A"));
 }
 
 TEST_F(ProjectLoaderTest, Clones)

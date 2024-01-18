@@ -10,11 +10,13 @@
 #include "stagemodel.h"
 
 Q_MOC_INCLUDE("spritemodel.h");
+Q_MOC_INCLUDE("monitormodel.h");
 
 namespace scratchcpprender
 {
 
 class SpriteModel;
+class MonitorModel;
 
 class ProjectLoader : public QObject
 {
@@ -26,6 +28,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(StageModel *stage READ stage NOTIFY stageChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> clones READ clones NOTIFY clonesChanged)
+        Q_PROPERTY(QQmlListProperty<MonitorModel> monitors READ monitors NOTIFY monitorsChanged)
         Q_PROPERTY(double fps READ fps WRITE setFps NOTIFY fpsChanged)
         Q_PROPERTY(bool turboMode READ turboMode WRITE setTurboMode NOTIFY turboModeChanged)
         Q_PROPERTY(unsigned int stageWidth READ stageWidth WRITE setStageWidth NOTIFY stageWidthChanged)
@@ -54,6 +57,9 @@ class ProjectLoader : public QObject
 
         QQmlListProperty<SpriteModel> clones();
         const QList<SpriteModel *> &cloneList() const;
+
+        QQmlListProperty<MonitorModel> monitors();
+        const QList<MonitorModel *> &monitorList() const;
 
         Q_INVOKABLE void start();
         Q_INVOKABLE void stop();
@@ -88,6 +94,7 @@ class ProjectLoader : public QObject
         void stageChanged();
         void spritesChanged();
         void clonesChanged();
+        void monitorsChanged();
         void fpsChanged();
         void turboModeChanged();
         void stageWidthChanged();
@@ -98,6 +105,8 @@ class ProjectLoader : public QObject
         void assetCountChanged();
         void cloneCreated(SpriteModel *model);
         void cloneDeleted(SpriteModel *model);
+        void monitorAdded(MonitorModel *model);
+        void monitorRemoved(MonitorModel *model);
 
     protected:
         void timerEvent(QTimerEvent *event) override;
@@ -109,6 +118,8 @@ class ProjectLoader : public QObject
         void redraw();
         void addClone(SpriteModel *model);
         void deleteClone(SpriteModel *model);
+        void addMonitor(libscratchcpp::Monitor *monitor);
+        void removeMonitor(libscratchcpp::Monitor *monitor, libscratchcpp::IMonitorHandler *iface);
 
         int m_timerId = -1;
         QString m_fileName;
@@ -120,6 +131,7 @@ class ProjectLoader : public QObject
         StageModel m_stage;
         QList<SpriteModel *> m_sprites;
         QList<SpriteModel *> m_clones;
+        QList<MonitorModel *> m_monitors;
         double m_fps = 30;
         bool m_turboMode = false;
         unsigned int m_stageWidth = 480;
