@@ -160,11 +160,23 @@ ProjectScene {
         }
 
         Component {
+            id: renderedListMonitor
+
+            ListMonitor {
+                model: parent.model
+                scale: root.stageScale
+                transformOrigin: Item.TopLeft
+                x: model.x * scale
+                y: model.y * scale
+            }
+        }
+
+        Component {
             id: renderedMonitor
 
             Loader {
                 readonly property MonitorModel model: monitorModel
-                sourceComponent: monitorModel ? (monitorModel.type === MonitorModel.Value ? renderedValueMonitor : null) : null
+                sourceComponent: monitorModel ? (monitorModel.type === MonitorModel.Value ? renderedValueMonitor : renderedListMonitor) : null
                 active: sourceComponent != null
                 z: loader.sprites.length + loader.clones.length + 1 // above all sprites
             }
