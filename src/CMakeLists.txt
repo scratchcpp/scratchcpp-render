@@ -11,6 +11,7 @@ qt_add_qml_module(scratchcpp-render
     RESOURCES
         internal/ValueMonitor.qml
 	internal/MonitorSlider.qml
+	internal/ListMonitor.qml
     SOURCES
         global.h
 	projectloader.cpp
