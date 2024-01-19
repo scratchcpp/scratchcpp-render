@@ -38,8 +38,7 @@ class RenderedTarget : public IRenderedTarget
         void updateDirection(double direction) override;
         void updateRotationStyle(libscratchcpp::Sprite::RotationStyle style) override;
         void updateLayerOrder(int layerOrder) override;
-
-        void loadCostume(libscratchcpp::Costume *costume) override;
+        void updateCostume(libscratchcpp::Costume *costume) override;
 
         void beforeRedraw() override;
 

@@ -38,7 +38,7 @@ void SpriteModel::onCloned(libscratchcpp::Sprite *clone)
 void SpriteModel::onCostumeChanged(libscratchcpp::Costume *costume)
 {
     if (m_renderedTarget)
-        m_renderedTarget->loadCostume(costume);
+        m_renderedTarget->updateCostume(costume);
 }
 
 void SpriteModel::onVisibleChanged(bool visible)

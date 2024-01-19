@@ -87,7 +87,7 @@ TEST(SpriteModelTest, OnCostumeChanged)
     RenderedTargetMock renderedTarget;
     model.setRenderedTarget(&renderedTarget);
 
-    EXPECT_CALL(renderedTarget, loadCostume(&costume));
+    EXPECT_CALL(renderedTarget, updateCostume(&costume));
     model.onCostumeChanged(&costume);
 }
 

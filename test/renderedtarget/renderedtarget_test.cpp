@@ -70,7 +70,7 @@ TEST_F(RenderedTargetTest, UpdateMethods)
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.loadCostume(&costume);
+    target.updateCostume(&costume);
     target.beforeRedraw();
     ASSERT_EQ(target.width(), 1.6);
     ASSERT_EQ(target.height(), 2.4);
@@ -194,7 +194,7 @@ TEST_F(RenderedTargetTest, LoadJpegCostume)
     costume.setBitmapResolution(3);
 
     RenderedTarget target;
-    target.loadCostume(&costume);
+    target.updateCostume(&costume);
     ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
@@ -210,7 +210,7 @@ TEST_F(RenderedTargetTest, LoadPngCostume)
     costume.setBitmapResolution(3);
 
     RenderedTarget target;
-    target.loadCostume(&costume);
+    target.updateCostume(&costume);
     ASSERT_FALSE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
     target.bitmapBuffer()->open(QBuffer::ReadOnly);
@@ -258,7 +258,7 @@ TEST_F(RenderedTargetTest, LoadSvgCostume)
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.setSpriteModel(&model);
-    target.loadCostume(costume.get());
+    target.updateCostume(costume.get());
     target.beforeRedraw();
     ASSERT_TRUE(target.isSvg());
     ASSERT_FALSE(target.bitmapBuffer()->isOpen());
@@ -324,7 +324,7 @@ TEST_F(RenderedTargetTest, PaintSvg)
     RenderedTarget target;
     target.setEngine(&engine);
     target.setSpriteModel(&model);
-    target.loadCostume(&costume);
+    target.updateCostume(&costume);
     target.beforeRedraw();
 
     // Create OpenGL context

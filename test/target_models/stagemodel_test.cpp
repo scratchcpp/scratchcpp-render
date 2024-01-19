@@ -34,7 +34,7 @@ TEST(StageModelTest, OnCostumeChanged)
     RenderedTargetMock renderedTarget;
     model.setRenderedTarget(&renderedTarget);
 
-    EXPECT_CALL(renderedTarget, loadCostume(&costume));
+    EXPECT_CALL(renderedTarget, updateCostume(&costume));
     model.onCostumeChanged(&costume);
 }
 
@@ -55,12 +55,12 @@ TEST(StageModelTest, RenderedTarget)
 
     RenderedTargetMock renderedTarget;
     QSignalSpy spy(&model, &StageModel::renderedTargetChanged);
-    EXPECT_CALL(renderedTarget, loadCostume(c2.get()));
+    EXPECT_CALL(renderedTarget, updateCostume(c2.get()));
     model.setRenderedTarget(&renderedTarget);
     ASSERT_EQ(spy.count(), 1);
     ASSERT_EQ(model.renderedTarget(), &renderedTarget);
 
-    EXPECT_CALL(renderedTarget, loadCostume(c3.get()));
+    EXPECT_CALL(renderedTarget, updateCostume(c3.get()));
     stage.setCostumeIndex(2);
     model.loadCostume();
 }

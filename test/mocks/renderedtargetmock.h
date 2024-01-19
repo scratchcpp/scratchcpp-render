@@ -19,10 +19,9 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(void, updateDirection, (double), (override));
         MOCK_METHOD(void, updateRotationStyle, (libscratchcpp::Sprite::RotationStyle), (override));
         MOCK_METHOD(void, updateLayerOrder, (int), (override));
+        MOCK_METHOD(void, updateCostume, (libscratchcpp::Costume *), (override));
 
         MOCK_METHOD(void, beforeRedraw, (), (override));
-
-        MOCK_METHOD(void, loadCostume, (libscratchcpp::Costume *), (override));
 
         MOCK_METHOD(void, deinitClone, (), (override));
 

@@ -104,7 +104,7 @@ void RenderedTarget::updateLayerOrder(int layerOrder)
     setZ(layerOrder);
 }
 
-void RenderedTarget::loadCostume(Costume *costume)
+void RenderedTarget::updateCostume(Costume *costume)
 {
     if (!costume || costume == m_costume)
         return;
@@ -189,7 +189,7 @@ void RenderedTarget::setStageModel(StageModel *newStageModel)
         Stage *stage = m_stageModel->stage();
 
         if (stage)
-            loadCostume(stage->currentCostume().get());
+            updateCostume(stage->currentCostume().get());
     }
 
     emit stageModelChanged();
@@ -216,7 +216,7 @@ void RenderedTarget::setSpriteModel(SpriteModel *newSpriteModel)
             m_size = sprite->size() / 100;
             m_direction = sprite->direction();
             m_rotationStyle = sprite->rotationStyle();
-            loadCostume(sprite->currentCostume().get());
+            updateCostume(sprite->currentCostume().get());
             updateVisibility(sprite->visible());
             updateLayerOrder(sprite->layerOrder());
             calculateSize();

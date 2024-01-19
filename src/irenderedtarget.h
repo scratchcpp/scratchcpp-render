@@ -33,8 +33,7 @@ class IRenderedTarget : public QNanoQuickItem
         virtual void updateDirection(double direction) = 0;
         virtual void updateRotationStyle(libscratchcpp::Sprite::RotationStyle style) = 0;
         virtual void updateLayerOrder(int layerOrder) = 0;
-
-        virtual void loadCostume(libscratchcpp::Costume *costume) = 0;
+        virtual void updateCostume(libscratchcpp::Costume *costume) = 0;
 
         virtual void beforeRedraw() = 0;
 
