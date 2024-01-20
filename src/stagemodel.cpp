@@ -20,7 +20,7 @@ void StageModel::init(libscratchcpp::Stage *stage)
 void StageModel::onCostumeChanged(libscratchcpp::Costume *costume)
 {
     if (m_renderedTarget)
-        m_renderedTarget->loadCostume(costume);
+        m_renderedTarget->updateCostume(costume);
 }
 
 void StageModel::onTempoChanged(int tempo)
@@ -47,7 +47,7 @@ void StageModel::loadCostume()
 {
     if (m_renderedTarget && m_stage) {
         if (m_stage)
-            m_renderedTarget->loadCostume(m_stage->currentCostume().get());
+            m_renderedTarget->updateCostume(m_stage->currentCostume().get());
     }
 }
 

@@ -9,6 +9,7 @@
 #include <QImage>
 
 #include "irenderedtarget.h"
+#include "texture.h"
 
 Q_MOC_INCLUDE("stagemodel.h");
 Q_MOC_INCLUDE("spritemodel.h");
@@ -16,6 +17,8 @@ Q_MOC_INCLUDE("scenemousearea.h");
 
 namespace scratchcpprender
 {
+
+class Skin;
 
 class RenderedTarget : public IRenderedTarget
 {
@@ -30,6 +33,7 @@ class RenderedTarget : public IRenderedTarget
 
     public:
         RenderedTarget(QNanoQuickItem *parent = nullptr);
+        ~RenderedTarget();
 
         void updateVisibility(bool visible) override;
         void updateX(double x) override;
@@ -38,8 +42,10 @@ class RenderedTarget : public IRenderedTarget
         void updateDirection(double direction) override;
         void updateRotationStyle(libscratchcpp::Sprite::RotationStyle style) override;
         void updateLayerOrder(int layerOrder) override;
+        void updateCostume(libscratchcpp::Costume *costume) override;
 
-        void loadCostume(libscratchcpp::Costume *costume) override;
+        bool costumesLoaded() const override;
+        void loadCostumes() override;
 
         void beforeRedraw() override;
 
@@ -68,18 +74,13 @@ class RenderedTarget : public IRenderedTarget
         qreal height() const override;
         void setHeight(qreal height) override;
 
+        libscratchcpp::Rect getBounds() const override;
+
         QPointF mapFromScene(const QPointF &point) const override;
-
-        QBuffer *bitmapBuffer() override;
-        const QString &bitmapUniqueKey() const override;
-
-        void lockCostume() override;
-        void unlockCostume() override;
 
         bool mirrorHorizontally() const override;
 
-        bool isSvg() const override;
-        void paintSvg(QNanoPainter *painter) override;
+        Texture texture() const override;
 
         void updateHullPoints(QOpenGLFramebufferObject *fbo) override;
         const std::vector<QPointF> &hullPoints() const override;
@@ -105,27 +106,24 @@ class RenderedTarget : public IRenderedTarget
         void calculateRotation();
         void calculateSize();
         void handleSceneMouseMove(qreal x, qreal y);
+        QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const;
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
         StageModel *m_stageModel = nullptr;
         SpriteModel *m_spriteModel = nullptr;
         SceneMouseArea *m_mouseArea = nullptr;
-        QSvgRenderer m_svgRenderer;
-        QImage m_costumeBitmap;
-        QBuffer m_bitmapBuffer;
-        QString m_bitmapUniqueKey;
-        QMutex m_costumeMutex;
-        QMutex mutex;
+        bool m_costumesLoaded = false;
+        std::unordered_map<libscratchcpp::Costume *, Skin *> m_skins;
+        bool m_skinsInherited = false;
+        Skin *m_skin = nullptr;
+        Texture m_texture;
+        Texture m_oldTexture;
         double m_size = 1;
-        double m_clampedSize = 1;
-        double m_maxSize = 1;
-        unsigned int m_costumeWidth = 0;
-        unsigned int m_costumeHeight = 0;
         double m_x = 0;
         double m_y = 0;
-        double m_width = 0;
-        double m_height = 0;
+        double m_width = 1;
+        double m_height = 1;
         double m_direction = 90;
         libscratchcpp::Sprite::RotationStyle m_rotationStyle = libscratchcpp::Sprite::RotationStyle::AllAround;
         bool m_mirrorHorizontally = false;

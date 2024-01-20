@@ -38,7 +38,7 @@ void SpriteModel::onCloned(libscratchcpp::Sprite *clone)
 void SpriteModel::onCostumeChanged(libscratchcpp::Costume *costume)
 {
     if (m_renderedTarget)
-        m_renderedTarget->loadCostume(costume);
+        m_renderedTarget->updateCostume(costume);
 }
 
 void SpriteModel::onVisibleChanged(bool visible)
@@ -93,7 +93,7 @@ void SpriteModel::onGraphicsEffectsCleared()
 
 libscratchcpp::Rect SpriteModel::boundingRect() const
 {
-    return libscratchcpp::Rect(m_sprite->x(), m_sprite->y(), m_sprite->x(), m_sprite->y());
+    return m_renderedTarget->getBounds();
 }
 
 libscratchcpp::Sprite *SpriteModel::sprite() const
@@ -113,6 +113,14 @@ void SpriteModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
 
     m_renderedTarget = newRenderedTarget;
     emit renderedTargetChanged();
+}
+
+SpriteModel *SpriteModel::cloneRoot() const
+{
+    if (m_cloneRoot == this)
+        return nullptr;
+    else
+        return m_cloneRoot;
 }
 
 } // namespace scratchcpprender

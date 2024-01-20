@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <QtOpenGL>
 #include <qnanoquickitem.h>
 #include <scratchcpp/sprite.h>
 
@@ -15,6 +16,7 @@ namespace scratchcpprender
 class StageModel;
 class SpriteModel;
 class SceneMouseArea;
+class Texture;
 
 class IRenderedTarget : public QNanoQuickItem
 {
@@ -33,8 +35,10 @@ class IRenderedTarget : public QNanoQuickItem
         virtual void updateDirection(double direction) = 0;
         virtual void updateRotationStyle(libscratchcpp::Sprite::RotationStyle style) = 0;
         virtual void updateLayerOrder(int layerOrder) = 0;
+        virtual void updateCostume(libscratchcpp::Costume *costume) = 0;
 
-        virtual void loadCostume(libscratchcpp::Costume *costume) = 0;
+        virtual bool costumesLoaded() const = 0;
+        virtual void loadCostumes() = 0;
 
         virtual void beforeRedraw() = 0;
 
@@ -63,18 +67,13 @@ class IRenderedTarget : public QNanoQuickItem
         virtual qreal height() const = 0;
         virtual void setHeight(qreal width) = 0;
 
+        virtual libscratchcpp::Rect getBounds() const = 0;
+
         virtual QPointF mapFromScene(const QPointF &point) const = 0;
-
-        virtual QBuffer *bitmapBuffer() = 0;
-        virtual const QString &bitmapUniqueKey() const = 0;
-
-        virtual void lockCostume() = 0;
-        virtual void unlockCostume() = 0;
 
         virtual bool mirrorHorizontally() const = 0;
 
-        virtual bool isSvg() const = 0;
-        virtual void paintSvg(QNanoPainter *painter) = 0;
+        virtual Texture texture() const = 0;
 
         virtual void updateHullPoints(QOpenGLFramebufferObject *fbo) = 0;
         virtual const std::vector<QPointF> &hullPoints() const = 0;

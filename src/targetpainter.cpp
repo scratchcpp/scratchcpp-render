@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
+#include <QOpenGLExtraFunctions>
 #include <scratchcpp/target.h>
 #include <scratchcpp/costume.h>
 
 #include "targetpainter.h"
 #include "irenderedtarget.h"
 #include "spritemodel.h"
+#include "bitmapskin.h"
 
 using namespace scratchcpprender;
 
-TargetPainter::TargetPainter()
+TargetPainter::TargetPainter(QOpenGLFramebufferObject *fbo) :
+    m_fbo(fbo)
 {
 }
 
@@ -24,42 +27,57 @@ void TargetPainter::paint(QNanoPainter *painter)
                "application object.");
     }
 
-    m_target->lockCostume();
-    double width = m_target->width();
-    double height = m_target->height();
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    Q_ASSERT(context);
 
-    if (m_target->isSvg())
-        m_target->paintSvg(painter);
-    else {
-        QOpenGLContext *context = QOpenGLContext::currentContext();
-        Q_ASSERT(context);
+    if (!context)
+        return;
 
-        if (!context)
-            return;
+    // Custom FBO - only used for testing
+    QOpenGLFramebufferObject *targetFbo = m_fbo ? m_fbo : framebufferObject();
 
-        QOffscreenSurface surface;
-        surface.setFormat(context->format());
-        surface.create();
-        Q_ASSERT(surface.isValid());
+    QOpenGLExtraFunctions glF(context);
+    glF.initializeOpenGLFunctions();
 
-        QSurface *oldSurface = context->surface();
-        context->makeCurrent(&surface);
+    // Cancel current frame because we're using a custom FBO
+    painter->cancelFrame();
 
-        painter->beginFrame(width, height);
-        QNanoImage image = QNanoImage::fromCache(painter, m_target->bitmapBuffer(), m_target->bitmapUniqueKey());
-        painter->drawImage(image, 0, 0, width, height);
-        painter->endFrame();
+    Texture texture = m_target->texture();
 
-        context->doneCurrent();
-        context->makeCurrent(oldSurface);
+    if (!texture.isValid())
+        return;
+
+    // Create a FBO for the current texture
+    unsigned int fbo;
+    glF.glGenFramebuffers(1, &fbo);
+    glF.glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glF.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.handle(), 0);
+
+    if (glF.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        qWarning() << "error: framebuffer incomplete (" + m_target->scratchTarget()->name() + ")";
+        glF.glDeleteFramebuffers(1, &fbo);
+        return;
     }
 
-    m_target->updateHullPoints(framebufferObject());
-    m_target->unlockCostume();
+    // Blit the FBO to the Qt Quick FBO
+    glF.glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glF.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFbo->handle());
+    glF.glBlitFramebuffer(0, 0, texture.width(), texture.height(), 0, 0, targetFbo->width(), targetFbo->height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glF.glBindFramebuffer(GL_FRAMEBUFFER, targetFbo->handle());
+
+    glF.glDeleteFramebuffers(1, &fbo);
+
+    m_target->updateHullPoints(targetFbo);
 }
 
 void TargetPainter::synchronize(QNanoQuickItem *item)
 {
     m_target = dynamic_cast<IRenderedTarget *>(item);
     Q_ASSERT(m_target);
+
+    // Render costumes into textures
+    if (!m_target->costumesLoaded()) {
+        m_target->loadCostumes();
+        invalidateFramebufferObject();
+    }
 }
