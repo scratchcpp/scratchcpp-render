@@ -30,90 +30,65 @@ class TargetPainterTest : public testing::Test
         }
 };
 
-TEST_F(TargetPainterTest, PaintBitmap)
+TEST_F(TargetPainterTest, Paint)
 {
     QOpenGLContext context;
     QOffscreenSurface surface;
     createContextAndSurface(&context, &surface);
 
-    std::unordered_map<std::string, std::string> files = { { "image.jpg", "jpeg_result.png" }, { "image.png", "png_result.png" } };
+    QOpenGLFramebufferObjectFormat format;
+    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
-    for (const auto &[inFile, outFile] : files) {
-        // Create target painter
-        TargetPainter targetPainter;
-        QNanoPainter painter;
-        RenderedTargetMock target;
-        targetPainter.synchronize(&target);
+    // Begin painting reference
+    QNanoPainter refPainter;
+    QOpenGLFramebufferObject refFbo(40, 60, format);
+    refFbo.bind();
+    refPainter.beginFrame(refFbo.width(), refFbo.height());
 
-        // Load the image
-        QBuffer buffer;
-        buffer.open(QBuffer::WriteOnly);
-        std::string str = readFileStr(inFile);
-        buffer.write(str.c_str(), str.size());
-        buffer.close();
+    // Paint reference
+    refPainter.setAntialias(0);
+    refPainter.setStrokeStyle(QNanoColor(255, 0, 0, 128));
+    refPainter.ellipse(refFbo.width() / 2, refFbo.height() / 2, refFbo.width() / 2, refFbo.height() / 2);
+    refPainter.stroke();
+    refPainter.endFrame();
 
-        QOpenGLFramebufferObjectFormat format;
-        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-
-        // Begin painting reference
-        QNanoPainter refPainter;
-        QOpenGLFramebufferObject refFbo(40, 60, format);
-        refFbo.bind();
-        refPainter.beginFrame(refFbo.width(), refFbo.height());
-
-        // Paint reference
-        QNanoImage refImage = QNanoImage::fromCache(&refPainter, &buffer, "abc");
-        refPainter.drawImage(refImage, 0, 0, 40, 60);
-        refPainter.endFrame();
-
-        // Begin painting
-        QOpenGLFramebufferObject fbo(40, 60, format);
-        fbo.bind();
-        painter.beginFrame(fbo.width(), fbo.height());
-
-        // Paint
-        EXPECT_CALL(target, lockCostume());
-        EXPECT_CALL(target, width()).WillOnce(Return(40));
-        EXPECT_CALL(target, height()).WillOnce(Return(60));
-        EXPECT_CALL(target, isSvg()).WillOnce(Return(false));
-        EXPECT_CALL(target, bitmapBuffer()).WillOnce(Return(&buffer));
-        static const QString uniqueKey("abc");
-        EXPECT_CALL(target, bitmapUniqueKey()).WillOnce(ReturnRef(uniqueKey));
-        EXPECT_CALL(target, updateHullPoints);
-        EXPECT_CALL(target, unlockCostume());
-        targetPainter.paint(&painter);
-        painter.endFrame();
-
-        // Compare resulting images
-        ASSERT_EQ(fbo.toImage(), refFbo.toImage());
-
-        // Release
-        fbo.release();
-        refFbo.release();
-    }
-
-    context.doneCurrent();
-}
-
-TEST_F(TargetPainterTest, PaintSvg)
-{
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
-
-    TargetPainter targetPainter;
+    // Begin painting
     QNanoPainter painter;
+    QOpenGLFramebufferObject fbo(40, 60, format);
+    fbo.bind();
+    painter.beginFrame(fbo.width(), fbo.height());
+
+    // Create target painter
+    TargetPainter targetPainter(&fbo);
     RenderedTargetMock target;
+
+    EXPECT_CALL(target, costumesLoaded()).WillOnce(Return(false));
+    EXPECT_CALL(target, loadCostumes());
     targetPainter.synchronize(&target);
 
+    EXPECT_CALL(target, costumesLoaded()).WillOnce(Return(true));
+    EXPECT_CALL(target, loadCostumes()).Times(0);
+    targetPainter.synchronize(&target);
+
+    EXPECT_CALL(target, costumesLoaded()).WillOnce(Return(false));
+    EXPECT_CALL(target, loadCostumes());
+    targetPainter.synchronize(&target);
+
+    // Paint
+    Texture texture(refFbo.texture(), refFbo.size());
     EXPECT_CALL(target, lockCostume());
-    EXPECT_CALL(target, width()).WillOnce(Return(40));
-    EXPECT_CALL(target, height()).WillOnce(Return(60));
-    EXPECT_CALL(target, isSvg()).WillOnce(Return(true));
-    EXPECT_CALL(target, paintSvg(&painter));
-    EXPECT_CALL(target, updateHullPoints);
+    EXPECT_CALL(target, texture()).WillOnce(Return(texture));
+    EXPECT_CALL(target, updateHullPoints(&fbo));
     EXPECT_CALL(target, unlockCostume());
     targetPainter.paint(&painter);
+    painter.endFrame();
+
+    // Compare resulting images
+    ASSERT_EQ(fbo.toImage(), refFbo.toImage());
+
+    // Release
+    fbo.release();
+    refFbo.release();
 
     context.doneCurrent();
 }

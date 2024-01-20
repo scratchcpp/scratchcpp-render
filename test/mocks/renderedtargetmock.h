@@ -1,6 +1,7 @@
 #pragma once
 
 #include <irenderedtarget.h>
+#include <texture.h>
 #include <qnanoquickitem.h>
 #include <gmock/gmock.h>
 
@@ -20,6 +21,9 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(void, updateRotationStyle, (libscratchcpp::Sprite::RotationStyle), (override));
         MOCK_METHOD(void, updateLayerOrder, (int), (override));
         MOCK_METHOD(void, updateCostume, (libscratchcpp::Costume *), (override));
+
+        MOCK_METHOD(bool, costumesLoaded, (), (const, override));
+        MOCK_METHOD(void, loadCostumes, (), (override));
 
         MOCK_METHOD(void, beforeRedraw, (), (override));
 
@@ -50,16 +54,12 @@ class RenderedTargetMock : public IRenderedTarget
 
         MOCK_METHOD(QPointF, mapFromScene, (const QPointF &), (const, override));
 
-        MOCK_METHOD(QBuffer *, bitmapBuffer, (), (override));
-        MOCK_METHOD(const QString &, bitmapUniqueKey, (), (const, override));
-
         MOCK_METHOD(void, lockCostume, (), (override));
         MOCK_METHOD(void, unlockCostume, (), (override));
 
         MOCK_METHOD(bool, mirrorHorizontally, (), (const, override));
 
-        MOCK_METHOD(bool, isSvg, (), (const, override));
-        MOCK_METHOD(void, paintSvg, (QNanoPainter *), (override));
+        MOCK_METHOD(Texture, texture, (), (const, override));
 
         MOCK_METHOD(void, updateHullPoints, (QOpenGLFramebufferObject *), (override));
         MOCK_METHOD(const std::vector<QPointF> &, hullPoints, (), (const, override));

@@ -8,17 +8,19 @@ namespace scratchcpprender
 {
 
 class IRenderedTarget;
+class Skin;
 
 class TargetPainter : public QNanoQuickItemPainter
 {
     public:
-        TargetPainter();
+        TargetPainter(QOpenGLFramebufferObject *fbo = nullptr);
         ~TargetPainter();
 
         void paint(QNanoPainter *painter) override;
         void synchronize(QNanoQuickItem *item) override;
 
     private:
+        QOpenGLFramebufferObject *m_fbo = nullptr;
         IRenderedTarget *m_target = nullptr;
 };
 

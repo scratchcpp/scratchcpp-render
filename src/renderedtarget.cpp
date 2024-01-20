@@ -10,6 +10,8 @@
 #include "stagemodel.h"
 #include "spritemodel.h"
 #include "scenemousearea.h"
+#include "bitmapskin.h"
+#include "svgskin.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -19,25 +21,12 @@ static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions ar
 RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
     IRenderedTarget(parent)
 {
-    // Get maximum viewport dimensions
-    QOpenGLContext context;
-    context.create();
-    Q_ASSERT(context.isValid());
+}
 
-    if (context.isValid()) {
-        QOffscreenSurface surface;
-        surface.create();
-        Q_ASSERT(surface.isValid());
-
-        if (surface.isValid()) {
-            context.makeCurrent(&surface);
-            GLint dims[2];
-            glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
-            m_maximumWidth = dims[0] * SVG_SCALE_LIMIT;
-            m_maximumHeight = dims[1] * SVG_SCALE_LIMIT;
-            context.doneCurrent();
-        }
-    }
+RenderedTarget::~RenderedTarget()
+{
+    for (const auto &[costume, skin] : m_skins)
+        delete skin;
 }
 
 void RenderedTarget::updateVisibility(bool visible)
@@ -112,29 +101,13 @@ void RenderedTarget::updateCostume(Costume *costume)
     m_costumeMutex.lock();
     m_costume = costume;
 
-    if (m_costume->dataFormat() == "svg") {
-        m_svgRenderer.load(QByteArray::fromRawData(static_cast<const char *>(m_costume->data()), m_costume->dataSize()));
-        QRectF rect = m_svgRenderer.viewBoxF();
-        m_costumeWidth = rect.width();
-        m_costumeHeight = rect.height();
-    } else {
-        m_bitmapBuffer.open(QBuffer::WriteOnly);
-        m_bitmapBuffer.write(static_cast<const char *>(m_costume->data()), m_costume->dataSize());
-        m_bitmapBuffer.close();
-        m_bitmapUniqueKey = QString::fromStdString(m_costume->id());
-        const char *format;
+    if (m_costumesLoaded) {
+        auto it = m_skins.find(m_costume);
 
-        {
-            QImageReader reader(&m_bitmapBuffer);
-            format = reader.format();
-        }
-
-        m_bitmapBuffer.close();
-        m_costumeBitmap.load(&m_bitmapBuffer, format);
-        QSize size = m_costumeBitmap.size();
-        m_costumeWidth = std::max(0, size.width());
-        m_costumeHeight = std::max(0, size.height());
-        m_bitmapBuffer.close();
+        if (it == m_skins.end())
+            m_skin = nullptr;
+        else
+            m_skin = it->second;
     }
 
     m_costumeMutex.unlock();
@@ -143,10 +116,59 @@ void RenderedTarget::updateCostume(Costume *costume)
     calculatePos();
 }
 
+bool RenderedTarget::costumesLoaded() const
+{
+    return m_costumesLoaded;
+}
+
+void RenderedTarget::loadCostumes()
+{
+    // Delete previous skins
+    for (const auto &[costume, skin] : m_skins)
+        delete skin;
+
+    m_skins.clear();
+
+    // Generate a skin for each costume
+    Target *target = scratchTarget();
+
+    if (!target)
+        return;
+
+    const auto &costumes = target->costumes();
+
+    for (auto costume : costumes) {
+        Skin *skin = nullptr;
+        if (costume->dataFormat() == "svg")
+            skin = new SVGSkin(costume.get());
+        else
+            skin = new BitmapSkin(costume.get());
+
+        if (skin)
+            m_skins[costume.get()] = skin;
+
+        if (m_costume && costume.get() == m_costume)
+            m_skin = skin;
+    }
+
+    m_costumesLoaded = true;
+
+    if (m_costume) {
+        calculateSize();
+        calculatePos();
+    }
+}
+
 void RenderedTarget::beforeRedraw()
 {
+    // These properties must be set here to avoid unnecessary calls to update()
     setWidth(m_width);
     setHeight(m_height);
+
+    if (!m_oldTexture.isValid() || (m_texture.isValid() && m_texture != m_oldTexture)) {
+        m_oldTexture = m_texture;
+        update();
+    }
 }
 
 void RenderedTarget::deinitClone()
@@ -343,35 +365,9 @@ void RenderedTarget::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
-void RenderedTarget::paintSvg(QNanoPainter *painter)
+Texture RenderedTarget::texture() const
 {
-    Q_ASSERT(painter);
-    QOpenGLContext *context = QOpenGLContext::currentContext();
-    Q_ASSERT(context);
-
-    if (!context)
-        return;
-
-    QOffscreenSurface surface;
-    surface.setFormat(context->format());
-    surface.create();
-    Q_ASSERT(surface.isValid());
-
-    QSurface *oldSurface = context->surface();
-    context->makeCurrent(&surface);
-
-    const QRectF drawRect(0, 0, std::min(width(), m_maximumWidth), std::min(height(), m_maximumHeight));
-    const QSize drawRectSize = drawRect.size().toSize();
-
-    QOpenGLPaintDevice device(drawRectSize);
-    QPainter qPainter;
-    qPainter.begin(&device);
-    qPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    m_svgRenderer.render(&qPainter, drawRect);
-    qPainter.end();
-
-    context->doneCurrent();
-    context->makeCurrent(oldSurface);
+    return m_texture;
 }
 
 void RenderedTarget::updateHullPoints(QOpenGLFramebufferObject *fbo)
@@ -458,27 +454,24 @@ bool RenderedTarget::contains(const QPointF &point) const
 
 void RenderedTarget::calculatePos()
 {
-    if (!m_costume || !m_engine)
+    if (!m_skin || !m_costume || !m_engine)
         return;
 
-    if (m_spriteModel) {
-        if (isVisible()) {
-            double stageWidth = m_engine->stageWidth();
-            double stageHeight = m_engine->stageHeight();
-            setX(m_stageScale * (stageWidth / 2 + m_x - m_costume->rotationCenterX() * m_clampedSize / m_costume->bitmapResolution() * (m_mirrorHorizontally ? -1 : 1)));
-            setY(m_stageScale * (stageHeight / 2 - m_y - m_costume->rotationCenterY() * m_clampedSize / m_costume->bitmapResolution()));
-            qreal originX = m_costume->rotationCenterX() * m_clampedSize * m_stageScale / m_costume->bitmapResolution();
-            qreal originY = m_costume->rotationCenterY() * m_clampedSize * m_stageScale / m_costume->bitmapResolution();
-            setTransformOriginPoint(QPointF(originX, originY));
-        }
-    } else {
+    if (isVisible() || m_stageModel) {
         double stageWidth = m_engine->stageWidth();
         double stageHeight = m_engine->stageHeight();
-        setX(m_stageScale * (stageWidth / 2 - m_costume->rotationCenterX() / m_costume->bitmapResolution()));
-        setY(m_stageScale * (stageHeight / 2 - m_costume->rotationCenterY() / m_costume->bitmapResolution()));
-        qreal originX = m_costume->rotationCenterX() / m_costume->bitmapResolution();
-        qreal originY = m_costume->rotationCenterY() / m_costume->bitmapResolution();
+        setX(m_stageScale * (stageWidth / 2 + m_x - m_costume->rotationCenterX() * m_size / scale() / m_costume->bitmapResolution() * (m_mirrorHorizontally ? -1 : 1)));
+        setY(m_stageScale * (stageHeight / 2 - m_y - m_costume->rotationCenterY() * m_size / scale() / m_costume->bitmapResolution()));
+        qreal originX = m_costume->rotationCenterX() * m_stageScale * m_size / scale() / m_costume->bitmapResolution();
+        qreal originY = m_costume->rotationCenterY() * m_stageScale * m_size / scale() / m_costume->bitmapResolution();
         setTransformOriginPoint(QPointF(originX, originY));
+
+        // Qt ignores the transform origin point if it's (0, 0),
+        // so set the transform origin to top left in this case.
+        if (originX == 0 && originY == 0)
+            setTransformOrigin(QQuickItem::TopLeft);
+        else
+            setTransformOrigin(QQuickItem::Center);
     }
 }
 
@@ -515,30 +508,13 @@ void RenderedTarget::calculateRotation()
 
 void RenderedTarget::calculateSize()
 {
-    if (m_costume) {
-        double bitmapRes = m_costume->bitmapResolution();
-
-        if (m_costumeWidth == 0 || m_costumeHeight == 0)
-            m_maxSize = 1;
-        else
-            m_maxSize = std::min(m_maximumWidth / (m_costumeWidth * m_stageScale), m_maximumHeight / (m_costumeHeight * m_stageScale));
-
-        if (m_spriteModel) {
-            m_clampedSize = std::min(m_size, m_maxSize);
-            m_width = m_costumeWidth * m_clampedSize * m_stageScale / bitmapRes;
-            m_height = m_height = m_costumeHeight * m_clampedSize * m_stageScale / bitmapRes;
-        } else {
-            m_width = m_costumeWidth * m_stageScale / bitmapRes;
-            m_height = m_height = m_costumeHeight * m_stageScale / bitmapRes;
-        }
+    if (m_skin && m_costume) {
+        Texture texture = m_skin->getTexture(m_size * m_stageScale);
+        m_texture = texture;
+        m_width = texture.width();
+        m_height = texture.height();
+        setScale(m_size * m_stageScale / m_skin->getTextureScale(texture) / m_costume->bitmapResolution());
     }
-
-    Q_ASSERT(m_maxSize > 0);
-
-    if (!m_stageModel && (m_size > m_maxSize) && (m_maxSize != 0))
-        setScale(m_size / m_maxSize);
-    else
-        setScale(1);
 }
 
 void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
@@ -554,16 +530,6 @@ void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
     }
 }
 
-QBuffer *RenderedTarget::bitmapBuffer()
-{
-    return &m_bitmapBuffer;
-}
-
-const QString &RenderedTarget::bitmapUniqueKey() const
-{
-    return m_bitmapUniqueKey;
-}
-
 void RenderedTarget::lockCostume()
 {
     m_costumeMutex.lock();
@@ -577,12 +543,4 @@ void RenderedTarget::unlockCostume()
 bool RenderedTarget::mirrorHorizontally() const
 {
     return m_mirrorHorizontally;
-}
-
-bool RenderedTarget::isSvg() const
-{
-    if (!m_costume)
-        return false;
-
-    return (m_costume->dataFormat() == "svg");
 }

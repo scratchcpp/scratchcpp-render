@@ -50,38 +50,52 @@ TEST_F(RenderedTargetTest, Constructors)
 
 TEST_F(RenderedTargetTest, UpdateMethods)
 {
+    QOpenGLContext context;
+    QOffscreenSurface surface;
+    createContextAndSurface(&context, &surface);
     RenderedTarget parent; // a parent item is needed for setVisible() to work
     RenderedTarget target(&parent);
     QSignalSpy mirrorHorizontallySpy(&target, &RenderedTarget::mirrorHorizontallyChanged);
+    ASSERT_FALSE(target.costumesLoaded());
 
     // Stage
     Stage stage;
     StageModel stageModel;
     stage.setInterface(&stageModel);
     target.setStageModel(&stageModel);
-    Costume costume("", "", "");
+    auto costume = std::make_shared<Costume>("", "", "png");
     std::string costumeData = readFileStr("image.png");
-    costume.setData(costumeData.size(), static_cast<void *>(costumeData.data()));
-    costume.setRotationCenterX(-23);
-    costume.setRotationCenterY(72);
-    costume.setBitmapResolution(2.5);
+    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    costume->setRotationCenterX(-23);
+    costume->setRotationCenterY(72);
+    costume->setBitmapResolution(2.5);
+    stage.addCostume(costume);
+    target.loadCostumes();
+    ASSERT_TRUE(target.costumesLoaded());
     EngineMock engine;
     target.setEngine(&engine);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.updateCostume(&costume);
+    target.updateCostume(costume.get());
     target.beforeRedraw();
-    ASSERT_EQ(target.width(), 1.6);
-    ASSERT_EQ(target.height(), 2.4);
-    ASSERT_EQ(target.x(), 249.2);
-    ASSERT_EQ(target.y(), 151.2);
+    ASSERT_EQ(target.width(), 4);
+    ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.x(), 263);
+    ASSERT_EQ(target.y(), 108);
     ASSERT_EQ(target.z(), 0);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(target.transformOriginPoint(), QPointF(-9.2, 28.8));
+    ASSERT_EQ(target.transformOriginPoint(), QPointF(-23, 72));
+    ASSERT_EQ(target.transformOrigin(), QQuickItem::Center);
+    ASSERT_EQ(target.scale(), 0.4);
 
     target.setStageModel(nullptr);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
+
+    Texture texture = target.texture();
+    ASSERT_TRUE(texture.isValid());
+    ASSERT_EQ(texture.width(), 4);
+    ASSERT_EQ(texture.height(), 6);
 
     // Sprite
     Sprite sprite;
@@ -92,23 +106,32 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     sprite.setX(0);
     sprite.setY(0);
     sprite.setLayerOrder(3);
+    sprite.addCostume(costume);
     SpriteModel spriteModel;
     sprite.setInterface(&spriteModel);
 
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).Times(2).WillRepeatedly(Return(360));
     target.setSpriteModel(&spriteModel);
+    target.loadCostumes();
     target.beforeRedraw();
 
-    ASSERT_EQ(std::round(target.width() * 100) / 100, 2.3);
-    ASSERT_EQ(std::round(target.height() * 100) / 100, 3.46);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 253.25);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 138.53);
+    ASSERT_EQ(target.width(), 4);
+    ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.x(), 263);
+    ASSERT_EQ(target.y(), 108);
     ASSERT_EQ(target.z(), 3);
     ASSERT_EQ(target.rotation(), -157.16);
-    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -13.25);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 41.47);
+    ASSERT_EQ(target.transformOriginPoint().x(), -23);
+    ASSERT_EQ(target.transformOriginPoint().y(), 72);
+    ASSERT_EQ(target.transformOrigin(), QQuickItem::Center);
+    ASSERT_EQ(std::round(target.scale() * 100) / 100, 0.58);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
+
+    texture = target.texture();
+    ASSERT_TRUE(texture.isValid());
+    ASSERT_EQ(texture.width(), 4);
+    ASSERT_EQ(texture.height(), 6);
 
     // Visibility
     target.updateVisibility(false);
@@ -123,27 +146,27 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateX(12.5);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 265.75);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 138.53);
+    ASSERT_EQ(target.x(), 275.5);
+    ASSERT_EQ(target.y(), 108);
 
     // Y
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateY(-76.09);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 265.75);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 214.62);
+    ASSERT_EQ(target.x(), 275.5);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
 
     // Size
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateSize(56.2);
     target.beforeRedraw();
-    ASSERT_EQ(std::round(target.width() * 100) / 100, 0.9);
-    ASSERT_EQ(std::round(target.height() * 100) / 100, 1.35);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 257.67);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 239.9);
-    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -5.17);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 16.19);
+    ASSERT_EQ(target.width(), 4);
+    ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.x(), 275.5);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
+    ASSERT_EQ(target.transformOriginPoint().x(), -23);
+    ASSERT_EQ(target.transformOriginPoint().y(), 72);
 
     // Direction
     target.updateDirection(123.8);
@@ -156,8 +179,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
     ASSERT_EQ(target.mirrorHorizontally(), false);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 257.67);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 239.9);
+    ASSERT_EQ(target.x(), 275.5);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -165,8 +188,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.updateDirection(-15);
     ASSERT_EQ(target.mirrorHorizontally(), true);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 247.33);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 239.9);
+    ASSERT_EQ(target.x(), 229.5);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
     ASSERT_EQ(mirrorHorizontallySpy.count(), 1);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -174,8 +197,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.updateDirection(134.89);
     ASSERT_EQ(target.mirrorHorizontally(), false);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 257.67);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 239.9);
+    ASSERT_EQ(target.x(), 275.5);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
     ASSERT_EQ(mirrorHorizontallySpy.count(), 2);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -184,110 +207,69 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_EQ(target.mirrorHorizontally(), false);
     ASSERT_EQ(target.rotation(), 0);
     ASSERT_EQ(mirrorHorizontallySpy.count(), 2);
-}
 
-TEST_F(RenderedTargetTest, LoadJpegCostume)
-{
-    std::string str = readFileStr("image.jpg");
-    Costume costume("", "abc", "jpg");
-    costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
-    costume.setBitmapResolution(3);
-
-    RenderedTarget target;
-    target.updateCostume(&costume);
-    ASSERT_FALSE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
-    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-}
-
-TEST_F(RenderedTargetTest, LoadPngCostume)
-{
-    std::string str = readFileStr("image.png");
-    Costume costume("", "abc", "png");
-    costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
-    costume.setBitmapResolution(3);
-
-    RenderedTarget target;
-    target.updateCostume(&costume);
-    ASSERT_FALSE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_EQ(target.bitmapBuffer()->readAll().toStdString(), str);
-    ASSERT_EQ(target.bitmapUniqueKey().toStdString(), costume.id());
-}
-
-TEST_F(RenderedTargetTest, LoadSvgCostume)
-{
-    // Get maximum viewport dimensions
-    QOpenGLContext context;
-    context.create();
-    Q_ASSERT(context.isValid());
-
-    QOffscreenSurface surface;
-    surface.create();
-    Q_ASSERT(surface.isValid());
-
-    context.makeCurrent(&surface);
-    GLint dims[2];
-    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
-    double maxWidth = dims[0] * 0.1;
-    double maxHeight = dims[1] * 0.1;
-    double maxSize = std::min(maxWidth / (1143 / 90.0), maxHeight / (1143 / 90.0));
-    context.doneCurrent();
-
-    std::string str = readFileStr("image.svg");
-    auto costume = std::make_shared<Costume>("", "abc", "svg");
-    costume->setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
-    costume->setBitmapResolution(1);
-
-    EngineMock engine;
-    SpriteModel model;
-    Sprite sprite;
-    sprite.setSize(maxSize * 100);
-    sprite.setX(49.7);
-    sprite.setY(-64.15);
-    costume->setRotationCenterX(-84);
-    costume->setRotationCenterY(53);
-    model.init(&sprite);
-
-    RenderedTarget target;
-    target.setEngine(&engine);
-
+    // Stage scale
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    target.setSpriteModel(&model);
-    target.updateCostume(costume.get());
+    target.setStageScale(1.5);
     target.beforeRedraw();
-    ASSERT_TRUE(target.isSvg());
-    ASSERT_FALSE(target.bitmapBuffer()->isOpen());
-    target.bitmapBuffer()->open(QBuffer::ReadOnly);
-    ASSERT_TRUE(target.bitmapBuffer()->readAll().toStdString().empty());
-    ASSERT_TRUE(target.bitmapUniqueKey().toStdString().empty());
-    target.bitmapBuffer()->close();
+    ASSERT_EQ(target.width(), 4);
+    ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.x(), 401.75);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 312.14);
+    ASSERT_EQ(target.z(), 3);
+    ASSERT_EQ(target.rotation(), 0);
+    ASSERT_EQ(target.transformOriginPoint().x(), -23);
+    ASSERT_EQ(target.transformOriginPoint().y(), 72);
+    ASSERT_EQ(target.transformOrigin(), QQuickItem::Center);
+    ASSERT_EQ(std::round(target.scale() * 100) / 100, 0.34);
 
-    ASSERT_EQ(std::round(target.width() * 100) / 100, 1548.09);
-    ASSERT_EQ(std::round(target.height() * 100) / 100, 1548.09);
-    ASSERT_EQ(target.scale(), 1);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 11126.36);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -6593.27);
-    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -10836.66);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 6837.42);
+    // Null rotation center
+    costume->setRotationCenterX(0);
+    costume->setRotationCenterY(0);
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateSize(100);
+    target.beforeRedraw();
+    ASSERT_EQ(target.width(), 4);
+    ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.x(), 378.75);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 384.14);
+    ASSERT_EQ(target.transformOriginPoint().x(), 0);
+    ASSERT_EQ(target.transformOriginPoint().y(), 0);
+    ASSERT_EQ(target.transformOrigin(), QQuickItem::TopLeft);
 
-    // Test scale limit
+    // SVG
+    costume = std::make_shared<Costume>("", "", "svg");
+    std::string svgCostumeData = readFileStr("image.svg");
+    costume->setData(svgCostumeData.size(), static_cast<void *>(svgCostumeData.data()));
+    costume->setRotationCenterX(25);
+    costume->setRotationCenterY(-8);
+    sprite.addCostume(costume);
+
     EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
     EXPECT_CALL(engine, stageHeight()).Times(2).WillRepeatedly(Return(360));
-    target.updateSize(maxSize * 250);
-    target.setStageScale(3.89);
+    target.loadCostumes();
+    target.updateCostume(costume.get());
+    target.beforeRedraw();
 
-    ASSERT_EQ(std::round(target.width() * 100) / 100, 1548.09);
-    ASSERT_EQ(std::round(target.height() * 100) / 100, 1548.09);
-    ASSERT_EQ(std::round(target.scale() * 100) / 100, 9.19);
-    ASSERT_EQ(std::round(target.x() * 100) / 100, 12595.73);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, -6286.52);
-    ASSERT_EQ(std::round(target.transformOriginPoint().x() * 100) / 100, -11468.8);
-    ASSERT_EQ(std::round(target.transformOriginPoint().y() * 100) / 100, 7236.27);
+    ASSERT_EQ(target.width(), 26);
+    ASSERT_EQ(target.height(), 26);
+    ASSERT_EQ(target.x(), 328.75);
+    ASSERT_EQ(std::round(target.y() * 100) / 100, 400.14);
+    ASSERT_EQ(target.z(), 3);
+    ASSERT_EQ(target.rotation(), 0);
+    ASSERT_EQ(target.transformOriginPoint().x(), 50);
+    ASSERT_EQ(target.transformOriginPoint().y(), -16);
+    ASSERT_EQ(target.transformOrigin(), QQuickItem::Center);
+    ASSERT_EQ(std::round(target.scale() * 100) / 100, 0.75);
+
+    texture = target.texture();
+    ASSERT_TRUE(texture.isValid());
+    ASSERT_EQ(texture.width(), 26);
+    ASSERT_EQ(texture.height(), 26);
+
+    context.doneCurrent();
 }
 
 TEST_F(RenderedTargetTest, DeinitClone)
@@ -303,61 +285,6 @@ TEST_F(RenderedTargetTest, DeinitClone)
     mouseArea.setDraggedSprite(&target1);
     target1.deinitClone();
     ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
-}
-
-TEST_F(RenderedTargetTest, PaintSvg)
-{
-    std::string str = readFileStr("image.svg");
-    Costume costume("", "abc", "svg");
-    costume.setData(str.size(), static_cast<void *>(const_cast<char *>(str.c_str())));
-    costume.setBitmapResolution(3);
-
-    EngineMock engine;
-    Sprite sprite;
-    sprite.setSize(2525.7);
-
-    SpriteModel model;
-    model.init(&sprite);
-
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
-    RenderedTarget target;
-    target.setEngine(&engine);
-    target.setSpriteModel(&model);
-    target.updateCostume(&costume);
-    target.beforeRedraw();
-
-    // Create OpenGL context
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
-
-    // Create a painter
-    QNanoPainter painter;
-
-    QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-
-    // Begin painting
-    QOpenGLFramebufferObject fbo(100, 100, format);
-    fbo.bind();
-    painter.beginFrame(fbo.width(), fbo.height());
-
-    // Paint
-    target.paintSvg(&painter);
-    painter.endFrame();
-
-    // Compare with reference image
-    QBuffer buffer;
-    fbo.toImage().save(&buffer, "png");
-    QFile ref("svg_result.png");
-    ref.open(QFile::ReadOnly);
-    buffer.open(QBuffer::ReadOnly);
-    ASSERT_EQ(buffer.readAll(), ref.readAll());
-
-    // Release
-    fbo.release();
-    context.doneCurrent();
 }
 
 TEST_F(RenderedTargetTest, HullPoints)
