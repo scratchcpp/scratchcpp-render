@@ -49,6 +49,8 @@ class SpriteModel
         IRenderedTarget *renderedTarget() const;
         void setRenderedTarget(IRenderedTarget *newRenderedTarget);
 
+        SpriteModel *cloneRoot() const;
+
     signals:
         void renderedTargetChanged();
         void cloned(SpriteModel *cloneModel);

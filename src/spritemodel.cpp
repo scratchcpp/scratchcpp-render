@@ -115,4 +115,12 @@ void SpriteModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
     emit renderedTargetChanged();
 }
 
+SpriteModel *SpriteModel::cloneRoot() const
+{
+    if (m_cloneRoot == this)
+        return nullptr;
+    else
+        return m_cloneRoot;
+}
+
 } // namespace scratchcpprender
