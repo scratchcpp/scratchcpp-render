@@ -33,6 +33,8 @@ qt_add_qml_module(scratchcpp-render
 	irenderedtarget.h
 	texture.cpp
 	texture.h
+	skin.cpp
+	skin.h
         renderedtarget.cpp
         renderedtarget.h
 	targetpainter.cpp
