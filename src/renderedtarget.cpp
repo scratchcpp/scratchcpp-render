@@ -98,7 +98,6 @@ void RenderedTarget::updateCostume(Costume *costume)
     if (!costume || costume == m_costume)
         return;
 
-    m_costumeMutex.lock();
     m_costume = costume;
 
     if (m_costumesLoaded) {
@@ -109,8 +108,6 @@ void RenderedTarget::updateCostume(Costume *costume)
         else
             m_skin = it->second;
     }
-
-    m_costumeMutex.unlock();
 
     calculateSize();
     calculatePos();
@@ -528,16 +525,6 @@ void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
         sprite->setX(x / m_stageScale - m_engine->stageWidth() / 2.0 - m_dragDeltaX);
         sprite->setY(-y / m_stageScale + m_engine->stageHeight() / 2.0 - m_dragDeltaY);
     }
-}
-
-void RenderedTarget::lockCostume()
-{
-    m_costumeMutex.lock();
-}
-
-void RenderedTarget::unlockCostume()
-{
-    m_costumeMutex.unlock();
 }
 
 bool RenderedTarget::mirrorHorizontally() const

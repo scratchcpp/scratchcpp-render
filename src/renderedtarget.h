@@ -76,9 +76,6 @@ class RenderedTarget : public IRenderedTarget
 
         QPointF mapFromScene(const QPointF &point) const override;
 
-        void lockCostume() override;
-        void unlockCostume() override;
-
         bool mirrorHorizontally() const override;
 
         Texture texture() const override;
@@ -118,8 +115,6 @@ class RenderedTarget : public IRenderedTarget
         Skin *m_skin = nullptr;
         Texture m_texture;
         Texture m_oldTexture;
-        QMutex m_costumeMutex;
-        QMutex mutex;
         double m_size = 1;
         double m_x = 0;
         double m_y = 0;

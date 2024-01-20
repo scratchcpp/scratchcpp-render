@@ -76,10 +76,8 @@ TEST_F(TargetPainterTest, Paint)
 
     // Paint
     Texture texture(refFbo.texture(), refFbo.size());
-    EXPECT_CALL(target, lockCostume());
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
     EXPECT_CALL(target, updateHullPoints(&fbo));
-    EXPECT_CALL(target, unlockCostume());
     targetPainter.paint(&painter);
     painter.endFrame();
 

@@ -69,9 +69,6 @@ class IRenderedTarget : public QNanoQuickItem
 
         virtual QPointF mapFromScene(const QPointF &point) const = 0;
 
-        virtual void lockCostume() = 0;
-        virtual void unlockCostume() = 0;
-
         virtual bool mirrorHorizontally() const = 0;
 
         virtual Texture texture() const = 0;

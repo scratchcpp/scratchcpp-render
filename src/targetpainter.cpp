@@ -27,8 +27,6 @@ void TargetPainter::paint(QNanoPainter *painter)
                "application object.");
     }
 
-    m_target->lockCostume();
-
     QOpenGLContext *context = QOpenGLContext::currentContext();
     Q_ASSERT(context);
 
@@ -46,10 +44,8 @@ void TargetPainter::paint(QNanoPainter *painter)
 
     Texture texture = m_target->texture();
 
-    if (!texture.isValid()) {
-        m_target->unlockCostume();
+    if (!texture.isValid())
         return;
-    }
 
     // Create a FBO for the current texture
     unsigned int fbo;
@@ -58,7 +54,6 @@ void TargetPainter::paint(QNanoPainter *painter)
     glF.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.handle(), 0);
 
     if (glF.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        m_target->unlockCostume();
         qWarning() << "error: framebuffer incomplete (" + m_target->scratchTarget()->name() + ")";
         glF.glDeleteFramebuffers(1, &fbo);
         return;
@@ -73,7 +68,6 @@ void TargetPainter::paint(QNanoPainter *painter)
     glF.glDeleteFramebuffers(1, &fbo);
 
     m_target->updateHullPoints(targetFbo);
-    m_target->unlockCostume();
 }
 
 void TargetPainter::synchronize(QNanoQuickItem *item)

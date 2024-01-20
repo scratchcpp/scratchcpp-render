@@ -54,9 +54,6 @@ class RenderedTargetMock : public IRenderedTarget
 
         MOCK_METHOD(QPointF, mapFromScene, (const QPointF &), (const, override));
 
-        MOCK_METHOD(void, lockCostume, (), (override));
-        MOCK_METHOD(void, unlockCostume, (), (override));
-
         MOCK_METHOD(bool, mirrorHorizontally, (), (const, override));
 
         MOCK_METHOD(Texture, texture, (), (const, override));
