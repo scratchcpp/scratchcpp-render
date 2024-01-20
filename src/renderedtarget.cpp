@@ -25,8 +25,10 @@ RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
 
 RenderedTarget::~RenderedTarget()
 {
-    for (const auto &[costume, skin] : m_skins)
-        delete skin;
+    if (!m_skinsInherited) {
+        for (const auto &[costume, skin] : m_skins)
+            delete skin;
+    }
 }
 
 void RenderedTarget::updateVisibility(bool visible)
@@ -121,9 +123,12 @@ bool RenderedTarget::costumesLoaded() const
 void RenderedTarget::loadCostumes()
 {
     // Delete previous skins
-    for (const auto &[costume, skin] : m_skins)
-        delete skin;
+    if (!m_skinsInherited) {
+        for (const auto &[costume, skin] : m_skins)
+            delete skin;
+    }
 
+    m_skinsInherited = false;
     m_skins.clear();
 
     // Generate a skin for each costume
@@ -227,6 +232,20 @@ void RenderedTarget::setSpriteModel(SpriteModel *newSpriteModel)
     m_spriteModel = newSpriteModel;
 
     if (m_spriteModel) {
+        SpriteModel *cloneRoot = m_spriteModel->cloneRoot();
+
+        if (cloneRoot) {
+            // Inherit skins from the clone root
+            RenderedTarget *target = dynamic_cast<RenderedTarget *>(cloneRoot->renderedTarget());
+            Q_ASSERT(target);
+
+            if (target->costumesLoaded()) {
+                m_skins = target->m_skins; // TODO: Avoid copying - maybe using a pointer?
+                m_costumesLoaded = true;
+                m_skinsInherited = true; // avoid double free
+            }
+        }
+
         Sprite *sprite = m_spriteModel->sprite();
 
         if (sprite) {

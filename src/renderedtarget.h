@@ -112,6 +112,7 @@ class RenderedTarget : public IRenderedTarget
         SceneMouseArea *m_mouseArea = nullptr;
         bool m_costumesLoaded = false;
         std::unordered_map<libscratchcpp::Costume *, Skin *> m_skins;
+        bool m_skinsInherited = false;
         Skin *m_skin = nullptr;
         Texture m_texture;
         Texture m_oldTexture;
