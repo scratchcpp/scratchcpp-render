@@ -325,19 +325,6 @@ TEST_F(RenderedTargetTest, HullPoints)
     target.updateHullPoints(&fbo);
     ASSERT_EQ(target.hullPoints(), std::vector<QPointF>({ { 1, 1 }, { 2, 1 }, { 3, 1 }, { 1, 2 }, { 3, 2 }, { 1, 3 }, { 2, 3 }, { 3, 3 } }));
 
-    // Begin painting (multisampled)
-    format.setSamples(16);
-    QOpenGLFramebufferObject fboMultiSampled(4, 6, format);
-    fboMultiSampled.bind();
-    painter.beginFrame(fboMultiSampled.width(), fboMultiSampled.height());
-
-    // Paint (multisampled)
-    painter.drawImage(image, 0, 0);
-    painter.endFrame();
-
-    // Test hull points (this is undefined with multisampling, so we just check if there are any hull points)
-    ASSERT_FALSE(target.hullPoints().empty());
-
     // Release
     fbo.release();
     context.doneCurrent();

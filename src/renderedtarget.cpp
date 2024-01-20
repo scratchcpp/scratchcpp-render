@@ -397,19 +397,10 @@ void RenderedTarget::updateHullPoints(QOpenGLFramebufferObject *fbo)
     m_hullPoints.clear();
     m_hullPoints.reserve(width * height);
 
-    // Blit multisampled FBO to a custom FBO
-    QOpenGLFramebufferObject customFbo(fbo->size());
-    glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo->handle());
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, customFbo.handle());
-    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, customFbo.handle());
-
     // Read pixels from framebuffer
     size_t size = width * height * 4;
     GLubyte *pixelData = new GLubyte[size];
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
-    fbo->bind();
 
     // Flip vertically
     int rowSize = width * 4;
