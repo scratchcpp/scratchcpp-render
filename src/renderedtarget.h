@@ -74,6 +74,8 @@ class RenderedTarget : public IRenderedTarget
         qreal height() const override;
         void setHeight(qreal height) override;
 
+        libscratchcpp::Rect getBounds() const override;
+
         QPointF mapFromScene(const QPointF &point) const override;
 
         bool mirrorHorizontally() const override;
@@ -104,6 +106,7 @@ class RenderedTarget : public IRenderedTarget
         void calculateRotation();
         void calculateSize();
         void handleSceneMouseMove(qreal x, qreal y);
+        QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const;
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;

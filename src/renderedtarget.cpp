@@ -2,6 +2,7 @@
 
 #include <scratchcpp/iengine.h>
 #include <scratchcpp/costume.h>
+#include <scratchcpp/rect.h>
 #include <QtSvg/QSvgRenderer>
 #include <qnanopainter.h>
 
@@ -17,6 +18,7 @@ using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions are multiplied by this
+static const double pi = std::acos(-1);    // TODO: Use std::numbers::pi in C++20
 
 RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
     IRenderedTarget(parent)
@@ -327,6 +329,43 @@ void RenderedTarget::setHeight(qreal height)
     QNanoQuickItem::setHeight(height);
 }
 
+Rect RenderedTarget::getBounds() const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/c3ede9c3d54769730c7b023021511e2aba167b1f/src/Rectangle.js#L33-L55
+    if (!m_costume || !m_skin || !m_texture.isValid())
+        return Rect(m_x, m_y, m_x, m_y);
+
+    const double width = m_texture.width() * m_size / scale() / m_costume->bitmapResolution();
+    const double height = m_texture.height() * m_size / scale() / m_costume->bitmapResolution();
+    const double originX = m_stageScale * m_costume->rotationCenterX() * m_size / scale() / m_costume->bitmapResolution() - width / 2;
+    const double originY = m_stageScale * -m_costume->rotationCenterY() * m_size / scale() / m_costume->bitmapResolution() + height / 2;
+    const double rot = -rotation() * pi / 180;
+    double left = std::numeric_limits<double>::infinity();
+    double top = -std::numeric_limits<double>::infinity();
+    double right = -std::numeric_limits<double>::infinity();
+    double bottom = std::numeric_limits<double>::infinity();
+
+    for (const QPointF &point : m_hullPoints) {
+        QPointF transformed = transformPoint(point.x() - width / 2, height / 2 - point.y(), originX, originY, rot);
+        const double x = transformed.x() * scale() / m_stageScale * (m_mirrorHorizontally ? -1 : 1);
+        const double y = transformed.y() * scale() / m_stageScale;
+
+        if (x < left)
+            left = x;
+
+        if (x > right)
+            right = x;
+
+        if (y > top)
+            top = y;
+
+        if (y < bottom)
+            bottom = y;
+    }
+
+    return Rect(left + m_x, top + m_y, right + m_x, bottom + m_y);
+}
+
 QPointF RenderedTarget::mapFromScene(const QPointF &point) const
 {
     return QNanoQuickItem::mapFromScene(point);
@@ -535,6 +574,15 @@ void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
         sprite->setX(x / m_stageScale - m_engine->stageWidth() / 2.0 - m_dragDeltaX);
         sprite->setY(-y / m_stageScale + m_engine->stageHeight() / 2.0 - m_dragDeltaY);
     }
+}
+
+QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const
+{
+    const double cosRot = std::cos(rot);
+    const double sinRot = std::sin(rot);
+    const double x = (scratchX - originX) * cosRot - (scratchY - originY) * sinRot;
+    const double y = (scratchX - originX) * sinRot + (scratchY - originY) * cosRot;
+    return QPointF(x, y);
 }
 
 bool RenderedTarget::mirrorHorizontally() const

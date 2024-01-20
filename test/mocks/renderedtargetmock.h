@@ -3,6 +3,7 @@
 #include <irenderedtarget.h>
 #include <texture.h>
 #include <qnanoquickitem.h>
+#include <scratchcpp/rect.h>
 #include <gmock/gmock.h>
 
 using namespace scratchcpprender;
@@ -53,6 +54,8 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(void, setHeight, (qreal), (override));
 
         MOCK_METHOD(QPointF, mapFromScene, (const QPointF &), (const, override));
+
+        MOCK_METHOD(libscratchcpp::Rect, getBounds, (), (const, override));
 
         MOCK_METHOD(bool, mirrorHorizontally, (), (const, override));
 

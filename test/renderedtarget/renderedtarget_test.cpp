@@ -9,6 +9,7 @@
 #include <scratchcpp/stage.h>
 #include <scratchcpp/sprite.h>
 #include <scratchcpp/costume.h>
+#include <scratchcpp/rect.h>
 #include <enginemock.h>
 
 #include "../common.h"
@@ -553,4 +554,76 @@ TEST_F(RenderedTargetTest, StageScale)
 
     target.setStageScale(6.4);
     ASSERT_EQ(target.stageScale(), 6.4);
+}
+
+TEST_F(RenderedTargetTest, GetBounds)
+{
+    QOpenGLContext context;
+    QOffscreenSurface surface;
+    createContextAndSurface(&context, &surface);
+    QOpenGLExtraFunctions glF(&context);
+    glF.initializeOpenGLFunctions();
+    RenderedTarget target;
+
+    Sprite sprite;
+    sprite.setX(75.64);
+    sprite.setY(-120.3);
+    sprite.setDirection(-46.37);
+    sprite.setSize(67.98);
+    SpriteModel spriteModel;
+    sprite.setInterface(&spriteModel);
+    target.setSpriteModel(&spriteModel);
+    EngineMock engine;
+    target.setEngine(&engine);
+    auto costume = std::make_shared<Costume>("", "", "png");
+    std::string costumeData = readFileStr("image.png");
+    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    costume->setRotationCenterX(-15);
+    costume->setRotationCenterY(48);
+    costume->setBitmapResolution(3.25);
+    sprite.addCostume(costume);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.loadCostumes();
+    target.updateCostume(costume.get());
+    target.beforeRedraw();
+
+    Texture texture = target.texture();
+    QOpenGLFramebufferObjectFormat format;
+    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    QOpenGLFramebufferObject fbo(texture.size(), format);
+    fbo.bind();
+    glF.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.handle(), 0);
+    target.updateHullPoints(&fbo);
+    fbo.release();
+
+    Rect bounds = target.getBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 66.13);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -124.52);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 66.72);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -125.11);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
+
+    bounds = target.getBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 71.87);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.47);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.29);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -110.89);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setStageScale(20.75);
+
+    bounds = target.getBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 71.87);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.47);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.29);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -110.89);
+
+    context.doneCurrent();
 }

@@ -67,6 +67,8 @@ class IRenderedTarget : public QNanoQuickItem
         virtual qreal height() const = 0;
         virtual void setHeight(qreal width) = 0;
 
+        virtual libscratchcpp::Rect getBounds() const = 0;
+
         virtual QPointF mapFromScene(const QPointF &point) const = 0;
 
         virtual bool mirrorHorizontally() const = 0;
