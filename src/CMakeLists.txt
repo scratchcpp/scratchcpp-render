@@ -31,6 +31,8 @@ qt_add_qml_module(scratchcpp-render
 	listmonitorlistmodel.cpp
 	listmonitorlistmodel.h
 	irenderedtarget.h
+	texture.cpp
+	texture.h
         renderedtarget.cpp
         renderedtarget.h
 	targetpainter.cpp
