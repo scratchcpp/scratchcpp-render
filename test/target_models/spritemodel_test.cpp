@@ -8,6 +8,8 @@
 using namespace scratchcpprender;
 using namespace libscratchcpp;
 
+using ::testing::Return;
+
 TEST(SpriteModelTest, Constructors)
 {
     SpriteModel model1;
@@ -173,6 +175,22 @@ TEST(SpriteModelTest, OnLayerOrderChanged)
 
     EXPECT_CALL(renderedTarget, updateLayerOrder(7));
     model.onLayerOrderChanged(7);
+}
+
+TEST(SpriteModelTest, BoundingRect)
+{
+    SpriteModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    Rect rect(-1, 1, 1, -1);
+    EXPECT_CALL(renderedTarget, getBounds()).WillOnce(Return(rect));
+    Rect bounds = model.boundingRect();
+    ASSERT_EQ(bounds.left(), rect.left());
+    ASSERT_EQ(bounds.top(), rect.top());
+    ASSERT_EQ(bounds.right(), rect.right());
+    ASSERT_EQ(bounds.bottom(), rect.bottom());
 }
 
 TEST(SpriteModelTest, RenderedTarget)
