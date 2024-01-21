@@ -32,6 +32,9 @@ void SpriteModel::onCloned(libscratchcpp::Sprite *clone)
 
     SpriteModel *cloneModel = new SpriteModel(m_cloneRoot);
     cloneModel->m_cloneRoot = m_cloneRoot;
+    cloneModel->m_penLayer = m_penLayer;
+    cloneModel->m_penAttributes = m_penAttributes;
+    cloneModel->m_penDown = m_penDown;
     clone->setInterface(cloneModel);
     emit cloned(cloneModel);
 }

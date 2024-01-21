@@ -74,9 +74,16 @@ TEST(SpriteModelTest, OnCloned)
     ASSERT_EQ(cloneModel->parent(), &model);
     ASSERT_EQ(cloneModel->sprite(), &clone2);
     ASSERT_EQ(cloneModel->cloneRoot(), &model);
+    ASSERT_FALSE(cloneModel->penDown());
 
     Sprite clone3;
     QSignalSpy spy2(cloneModel, &SpriteModel::cloned);
+    PenLayerMock penLayer;
+    cloneModel->setPenLayer(&penLayer);
+    cloneModel->penAttributes().color = QColor(255, 0, 0);
+    cloneModel->penAttributes().diameter = 20.3;
+    EXPECT_CALL(penLayer, drawPoint);
+    cloneModel->setPenDown(true);
     cloneModel->onCloned(&clone3);
     ASSERT_EQ(spy2.count(), 1);
 
@@ -87,6 +94,10 @@ TEST(SpriteModelTest, OnCloned)
     ASSERT_EQ(cloneModel->parent(), &model);
     ASSERT_EQ(cloneModel->sprite(), &clone3);
     ASSERT_EQ(cloneModel->cloneRoot(), &model);
+    ASSERT_EQ(cloneModel->penLayer(), &penLayer);
+    ASSERT_EQ(cloneModel->penAttributes().color, QColor(255, 0, 0));
+    ASSERT_EQ(cloneModel->penAttributes().diameter, 20.3);
+    ASSERT_TRUE(cloneModel->penDown());
 }
 
 TEST(SpriteModelTest, OnCostumeChanged)
