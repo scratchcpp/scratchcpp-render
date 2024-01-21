@@ -2,6 +2,7 @@
 #include <scratchcpp/costume.h>
 #include <spritemodel.h>
 #include <renderedtargetmock.h>
+#include <penlayermock.h>
 
 #include "../common.h"
 
@@ -9,6 +10,9 @@ using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 using ::testing::Return;
+using ::testing::WithArgs;
+using ::testing::Invoke;
+using ::testing::_;
 
 TEST(SpriteModelTest, Constructors)
 {
@@ -203,4 +207,43 @@ TEST(SpriteModelTest, RenderedTarget)
     model.setRenderedTarget(&renderedTarget);
     ASSERT_EQ(spy.count(), 1);
     ASSERT_EQ(model.renderedTarget(), &renderedTarget);
+}
+
+TEST(SpriteModelTest, PenLayer)
+{
+    SpriteModel model;
+    ASSERT_EQ(model.penLayer(), nullptr);
+
+    PenLayerMock penLayer;
+    QSignalSpy spy(&model, &SpriteModel::penLayerChanged);
+    model.setPenLayer(&penLayer);
+    ASSERT_EQ(spy.count(), 1);
+    ASSERT_EQ(model.penLayer(), &penLayer);
+}
+
+TEST(SpriteModelTest, PenDown)
+{
+    SpriteModel model;
+    Sprite sprite;
+    sprite.setX(24.6);
+    sprite.setY(-48.8);
+    model.init(&sprite);
+    ASSERT_FALSE(model.penDown());
+
+    PenLayerMock penLayer;
+    model.setPenLayer(&penLayer);
+
+    PenAttributes &attr = model.penAttributes();
+
+    EXPECT_CALL(penLayer, drawPoint(_, 24.6, -48.8)).WillOnce(WithArgs<0>(Invoke([&attr](const PenAttributes &attrArg) { ASSERT_EQ(&attr, &attrArg); })));
+    model.setPenDown(true);
+    ASSERT_TRUE(model.penDown());
+
+    EXPECT_CALL(penLayer, drawPoint).Times(0);
+    model.setPenDown(true);
+    ASSERT_TRUE(model.penDown());
+
+    EXPECT_CALL(penLayer, drawPoint).Times(0);
+    model.setPenDown(false);
+    ASSERT_FALSE(model.penDown());
 }

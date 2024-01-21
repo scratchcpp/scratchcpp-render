@@ -5,6 +5,7 @@
 
 #include "spritemodel.h"
 #include "renderedtarget.h"
+#include "ipenlayer.h"
 
 namespace scratchcpprender
 {
@@ -113,6 +114,41 @@ void SpriteModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
 
     m_renderedTarget = newRenderedTarget;
     emit renderedTargetChanged();
+}
+
+IPenLayer *SpriteModel::penLayer() const
+{
+    return m_penLayer;
+}
+
+void SpriteModel::setPenLayer(IPenLayer *newPenLayer)
+{
+    if (m_penLayer == newPenLayer)
+        return;
+
+    m_penLayer = newPenLayer;
+    emit penLayerChanged();
+}
+
+PenAttributes &SpriteModel::penAttributes()
+{
+    return m_penAttributes;
+}
+
+bool SpriteModel::penDown() const
+{
+    return m_penDown;
+}
+
+void SpriteModel::setPenDown(bool newPenDown)
+{
+    if (m_penDown == newPenDown)
+        return;
+
+    m_penDown = newPenDown;
+
+    if (m_penDown && m_penLayer && m_sprite)
+        m_penLayer->drawPoint(m_penAttributes, m_sprite->x(), m_sprite->y());
 }
 
 SpriteModel *SpriteModel::cloneRoot() const
