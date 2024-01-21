@@ -7,7 +7,7 @@
 using namespace scratchcpprender;
 
 BitmapSkin::BitmapSkin(libscratchcpp::Costume *costume) :
-    Skin(costume)
+    Skin()
 {
     if (!costume)
         return;

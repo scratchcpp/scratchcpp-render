@@ -10,7 +10,7 @@ static const int MAX_TEXTURE_DIMENSION = 2048;
 static const int INDEX_OFFSET = 8;
 
 SVGSkin::SVGSkin(libscratchcpp::Costume *costume, bool antialiasing) :
-    Skin(costume),
+    Skin(),
     m_antialiasing(antialiasing)
 {
     if (!costume)

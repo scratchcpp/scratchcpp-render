@@ -7,6 +7,13 @@
 #include "skin.h"
 #include "texture.h"
 
+namespace libscratchcpp
+{
+
+class Costume;
+
+}
+
 namespace scratchcpprender
 {
 

@@ -6,13 +6,6 @@
 #include <QSizeF>
 #include <QtOpenGL>
 
-namespace libscratchcpp
-{
-
-class Costume;
-
-}
-
 namespace scratchcpprender
 {
 
@@ -21,7 +14,7 @@ class Texture;
 class Skin
 {
     public:
-        Skin(libscratchcpp::Costume *costume);
+        Skin();
         Skin(const Skin &) = delete;
         virtual ~Skin() { }
 

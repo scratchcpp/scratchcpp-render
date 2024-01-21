@@ -7,10 +7,8 @@
 
 using namespace scratchcpprender;
 
-Skin::Skin(libscratchcpp::Costume *costume)
+Skin::Skin()
 {
-    if (!costume)
-        return;
 }
 
 Texture Skin::createAndPaintTexture(int width, int height, bool multisampled)
