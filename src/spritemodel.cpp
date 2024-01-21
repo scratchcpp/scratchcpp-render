@@ -62,6 +62,8 @@ void SpriteModel::onYChanged(double y)
 
 void SpriteModel::onMoved(double oldX, double oldY, double newX, double newY)
 {
+    if (m_penDown && m_penLayer)
+        m_penLayer->drawLine(m_penAttributes, oldX, oldY, newX, newY);
 }
 
 void SpriteModel::onSizeChanged(double size)

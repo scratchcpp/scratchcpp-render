@@ -135,6 +135,23 @@ TEST(SpriteModelTest, OnYChanged)
     model.onYChanged(-46.1);
 }
 
+TEST(SpriteModelTest, OnMoved)
+{
+    SpriteModel model;
+
+    PenLayerMock penLayer;
+    model.setPenLayer(&penLayer);
+
+    EXPECT_CALL(penLayer, drawLine).Times(0);
+    model.onMoved(-15.6, 54.9, 159.04, -2.5);
+
+    model.setPenDown(true);
+    PenAttributes &attr = model.penAttributes();
+
+    EXPECT_CALL(penLayer, drawLine(_, -15.6, 54.9, 159.04, -2.5)).WillOnce(WithArgs<0>(Invoke([&attr](const PenAttributes &attrArg) { ASSERT_EQ(&attr, &attrArg); })));
+    model.onMoved(-15.6, 54.9, 159.04, -2.5);
+}
+
 TEST(SpriteModelTest, OnSizeChanged)
 {
     SpriteModel model;
