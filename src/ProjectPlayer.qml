@@ -110,7 +110,7 @@ ProjectScene {
         }
 
         PenLayer {
-            id: penLayer
+            id: projectPenLayer
             engine: loader.engine
             anchors.fill: parent
         }
@@ -127,6 +127,7 @@ ProjectScene {
                     engine = loader.engine;
                     spriteModel = modelData;
                     spriteModel.renderedTarget = this;
+                    spriteModel.penLayer = projectPenLayer;
                 }
             }
         }
