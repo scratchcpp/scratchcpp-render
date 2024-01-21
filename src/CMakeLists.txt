@@ -49,6 +49,11 @@ qt_add_qml_module(scratchcpp-render
 	mouseeventhandler.h
 	keyeventhandler.cpp
 	keyeventhandler.h
+	ipenlayer.h
+	penlayer.cpp
+	penlayer.h
+	penlayerpainter.cpp
+	penlayerpainter.h
 	penattributes.h
 )
 
