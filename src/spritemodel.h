@@ -39,6 +39,7 @@ class SpriteModel
         void onVisibleChanged(bool visible) override;
         void onXChanged(double x) override;
         void onYChanged(double y) override;
+        void onMoved(double oldX, double oldY, double newX, double newY) override;
         void onSizeChanged(double size) override;
         void onDirectionChanged(double direction) override;
         void onRotationStyleChanged(libscratchcpp::Sprite::RotationStyle rotationStyle) override;

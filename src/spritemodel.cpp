@@ -60,6 +60,10 @@ void SpriteModel::onYChanged(double y)
         m_renderedTarget->updateY(y);
 }
 
+void SpriteModel::onMoved(double oldX, double oldY, double newX, double newY)
+{
+}
+
 void SpriteModel::onSizeChanged(double size)
 {
     if (m_renderedTarget)
