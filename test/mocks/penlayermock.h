@@ -12,6 +12,9 @@ namespace scratchcpprender
 class PenLayerMock : public IPenLayer
 {
     public:
+        MOCK_METHOD(bool, antialiasingEnabled, (), (const, override));
+        MOCK_METHOD(void, setAntialiasingEnabled, (bool), (override));
+
         MOCK_METHOD(libscratchcpp::IEngine *, engine, (), (const, override));
         MOCK_METHOD(void, setEngine, (libscratchcpp::IEngine *), (override));
 

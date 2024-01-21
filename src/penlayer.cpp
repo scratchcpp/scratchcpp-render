@@ -12,7 +12,7 @@ PenLayer::PenLayer(QNanoQuickItem *parent) :
     IPenLayer(parent)
 {
     m_fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-    m_fboFormat.setSamples(4);
+    m_fboFormat.setSamples(m_antialiasingEnabled ? 4 : 0);
 }
 
 PenLayer::~PenLayer()
@@ -22,6 +22,17 @@ PenLayer::~PenLayer()
 
     if (m_painter && m_painter->isActive())
         m_painter->end();
+}
+
+bool PenLayer::antialiasingEnabled() const
+{
+    return m_antialiasingEnabled;
+}
+
+void PenLayer::setAntialiasingEnabled(bool enabled)
+{
+    m_antialiasingEnabled = enabled;
+    m_fboFormat.setSamples(enabled ? 4 : 0);
 }
 
 libscratchcpp::IEngine *PenLayer::engine() const
@@ -81,7 +92,7 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
     // Begin painting
     m_fbo->bind();
     m_painter->beginNativePainting();
-    m_painter->setRenderHint(QPainter::Antialiasing);
+    m_painter->setRenderHint(QPainter::Antialiasing, m_antialiasingEnabled);
     m_painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
 
     // Translate to Scratch coordinate system

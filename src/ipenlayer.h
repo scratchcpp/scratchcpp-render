@@ -26,6 +26,9 @@ class IPenLayer : public QNanoQuickItem
 
         virtual ~IPenLayer() { }
 
+        virtual bool antialiasingEnabled() const = 0;
+        virtual void setAntialiasingEnabled(bool enabled) = 0;
+
         virtual libscratchcpp::IEngine *engine() const = 0;
         virtual void setEngine(libscratchcpp::IEngine *newEngine) = 0;
 

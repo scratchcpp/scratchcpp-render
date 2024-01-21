@@ -20,6 +20,9 @@ class PenLayer : public IPenLayer
         PenLayer(QNanoQuickItem *parent = nullptr);
         ~PenLayer();
 
+        bool antialiasingEnabled() const override;
+        void setAntialiasingEnabled(bool enabled) override;
+
         libscratchcpp::IEngine *engine() const override;
         void setEngine(libscratchcpp::IEngine *newEngine) override;
 
@@ -39,6 +42,7 @@ class PenLayer : public IPenLayer
 
     private:
         static std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> m_projectPenLayers;
+        bool m_antialiasingEnabled = true;
         libscratchcpp::IEngine *m_engine = nullptr;
         std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
         std::unique_ptr<QOpenGLPaintDevice> m_paintDevice;

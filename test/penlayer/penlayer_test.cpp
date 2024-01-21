@@ -69,6 +69,8 @@ TEST_F(PenLayerTest, Engine)
 TEST_F(PenLayerTest, FramebufferObject)
 {
     PenLayer penLayer;
+    ASSERT_TRUE(penLayer.antialiasingEnabled());
+
     EngineMock engine1, engine2;
     EXPECT_CALL(engine1, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine1, stageHeight()).WillOnce(Return(360));
@@ -80,6 +82,9 @@ TEST_F(PenLayerTest, FramebufferObject)
     ASSERT_EQ(fbo->format().attachment(), QOpenGLFramebufferObject::CombinedDepthStencil);
     ASSERT_EQ(fbo->format().samples(), 4);
 
+    penLayer.setAntialiasingEnabled(false);
+    ASSERT_FALSE(penLayer.antialiasingEnabled());
+
     EXPECT_CALL(engine2, stageWidth()).WillOnce(Return(500));
     EXPECT_CALL(engine2, stageHeight()).WillOnce(Return(400));
     penLayer.setEngine(&engine2);
@@ -88,7 +93,7 @@ TEST_F(PenLayerTest, FramebufferObject)
     ASSERT_EQ(fbo->width(), 500);
     ASSERT_EQ(fbo->height(), 400);
     ASSERT_EQ(fbo->format().attachment(), QOpenGLFramebufferObject::CombinedDepthStencil);
-    ASSERT_EQ(fbo->format().samples(), 4);
+    ASSERT_EQ(fbo->format().samples(), 0);
 }
 
 TEST_F(PenLayerTest, GetProjectPenLayer)
@@ -161,6 +166,7 @@ TEST_F(PenLayerTest, Clear)
 TEST_F(PenLayerTest, DrawPoint)
 {
     PenLayer penLayer;
+    penLayer.setAntialiasingEnabled(false);
     EngineMock engine;
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
@@ -207,6 +213,7 @@ TEST_F(PenLayerTest, DrawPoint)
 TEST_F(PenLayerTest, DrawLine)
 {
     PenLayer penLayer;
+    penLayer.setAntialiasingEnabled(false);
     EngineMock engine;
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
@@ -238,7 +245,7 @@ TEST_F(PenLayerTest, DrawLine)
     penLayer.drawLine(attr, -54, 21, 88, -6);
 
     QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
-    QImage image = fbo->toImage();
+    QImage image = fbo->toImage().scaled(240, 180);
     QBuffer buffer;
     image.save(&buffer, "png");
     QFile ref("lines.png");
