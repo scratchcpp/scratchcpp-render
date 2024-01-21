@@ -59,7 +59,6 @@ class SpriteModel
         void setPenLayer(IPenLayer *newPenLayer);
 
         PenAttributes &penAttributes();
-        void setPenAttributes(const PenAttributes &newPenAttributes);
 
         bool penDown() const;
         void setPenDown(bool newPenDown);
