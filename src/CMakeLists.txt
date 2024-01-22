@@ -49,6 +49,12 @@ qt_add_qml_module(scratchcpp-render
 	mouseeventhandler.h
 	keyeventhandler.cpp
 	keyeventhandler.h
+	ipenlayer.h
+	penlayer.cpp
+	penlayer.h
+	penlayerpainter.cpp
+	penlayerpainter.h
+	penattributes.h
 )
 
 list(APPEND QML_IMPORT_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})

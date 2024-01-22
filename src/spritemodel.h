@@ -6,12 +6,16 @@
 #include <QQmlEngine>
 #include <scratchcpp/ispritehandler.h>
 
+#include "penattributes.h"
+
 Q_MOC_INCLUDE("renderedtarget.h");
+Q_MOC_INCLUDE("ipenlayer.h");
 
 namespace scratchcpprender
 {
 
 class IRenderedTarget;
+class IPenLayer;
 
 class SpriteModel
     : public QObject
@@ -20,6 +24,7 @@ class SpriteModel
         Q_OBJECT
         QML_ELEMENT
         Q_PROPERTY(IRenderedTarget *renderedTarget READ renderedTarget WRITE setRenderedTarget NOTIFY renderedTargetChanged)
+        Q_PROPERTY(IPenLayer *penLayer READ penLayer WRITE setPenLayer NOTIFY penLayerChanged)
 
     public:
         SpriteModel(QObject *parent = nullptr);
@@ -34,6 +39,7 @@ class SpriteModel
         void onVisibleChanged(bool visible) override;
         void onXChanged(double x) override;
         void onYChanged(double y) override;
+        void onMoved(double oldX, double oldY, double newX, double newY) override;
         void onSizeChanged(double size) override;
         void onDirectionChanged(double direction) override;
         void onRotationStyleChanged(libscratchcpp::Sprite::RotationStyle rotationStyle) override;
@@ -49,16 +55,28 @@ class SpriteModel
         IRenderedTarget *renderedTarget() const;
         void setRenderedTarget(IRenderedTarget *newRenderedTarget);
 
+        IPenLayer *penLayer() const;
+        void setPenLayer(IPenLayer *newPenLayer);
+
+        PenAttributes &penAttributes();
+
+        bool penDown() const;
+        void setPenDown(bool newPenDown);
+
         SpriteModel *cloneRoot() const;
 
     signals:
         void renderedTargetChanged();
+        void penLayerChanged();
         void cloned(SpriteModel *cloneModel);
         void cloneDeleted(SpriteModel *clone);
 
     private:
         libscratchcpp::Sprite *m_sprite = nullptr;
         IRenderedTarget *m_renderedTarget = nullptr;
+        IPenLayer *m_penLayer = nullptr;
+        PenAttributes m_penAttributes;
+        bool m_penDown = false;
         SpriteModel *m_cloneRoot = nullptr;
 };
 

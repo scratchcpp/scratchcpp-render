@@ -109,6 +109,12 @@ ProjectScene {
             onStageModelChanged: stageModel.renderedTarget = this
         }
 
+        PenLayer {
+            id: projectPenLayer
+            engine: loader.engine
+            anchors.fill: parent
+        }
+
         Component {
             id: renderedSprite
 
@@ -121,6 +127,7 @@ ProjectScene {
                     engine = loader.engine;
                     spriteModel = modelData;
                     spriteModel.renderedTarget = this;
+                    spriteModel.penLayer = projectPenLayer;
                 }
             }
         }

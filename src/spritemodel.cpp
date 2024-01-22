@@ -5,6 +5,7 @@
 
 #include "spritemodel.h"
 #include "renderedtarget.h"
+#include "ipenlayer.h"
 
 namespace scratchcpprender
 {
@@ -31,6 +32,9 @@ void SpriteModel::onCloned(libscratchcpp::Sprite *clone)
 
     SpriteModel *cloneModel = new SpriteModel(m_cloneRoot);
     cloneModel->m_cloneRoot = m_cloneRoot;
+    cloneModel->m_penLayer = m_penLayer;
+    cloneModel->m_penAttributes = m_penAttributes;
+    cloneModel->m_penDown = m_penDown;
     clone->setInterface(cloneModel);
     emit cloned(cloneModel);
 }
@@ -57,6 +61,12 @@ void SpriteModel::onYChanged(double y)
 {
     if (m_renderedTarget)
         m_renderedTarget->updateY(y);
+}
+
+void SpriteModel::onMoved(double oldX, double oldY, double newX, double newY)
+{
+    if (m_penDown && m_penLayer)
+        m_penLayer->drawLine(m_penAttributes, oldX, oldY, newX, newY);
 }
 
 void SpriteModel::onSizeChanged(double size)
@@ -113,6 +123,41 @@ void SpriteModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
 
     m_renderedTarget = newRenderedTarget;
     emit renderedTargetChanged();
+}
+
+IPenLayer *SpriteModel::penLayer() const
+{
+    return m_penLayer;
+}
+
+void SpriteModel::setPenLayer(IPenLayer *newPenLayer)
+{
+    if (m_penLayer == newPenLayer)
+        return;
+
+    m_penLayer = newPenLayer;
+    emit penLayerChanged();
+}
+
+PenAttributes &SpriteModel::penAttributes()
+{
+    return m_penAttributes;
+}
+
+bool SpriteModel::penDown() const
+{
+    return m_penDown;
+}
+
+void SpriteModel::setPenDown(bool newPenDown)
+{
+    if (m_penDown == newPenDown)
+        return;
+
+    m_penDown = newPenDown;
+
+    if (m_penDown && m_penLayer && m_sprite)
+        m_penLayer->drawPoint(m_penAttributes, m_sprite->x(), m_sprite->y());
 }
 
 SpriteModel *SpriteModel::cloneRoot() const

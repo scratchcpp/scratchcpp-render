@@ -2,6 +2,7 @@
 #include <scratchcpp/costume.h>
 #include <spritemodel.h>
 #include <renderedtargetmock.h>
+#include <penlayermock.h>
 
 #include "../common.h"
 
@@ -9,6 +10,9 @@ using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 using ::testing::Return;
+using ::testing::WithArgs;
+using ::testing::Invoke;
+using ::testing::_;
 
 TEST(SpriteModelTest, Constructors)
 {
@@ -70,9 +74,16 @@ TEST(SpriteModelTest, OnCloned)
     ASSERT_EQ(cloneModel->parent(), &model);
     ASSERT_EQ(cloneModel->sprite(), &clone2);
     ASSERT_EQ(cloneModel->cloneRoot(), &model);
+    ASSERT_FALSE(cloneModel->penDown());
 
     Sprite clone3;
     QSignalSpy spy2(cloneModel, &SpriteModel::cloned);
+    PenLayerMock penLayer;
+    cloneModel->setPenLayer(&penLayer);
+    cloneModel->penAttributes().color = QColor(255, 0, 0);
+    cloneModel->penAttributes().diameter = 20.3;
+    EXPECT_CALL(penLayer, drawPoint);
+    cloneModel->setPenDown(true);
     cloneModel->onCloned(&clone3);
     ASSERT_EQ(spy2.count(), 1);
 
@@ -83,6 +94,10 @@ TEST(SpriteModelTest, OnCloned)
     ASSERT_EQ(cloneModel->parent(), &model);
     ASSERT_EQ(cloneModel->sprite(), &clone3);
     ASSERT_EQ(cloneModel->cloneRoot(), &model);
+    ASSERT_EQ(cloneModel->penLayer(), &penLayer);
+    ASSERT_EQ(cloneModel->penAttributes().color, QColor(255, 0, 0));
+    ASSERT_EQ(cloneModel->penAttributes().diameter, 20.3);
+    ASSERT_TRUE(cloneModel->penDown());
 }
 
 TEST(SpriteModelTest, OnCostumeChanged)
@@ -129,6 +144,23 @@ TEST(SpriteModelTest, OnYChanged)
 
     EXPECT_CALL(renderedTarget, updateY(-46.1));
     model.onYChanged(-46.1);
+}
+
+TEST(SpriteModelTest, OnMoved)
+{
+    SpriteModel model;
+
+    PenLayerMock penLayer;
+    model.setPenLayer(&penLayer);
+
+    EXPECT_CALL(penLayer, drawLine).Times(0);
+    model.onMoved(-15.6, 54.9, 159.04, -2.5);
+
+    model.setPenDown(true);
+    PenAttributes &attr = model.penAttributes();
+
+    EXPECT_CALL(penLayer, drawLine(_, -15.6, 54.9, 159.04, -2.5)).WillOnce(WithArgs<0>(Invoke([&attr](const PenAttributes &attrArg) { ASSERT_EQ(&attr, &attrArg); })));
+    model.onMoved(-15.6, 54.9, 159.04, -2.5);
 }
 
 TEST(SpriteModelTest, OnSizeChanged)
@@ -203,4 +235,43 @@ TEST(SpriteModelTest, RenderedTarget)
     model.setRenderedTarget(&renderedTarget);
     ASSERT_EQ(spy.count(), 1);
     ASSERT_EQ(model.renderedTarget(), &renderedTarget);
+}
+
+TEST(SpriteModelTest, PenLayer)
+{
+    SpriteModel model;
+    ASSERT_EQ(model.penLayer(), nullptr);
+
+    PenLayerMock penLayer;
+    QSignalSpy spy(&model, &SpriteModel::penLayerChanged);
+    model.setPenLayer(&penLayer);
+    ASSERT_EQ(spy.count(), 1);
+    ASSERT_EQ(model.penLayer(), &penLayer);
+}
+
+TEST(SpriteModelTest, PenDown)
+{
+    SpriteModel model;
+    Sprite sprite;
+    sprite.setX(24.6);
+    sprite.setY(-48.8);
+    model.init(&sprite);
+    ASSERT_FALSE(model.penDown());
+
+    PenLayerMock penLayer;
+    model.setPenLayer(&penLayer);
+
+    PenAttributes &attr = model.penAttributes();
+
+    EXPECT_CALL(penLayer, drawPoint(_, 24.6, -48.8)).WillOnce(WithArgs<0>(Invoke([&attr](const PenAttributes &attrArg) { ASSERT_EQ(&attr, &attrArg); })));
+    model.setPenDown(true);
+    ASSERT_TRUE(model.penDown());
+
+    EXPECT_CALL(penLayer, drawPoint).Times(0);
+    model.setPenDown(true);
+    ASSERT_TRUE(model.penDown());
+
+    EXPECT_CALL(penLayer, drawPoint).Times(0);
+    model.setPenDown(false);
+    ASSERT_FALSE(model.penDown());
 }
