@@ -20,6 +20,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     // Blocks
     engine->addCompileFunction(this, "pen_clear", &compileClear);
     engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
+    engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
 }
 
 void PenBlocks::compileClear(Compiler *compiler)
@@ -30,6 +31,11 @@ void PenBlocks::compileClear(Compiler *compiler)
 void PenBlocks::compilePenDown(Compiler *compiler)
 {
     compiler->addFunctionCall(&penDown);
+}
+
+void PenBlocks::compilePenUp(Compiler *compiler)
+{
+    compiler->addFunctionCall(&penUp);
 }
 
 unsigned int PenBlocks::clear(VirtualMachine *vm)
@@ -60,3 +66,18 @@ unsigned int PenBlocks::penDown(VirtualMachine *vm)
     return 0;
 }
 
+unsigned int PenBlocks::penUp(libscratchcpp::VirtualMachine *vm)
+{
+    Target *target = vm->target();
+
+    if (!target || target->isStage())
+        return 0;
+
+    Sprite *sprite = static_cast<Sprite *>(target);
+    SpriteModel *model = static_cast<SpriteModel *>(sprite->getInterface());
+
+    if (model)
+        model->setPenDown(false);
+
+    return 0;
+}

@@ -46,6 +46,7 @@ TEST_F(PenBlocksTest, RegisterBlocks)
     // Blocks
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_clear", &PenBlocks::compileClear));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penDown", &PenBlocks::compilePenDown));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penUp", &PenBlocks::compilePenUp));
 
     m_section->registerBlocks(&m_engineMock);
 }
@@ -126,4 +127,46 @@ TEST_F(PenBlocksTest, PenDownImpl)
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
     ASSERT_TRUE(model.penDown());
+}
+
+TEST_F(PenBlocksTest, PenUp)
+{
+    Compiler compiler(&m_engineMock);
+
+    auto block = std::make_shared<Block>("a", "pen_penUp");
+
+    EXPECT_CALL(m_engineMock, functionIndex(&PenBlocks::penUp)).WillOnce(Return(2));
+    compiler.init();
+    compiler.setBlock(block);
+    PenBlocks::compilePenUp(&compiler);
+    compiler.end();
+
+    ASSERT_EQ(compiler.bytecode(), std::vector<unsigned int>({ vm::OP_START, vm::OP_EXEC, 2, vm::OP_HALT }));
+    ASSERT_TRUE(compiler.constValues().empty());
+    ASSERT_TRUE(compiler.variables().empty());
+    ASSERT_TRUE(compiler.lists().empty());
+}
+
+TEST_F(PenBlocksTest, PenUpImpl)
+{
+    static unsigned int bytecode[] = { vm::OP_START, vm::OP_EXEC, 0, vm::OP_HALT };
+    static BlockFunc functions[] = { &PenBlocks::penUp };
+
+    SpriteModel model;
+    model.setPenDown(true);
+    Sprite sprite;
+    sprite.setInterface(&model);
+
+    VirtualMachine vm(&sprite, &m_engineMock, nullptr);
+    vm.setBytecode(bytecode);
+    vm.setFunctions(functions);
+
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_FALSE(model.penDown());
+
+    vm.reset();
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_FALSE(model.penDown());
 }
