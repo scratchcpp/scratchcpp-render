@@ -34,6 +34,7 @@ class PenLayer : public IPenLayer
         QOpenGLFramebufferObject *framebufferObject() const override;
 
         static IPenLayer *getProjectPenLayer(libscratchcpp::IEngine *engine);
+        static void addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer); // for tests
 
     signals:
         void engineChanged();

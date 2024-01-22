@@ -3,6 +3,7 @@
 #include <spritemodel.h>
 #include <renderedtargetmock.h>
 #include <penlayermock.h>
+#include <enginemock.h>
 
 #include "../common.h"
 
@@ -149,17 +150,25 @@ TEST(SpriteModelTest, OnYChanged)
 TEST(SpriteModelTest, OnMoved)
 {
     SpriteModel model;
+    Sprite sprite;
+    EngineMock engine;
+    sprite.setEngine(&engine);
+    model.init(&sprite);
 
     PenLayerMock penLayer;
     model.setPenLayer(&penLayer);
 
     EXPECT_CALL(penLayer, drawLine).Times(0);
+    EXPECT_CALL(engine, requestRedraw).Times(0);
     model.onMoved(-15.6, 54.9, 159.04, -2.5);
 
+    EXPECT_CALL(penLayer, drawPoint);
+    EXPECT_CALL(engine, requestRedraw);
     model.setPenDown(true);
     PenAttributes &attr = model.penAttributes();
 
     EXPECT_CALL(penLayer, drawLine(_, -15.6, 54.9, 159.04, -2.5)).WillOnce(WithArgs<0>(Invoke([&attr](const PenAttributes &attrArg) { ASSERT_EQ(&attr, &attrArg); })));
+    EXPECT_CALL(engine, requestRedraw());
     model.onMoved(-15.6, 54.9, 159.04, -2.5);
 }
 
@@ -253,8 +262,10 @@ TEST(SpriteModelTest, PenDown)
 {
     SpriteModel model;
     Sprite sprite;
+    EngineMock engine;
     sprite.setX(24.6);
     sprite.setY(-48.8);
+    sprite.setEngine(&engine);
     model.init(&sprite);
     ASSERT_FALSE(model.penDown());
 
@@ -264,14 +275,17 @@ TEST(SpriteModelTest, PenDown)
     PenAttributes &attr = model.penAttributes();
 
     EXPECT_CALL(penLayer, drawPoint(_, 24.6, -48.8)).WillOnce(WithArgs<0>(Invoke([&attr](const PenAttributes &attrArg) { ASSERT_EQ(&attr, &attrArg); })));
+    EXPECT_CALL(engine, requestRedraw());
+    model.setPenDown(true);
+    ASSERT_TRUE(model.penDown());
+
+    EXPECT_CALL(penLayer, drawPoint(_, 24.6, -48.8));
+    EXPECT_CALL(engine, requestRedraw());
     model.setPenDown(true);
     ASSERT_TRUE(model.penDown());
 
     EXPECT_CALL(penLayer, drawPoint).Times(0);
-    model.setPenDown(true);
-    ASSERT_TRUE(model.penDown());
-
-    EXPECT_CALL(penLayer, drawPoint).Times(0);
+    EXPECT_CALL(engine, requestRedraw).Times(0);
     model.setPenDown(false);
     ASSERT_FALSE(model.penDown());
 }

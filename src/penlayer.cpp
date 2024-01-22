@@ -47,7 +47,7 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 
     m_engine = newEngine;
 
-    if (m_engine) {
+    if (m_engine && QOpenGLContext::currentContext()) {
         m_projectPenLayers[m_engine] = this;
         m_fbo = std::make_unique<QOpenGLFramebufferObject>(m_engine->stageWidth(), m_engine->stageHeight(), m_fboFormat);
         Q_ASSERT(m_fbo->isValid());
@@ -132,6 +132,11 @@ IPenLayer *PenLayer::getProjectPenLayer(libscratchcpp::IEngine *engine)
         return it->second;
 
     return nullptr;
+}
+
+void PenLayer::addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer)
+{
+    m_projectPenLayers[engine] = penLayer;
 }
 
 QNanoQuickItemPainter *PenLayer::createItemPainter() const

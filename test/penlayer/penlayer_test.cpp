@@ -99,27 +99,31 @@ TEST_F(PenLayerTest, FramebufferObject)
 TEST_F(PenLayerTest, GetProjectPenLayer)
 {
     PenLayer penLayer;
-    ASSERT_EQ(penLayer.getProjectPenLayer(nullptr), nullptr);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(nullptr), nullptr);
 
     EngineMock engine1, engine2;
-    ASSERT_EQ(penLayer.getProjectPenLayer(&engine1), nullptr);
-    ASSERT_EQ(penLayer.getProjectPenLayer(&engine2), nullptr);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine1), nullptr);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine2), nullptr);
 
     EXPECT_CALL(engine1, stageWidth()).WillOnce(Return(1));
     EXPECT_CALL(engine1, stageHeight()).WillOnce(Return(1));
     penLayer.setEngine(&engine1);
-    ASSERT_EQ(penLayer.getProjectPenLayer(&engine1), &penLayer);
-    ASSERT_EQ(penLayer.getProjectPenLayer(&engine2), nullptr);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine1), &penLayer);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine2), nullptr);
 
     EXPECT_CALL(engine2, stageWidth()).WillOnce(Return(1));
     EXPECT_CALL(engine2, stageHeight()).WillOnce(Return(1));
     penLayer.setEngine(&engine2);
-    ASSERT_EQ(penLayer.getProjectPenLayer(&engine1), nullptr);
-    ASSERT_EQ(penLayer.getProjectPenLayer(&engine2), &penLayer);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine1), nullptr);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine2), &penLayer);
 
     penLayer.setEngine(nullptr);
-    ASSERT_EQ(penLayer.getProjectPenLayer(&engine1), nullptr);
-    ASSERT_EQ(penLayer.getProjectPenLayer(&engine2), nullptr);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine1), nullptr);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine2), nullptr);
+
+    PenLayer::addPenLayer(&engine1, &penLayer);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine1), &penLayer);
+    ASSERT_EQ(PenLayer::getProjectPenLayer(&engine2), nullptr);
 }
 
 TEST_F(PenLayerTest, Clear)

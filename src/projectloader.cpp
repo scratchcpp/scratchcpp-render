@@ -3,6 +3,7 @@
 #include <scratchcpp/iengine.h>
 #include <scratchcpp/value.h>
 #include <scratchcpp/monitor.h>
+#include <scratchcpp/scratchconfiguration.h>
 #include <QtConcurrent/QtConcurrent>
 #include <QApplication>
 
@@ -11,6 +12,7 @@
 #include "valuemonitormodel.h"
 #include "listmonitormodel.h"
 #include "renderedtarget.h"
+#include "blocks/penextension.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -31,6 +33,9 @@ ProjectLoader::ProjectLoader(QObject *parent) :
     });
 
     initTimer();
+
+    // Register pen blocks
+    ScratchConfiguration::registerExtension(std::make_shared<PenExtension>());
 }
 
 ProjectLoader::~ProjectLoader()

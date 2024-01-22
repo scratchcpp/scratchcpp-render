@@ -2,6 +2,7 @@
 
 #include <scratchcpp/costume.h>
 #include <scratchcpp/rect.h>
+#include <scratchcpp/iengine.h>
 
 #include "spritemodel.h"
 #include "renderedtarget.h"
@@ -65,8 +66,13 @@ void SpriteModel::onYChanged(double y)
 
 void SpriteModel::onMoved(double oldX, double oldY, double newX, double newY)
 {
-    if (m_penDown && m_penLayer)
+    if (m_penDown && m_penLayer) {
         m_penLayer->drawLine(m_penAttributes, oldX, oldY, newX, newY);
+        libscratchcpp::IEngine *engine = m_sprite->engine();
+
+        if (engine)
+            engine->requestRedraw();
+    }
 }
 
 void SpriteModel::onSizeChanged(double size)
@@ -151,13 +157,15 @@ bool SpriteModel::penDown() const
 
 void SpriteModel::setPenDown(bool newPenDown)
 {
-    if (m_penDown == newPenDown)
-        return;
-
     m_penDown = newPenDown;
 
-    if (m_penDown && m_penLayer && m_sprite)
+    if (m_penDown && m_penLayer && m_sprite) {
         m_penLayer->drawPoint(m_penAttributes, m_sprite->x(), m_sprite->y());
+        libscratchcpp::IEngine *engine = m_sprite->engine();
+
+        if (engine)
+            engine->requestRedraw();
+    }
 }
 
 SpriteModel *SpriteModel::cloneRoot() const
