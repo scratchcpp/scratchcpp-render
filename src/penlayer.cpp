@@ -19,9 +19,6 @@ PenLayer::~PenLayer()
 {
     if (m_engine)
         m_projectPenLayers.erase(m_engine);
-
-    if (m_painter && m_painter->isActive())
-        m_painter->end();
 }
 
 bool PenLayer::antialiasingEnabled() const
@@ -55,11 +52,7 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
         m_fbo = std::make_unique<QOpenGLFramebufferObject>(m_engine->stageWidth(), m_engine->stageHeight(), m_fboFormat);
         Q_ASSERT(m_fbo->isValid());
 
-        if (m_painter && m_painter->isActive())
-            m_painter->end();
-
         m_paintDevice = std::make_unique<QOpenGLPaintDevice>(m_fbo->size());
-        m_painter = std::make_unique<QPainter>(m_paintDevice.get());
         clear();
     }
 
@@ -86,14 +79,15 @@ void scratchcpprender::PenLayer::drawPoint(const PenAttributes &penAttributes, d
 
 void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, double x0, double y0, double x1, double y1)
 {
-    if (!m_fbo || !m_painter || !m_engine)
+    if (!m_fbo || !m_paintDevice || !m_engine)
         return;
 
     // Begin painting
     m_fbo->bind();
-    m_painter->beginNativePainting();
-    m_painter->setRenderHint(QPainter::Antialiasing, m_antialiasingEnabled);
-    m_painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
+    QPainter painter(m_paintDevice.get());
+    painter.beginNativePainting();
+    painter.setRenderHint(QPainter::Antialiasing, m_antialiasingEnabled);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, false);
 
     // Translate to Scratch coordinate system
     double stageWidthHalf = m_engine->stageWidth() / 2;
@@ -107,16 +101,17 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
     QPen pen(penAttributes.color);
     pen.setWidthF(penAttributes.diameter);
     pen.setCapStyle(Qt::RoundCap);
-    m_painter->setPen(pen);
+    painter.setPen(pen);
 
     // If the start and end coordinates are the same, draw a point, otherwise draw a line
     if (x0 == x1 && y0 == y1)
-        m_painter->drawPoint(x0, y0);
+        painter.drawPoint(x0, y0);
     else
-        m_painter->drawLine(x0, y0, x1, y1);
+        painter.drawLine(x0, y0, x1, y1);
 
     // End painting
-    m_painter->endNativePainting();
+    painter.endNativePainting();
+    painter.end();
     m_fbo->release();
 
     update();

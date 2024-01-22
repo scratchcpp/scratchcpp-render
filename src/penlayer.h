@@ -5,6 +5,7 @@
 #include <ipenlayer.h>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLPaintDevice>
+#include <QPainter>
 #include <scratchcpp/iengine.h>
 
 namespace scratchcpprender
@@ -46,7 +47,6 @@ class PenLayer : public IPenLayer
         libscratchcpp::IEngine *m_engine = nullptr;
         std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
         std::unique_ptr<QOpenGLPaintDevice> m_paintDevice;
-        std::unique_ptr<QPainter> m_painter;
         QOpenGLFramebufferObjectFormat m_fboFormat;
 };
 
