@@ -55,6 +55,8 @@ qt_add_qml_module(scratchcpp-render
 	penlayerpainter.cpp
 	penlayerpainter.h
 	penattributes.h
+	blocks/penblocks.cpp
+	blocks/penblocks.h
 )
 
 list(APPEND QML_IMPORT_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
