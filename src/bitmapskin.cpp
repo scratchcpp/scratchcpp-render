@@ -31,7 +31,9 @@ BitmapSkin::BitmapSkin(libscratchcpp::Costume *costume) :
     m_texture = createAndPaintTexture(m_image.width(), m_image.height(), false);
     m_textureSize.setWidth(m_image.width());
     m_textureSize.setHeight(m_image.height());
-    Q_ASSERT(m_texture.isValid());
+
+    if (!m_texture.isValid())
+        qWarning() << "invalid bitmap texture (costume name: " + costume->name() + ")";
 }
 
 BitmapSkin::~BitmapSkin()
