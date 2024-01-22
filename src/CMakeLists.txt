@@ -55,6 +55,8 @@ qt_add_qml_module(scratchcpp-render
 	penlayerpainter.cpp
 	penlayerpainter.h
 	penattributes.h
+	blocks/penextension.cpp
+	blocks/penextension.h
 	blocks/penblocks.cpp
 	blocks/penblocks.h
 )
