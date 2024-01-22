@@ -19,11 +19,17 @@ void PenBlocks::registerBlocks(IEngine *engine)
 {
     // Blocks
     engine->addCompileFunction(this, "pen_clear", &compileClear);
+    engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
 }
 
 void PenBlocks::compileClear(Compiler *compiler)
 {
     compiler->addFunctionCall(&clear);
+}
+
+void PenBlocks::compilePenDown(Compiler *compiler)
+{
+    compiler->addFunctionCall(&penDown);
 }
 
 unsigned int PenBlocks::clear(VirtualMachine *vm)
@@ -37,3 +43,20 @@ unsigned int PenBlocks::clear(VirtualMachine *vm)
 
     return 0;
 }
+
+unsigned int PenBlocks::penDown(VirtualMachine *vm)
+{
+    Target *target = vm->target();
+
+    if (!target || target->isStage())
+        return 0;
+
+    Sprite *sprite = static_cast<Sprite *>(target);
+    SpriteModel *model = static_cast<SpriteModel *>(sprite->getInterface());
+
+    if (model)
+        model->setPenDown(true);
+
+    return 0;
+}
+

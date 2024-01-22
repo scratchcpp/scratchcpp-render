@@ -19,8 +19,10 @@ class PenBlocks : public libscratchcpp::IBlockSection
         void registerBlocks(libscratchcpp::IEngine *engine) override;
 
         static void compileClear(libscratchcpp::Compiler *compiler);
+        static void compilePenDown(libscratchcpp::Compiler *compiler);
 
         static unsigned int clear(libscratchcpp::VirtualMachine *vm);
+        static unsigned int penDown(libscratchcpp::VirtualMachine *vm);
 };
 
 } // namespace scratchcpprender
