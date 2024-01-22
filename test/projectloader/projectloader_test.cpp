@@ -1,8 +1,10 @@
 #include <QtTest/QSignalSpy>
+#include <scratchcpp/scratchconfiguration.h>
 #include <projectloader.h>
 #include <spritemodel.h>
 #include <valuemonitormodel.h>
 #include <listmonitormodel.h>
+#include <blocks/penextension.h>
 #include <enginemock.h>
 #include <renderedtargetmock.h>
 
@@ -62,6 +64,9 @@ TEST_F(ProjectLoaderTest, Constructors)
     ProjectLoader loader1;
     ProjectLoader loader2(&loader1);
     ASSERT_EQ(loader2.parent(), &loader1);
+
+    // Pen extension should be registered
+    ASSERT_TRUE(dynamic_cast<PenExtension *>(ScratchConfiguration::getExtension("pen")));
 }
 
 TEST_F(ProjectLoaderTest, Load)
