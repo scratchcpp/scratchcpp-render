@@ -65,8 +65,10 @@ void scratchcpprender::PenLayer::clear()
         return;
 
     m_fbo->bind();
+    glDisable(GL_SCISSOR_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_SCISSOR_TEST);
     m_fbo->release();
 
     update();
