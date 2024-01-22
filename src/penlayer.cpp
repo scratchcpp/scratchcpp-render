@@ -134,6 +134,11 @@ IPenLayer *PenLayer::getProjectPenLayer(libscratchcpp::IEngine *engine)
     return nullptr;
 }
 
+void PenLayer::addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer)
+{
+    m_projectPenLayers[engine] = penLayer;
+}
+
 QNanoQuickItemPainter *PenLayer::createItemPainter() const
 {
     return new PenLayerPainter;
