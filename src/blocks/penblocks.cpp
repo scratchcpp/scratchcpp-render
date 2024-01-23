@@ -26,6 +26,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
     engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
+    engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
 
     // Inputs
     engine->addInput(this, "SIZE", SIZE);
@@ -50,6 +51,12 @@ void PenBlocks::compileChangePenSizeBy(libscratchcpp::Compiler *compiler)
 {
     compiler->addInput(SIZE);
     compiler->addFunctionCall(&changePenSizeBy);
+}
+
+void PenBlocks::compileSetPenSizeTo(libscratchcpp::Compiler *compiler)
+{
+    compiler->addInput(SIZE);
+    compiler->addFunctionCall(&setPenSizeTo);
 }
 
 unsigned int PenBlocks::clear(VirtualMachine *vm)
@@ -90,6 +97,16 @@ unsigned int PenBlocks::changePenSizeBy(libscratchcpp::VirtualMachine *vm)
 
     if (model)
         model->penAttributes().diameter = std::clamp(model->penAttributes().diameter + vm->getInput(0, 1)->toDouble(), PEN_SIZE_MIN, PEN_SIZE_MAX);
+
+    return 1;
+}
+
+unsigned int PenBlocks::setPenSizeTo(libscratchcpp::VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model)
+        model->penAttributes().diameter = std::clamp(vm->getInput(0, 1)->toDouble(), PEN_SIZE_MIN, PEN_SIZE_MAX);
 
     return 1;
 }

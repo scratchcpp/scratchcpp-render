@@ -65,6 +65,7 @@ TEST_F(PenBlocksTest, RegisterBlocks)
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penDown", &PenBlocks::compilePenDown));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penUp", &PenBlocks::compilePenUp));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenSizeBy", &PenBlocks::compileChangePenSizeBy));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenSizeTo", &PenBlocks::compileSetPenSizeTo));
 
     // Inputs
     EXPECT_CALL(m_engineMock, addInput(m_section.get(), "SIZE", PenBlocks::SIZE));
@@ -263,4 +264,69 @@ TEST_F(PenBlocksTest, ChangePenSizeByImpl)
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
     ASSERT_EQ(model.penAttributes().diameter, 1);
+}
+
+TEST_F(PenBlocksTest, SetPenSizeTo)
+{
+    Compiler compiler(&m_engineMock);
+
+    // set pen size to (51.46)
+    auto block1 = std::make_shared<Block>("a", "pen_setPenSizeTo");
+    addValueInput(block1, "SIZE", PenBlocks::SIZE, 51.46);
+
+    // set pen size to (null block)
+    auto block2 = std::make_shared<Block>("b", "pen_setPenSizeTo");
+    addObscuredInput(block2, "SIZE", PenBlocks::SIZE, createNullBlock("c"));
+
+    compiler.init();
+
+    EXPECT_CALL(m_engineMock, functionIndex(&PenBlocks::setPenSizeTo)).WillOnce(Return(2));
+    compiler.setBlock(block1);
+    PenBlocks::compileSetPenSizeTo(&compiler);
+
+    EXPECT_CALL(m_engineMock, functionIndex(&PenBlocks::setPenSizeTo)).WillOnce(Return(2));
+    compiler.setBlock(block2);
+    PenBlocks::compileSetPenSizeTo(&compiler);
+
+    compiler.end();
+
+    ASSERT_EQ(compiler.bytecode(), std::vector<unsigned int>({ vm::OP_START, vm::OP_CONST, 0, vm::OP_EXEC, 2, vm::OP_NULL, vm::OP_EXEC, 2, vm::OP_HALT }));
+    ASSERT_EQ(compiler.constValues().size(), 1);
+    ASSERT_EQ(compiler.constValues()[0].toDouble(), 51.46);
+    ASSERT_TRUE(compiler.variables().empty());
+    ASSERT_TRUE(compiler.lists().empty());
+}
+
+TEST_F(PenBlocksTest, SetPenSizeToImpl)
+{
+    static unsigned int bytecode1[] = { vm::OP_START, vm::OP_CONST, 0, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode2[] = { vm::OP_START, vm::OP_CONST, 1, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode3[] = { vm::OP_START, vm::OP_CONST, 2, vm::OP_EXEC, 0, vm::OP_HALT };
+    static BlockFunc functions[] = { &PenBlocks::setPenSizeTo };
+    static Value constValues[] = { 511.5, -650.08, 1500 };
+
+    SpriteModel model;
+    Sprite sprite;
+    sprite.setInterface(&model);
+
+    VirtualMachine vm(&sprite, &m_engineMock, nullptr);
+    vm.setBytecode(bytecode1);
+    vm.setFunctions(functions);
+    vm.setConstValues(constValues);
+
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().diameter, 511.5);
+
+    vm.reset();
+    vm.setBytecode(bytecode2);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().diameter, 1);
+
+    vm.reset();
+    vm.setBytecode(bytecode3);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().diameter, 1200);
 }
