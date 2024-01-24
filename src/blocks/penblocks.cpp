@@ -25,10 +25,12 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_clear", &compileClear);
     engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
     engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
+    engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
 
     // Inputs
+    engine->addInput(this, "COLOR", COLOR);
     engine->addInput(this, "SIZE", SIZE);
 }
 
@@ -45,6 +47,12 @@ void PenBlocks::compilePenDown(Compiler *compiler)
 void PenBlocks::compilePenUp(Compiler *compiler)
 {
     compiler->addFunctionCall(&penUp);
+}
+
+void PenBlocks::compileSetPenColorToColor(libscratchcpp::Compiler *compiler)
+{
+    compiler->addInput(COLOR);
+    compiler->addFunctionCall(&setPenColorToColor);
 }
 
 void PenBlocks::compileChangePenSizeBy(libscratchcpp::Compiler *compiler)
@@ -107,6 +115,41 @@ unsigned int PenBlocks::setPenSizeTo(libscratchcpp::VirtualMachine *vm)
 
     if (model)
         model->penAttributes().diameter = std::clamp(vm->getInput(0, 1)->toDouble(), PEN_SIZE_MIN, PEN_SIZE_MAX);
+
+    return 1;
+}
+
+unsigned int PenBlocks::setPenColorToColor(libscratchcpp::VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model) {
+        const Value *value = vm->getInput(0, 1);
+        std::string stringValue;
+        PenAttributes &attributes = model->penAttributes();
+
+        if (value->isString())
+            stringValue = value->toString();
+
+        if (!stringValue.empty() && stringValue[0] == '#') {
+            bool valid = false;
+
+            if (stringValue.size() <= 7) // #RRGGBB
+            {
+                attributes.color = QColor::fromString(stringValue);
+                valid = attributes.color.isValid();
+            }
+
+            if (!valid)
+                attributes.color = QColor(0, 0, 0);
+
+        } else {
+            attributes.color = QColor::fromRgba(static_cast<QRgb>(value->toLong()));
+
+            if (attributes.color.alpha() == 0)
+                attributes.color.setAlpha(255);
+        }
+    }
 
     return 1;
 }

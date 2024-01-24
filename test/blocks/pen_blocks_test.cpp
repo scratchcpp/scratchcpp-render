@@ -64,10 +64,12 @@ TEST_F(PenBlocksTest, RegisterBlocks)
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_clear", &PenBlocks::compileClear));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penDown", &PenBlocks::compilePenDown));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penUp", &PenBlocks::compilePenUp));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenColorToColor", &PenBlocks::compileSetPenColorToColor));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenSizeBy", &PenBlocks::compileChangePenSizeBy));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenSizeTo", &PenBlocks::compileSetPenSizeTo));
 
     // Inputs
+    EXPECT_CALL(m_engineMock, addInput(m_section.get(), "COLOR", PenBlocks::COLOR));
     EXPECT_CALL(m_engineMock, addInput(m_section.get(), "SIZE", PenBlocks::SIZE));
 
     m_section->registerBlocks(&m_engineMock);
@@ -191,6 +193,99 @@ TEST_F(PenBlocksTest, PenUpImpl)
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
     ASSERT_FALSE(model.penDown());
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor)
+{
+    Compiler compiler(&m_engineMock);
+
+    // set pen color to ("#AABBCC")
+    auto block1 = std::make_shared<Block>("a", "pen_setPenColorToColor");
+    addValueInput(block1, "COLOR", PenBlocks::COLOR, "#AABBCC");
+
+    // set pen color to (null block)
+    auto block2 = std::make_shared<Block>("b", "pen_setPenColorToColor");
+    addObscuredInput(block2, "COLOR", PenBlocks::COLOR, createNullBlock("c"));
+
+    compiler.init();
+
+    EXPECT_CALL(m_engineMock, functionIndex(&PenBlocks::setPenColorToColor)).WillOnce(Return(2));
+    compiler.setBlock(block1);
+    PenBlocks::compileSetPenColorToColor(&compiler);
+
+    EXPECT_CALL(m_engineMock, functionIndex(&PenBlocks::setPenColorToColor)).WillOnce(Return(2));
+    compiler.setBlock(block2);
+    PenBlocks::compileSetPenColorToColor(&compiler);
+
+    compiler.end();
+
+    ASSERT_EQ(compiler.bytecode(), std::vector<unsigned int>({ vm::OP_START, vm::OP_CONST, 0, vm::OP_EXEC, 2, vm::OP_NULL, vm::OP_EXEC, 2, vm::OP_HALT }));
+    ASSERT_EQ(compiler.constValues().size(), 1);
+    ASSERT_EQ(compiler.constValues()[0].toString(), "#AABBCC");
+    ASSERT_TRUE(compiler.variables().empty());
+    ASSERT_TRUE(compiler.lists().empty());
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColorImpl)
+{
+    static unsigned int bytecode1[] = { vm::OP_START, vm::OP_CONST, 0, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode2[] = { vm::OP_START, vm::OP_CONST, 1, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode3[] = { vm::OP_START, vm::OP_CONST, 2, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode4[] = { vm::OP_START, vm::OP_CONST, 3, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode5[] = { vm::OP_START, vm::OP_CONST, 4, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode6[] = { vm::OP_START, vm::OP_CONST, 5, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode7[] = { vm::OP_START, vm::OP_CONST, 6, vm::OP_EXEC, 0, vm::OP_HALT };
+    static BlockFunc functions[] = { &PenBlocks::setPenColorToColor };
+    static Value constValues[] = { "#AABbCC", "#03F", "#FFGFFF", "#AABBCCDD", "FFFFFF", 1228097602, 255 };
+
+    SpriteModel model;
+    Sprite sprite;
+    sprite.setInterface(&model);
+
+    VirtualMachine vm(&sprite, &m_engineMock, nullptr);
+    vm.setBytecode(bytecode1);
+    vm.setFunctions(functions);
+    vm.setConstValues(constValues);
+
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor(170, 187, 204));
+
+    vm.reset();
+    vm.setBytecode(bytecode2);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor(0, 51, 255));
+
+    vm.reset();
+    vm.setBytecode(bytecode3);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor(0, 0, 0));
+
+    vm.reset();
+    vm.setBytecode(bytecode4);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor(0, 0, 0));
+
+    vm.reset();
+    vm.setBytecode(bytecode5);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor(0, 0, 0));
+
+    vm.reset();
+    vm.setBytecode(bytecode6);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor::fromRgba(1228097602));
+
+    vm.reset();
+    vm.setBytecode(bytecode7);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor::fromRgb(255));
 }
 
 TEST_F(PenBlocksTest, ChangePenSizeBy)

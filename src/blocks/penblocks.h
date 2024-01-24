@@ -14,6 +14,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
     public:
         enum Inputs
         {
+            COLOR,
             SIZE
         };
 
@@ -24,12 +25,14 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static void compileClear(libscratchcpp::Compiler *compiler);
         static void compilePenDown(libscratchcpp::Compiler *compiler);
         static void compilePenUp(libscratchcpp::Compiler *compiler);
+        static void compileSetPenColorToColor(libscratchcpp::Compiler *compiler);
         static void compileChangePenSizeBy(libscratchcpp::Compiler *compiler);
         static void compileSetPenSizeTo(libscratchcpp::Compiler *compiler);
 
         static unsigned int clear(libscratchcpp::VirtualMachine *vm);
         static unsigned int penDown(libscratchcpp::VirtualMachine *vm);
         static unsigned int penUp(libscratchcpp::VirtualMachine *vm);
+        static unsigned int setPenColorToColor(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenSizeBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenSizeTo(libscratchcpp::VirtualMachine *vm);
 
