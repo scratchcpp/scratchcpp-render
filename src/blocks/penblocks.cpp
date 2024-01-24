@@ -28,10 +28,12 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
+    engine->addCompileFunction(this, "pen_changePenHueBy", &compileChangePenHueBy);
 
     // Inputs
     engine->addInput(this, "COLOR", COLOR);
     engine->addInput(this, "SIZE", SIZE);
+    engine->addInput(this, "HUE", HUE);
 }
 
 void PenBlocks::compileClear(Compiler *compiler)
@@ -65,6 +67,12 @@ void PenBlocks::compileSetPenSizeTo(libscratchcpp::Compiler *compiler)
 {
     compiler->addInput(SIZE);
     compiler->addFunctionCall(&setPenSizeTo);
+}
+
+void PenBlocks::compileChangePenHueBy(libscratchcpp::Compiler *compiler)
+{
+    compiler->addInput(HUE);
+    compiler->addFunctionCall(&changePenHueBy);
 }
 
 unsigned int PenBlocks::clear(VirtualMachine *vm)
@@ -119,6 +127,18 @@ unsigned int PenBlocks::setPenSizeTo(libscratchcpp::VirtualMachine *vm)
     return 1;
 }
 
+unsigned int PenBlocks::changePenHueBy(libscratchcpp::VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model) {
+        const double colorChange = vm->getInput(0, 1)->toDouble() / 2;
+        setOrChangeColorParam(model->penAttributes(), ColorParam::COLOR, colorChange, true);
+    }
+
+    return 1;
+}
+
 unsigned int PenBlocks::setPenColorToColor(libscratchcpp::VirtualMachine *vm)
 {
     SpriteModel *model = getSpriteModel(vm);
@@ -164,4 +184,28 @@ SpriteModel *PenBlocks::getSpriteModel(libscratchcpp::VirtualMachine *vm)
     Sprite *sprite = static_cast<Sprite *>(target);
     SpriteModel *model = static_cast<SpriteModel *>(sprite->getInterface());
     return model;
+}
+
+void PenBlocks::setOrChangeColorParam(PenAttributes &penAttributes, ColorParam param, double value, bool change)
+{
+    PenState penState(penAttributes.color);
+
+    switch (param) {
+        case ColorParam::COLOR:
+            penState.color = wrapClamp(value + (change ? penState.color : 0), 0, 100);
+            break;
+    }
+
+    const int h = std::round(std::fmod(penState.color * 360 / 100, 360.0));
+    const int s = std::round(penState.saturation * 2.55);
+    const int v = std::round(penState.brightness * 2.55);
+    const int a = std::round((100 - penState.transparency) * 2.55);
+    penAttributes.color = QColor::fromHsv(h, s, v, a);
+}
+
+double PenBlocks::wrapClamp(double n, double min, double max)
+{
+    // TODO: Move this to a separate class
+    const double range = max - min + 1;
+    return n - (std::floor((n - min) / range) * range);
 }
