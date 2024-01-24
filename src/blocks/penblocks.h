@@ -42,23 +42,6 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static unsigned int changePenHueBy(libscratchcpp::VirtualMachine *vm);
 
     private:
-        struct PenState
-        {
-                PenState(const QColor &color)
-                {
-                    QColor hsvColor = color.toHsv();
-                    this->color = hsvColor.hue() * 100 / 360.0;
-                    this->saturation = hsvColor.saturationF() * 100;
-                    this->brightness = hsvColor.valueF() * 100;
-                    this->transparency = 100 * (1 - hsvColor.alphaF());
-                }
-
-                double color = 0;
-                double saturation = 0;
-                double brightness = 0;
-                double transparency = 0;
-        };
-
         enum class ColorParam
         {
             COLOR

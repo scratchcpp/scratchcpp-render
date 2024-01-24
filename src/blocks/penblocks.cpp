@@ -5,6 +5,7 @@
 
 #include "penblocks.h"
 #include "penlayer.h"
+#include "penstate.h"
 #include "spritemodel.h"
 
 using namespace scratchcpprender;
@@ -188,7 +189,8 @@ SpriteModel *PenBlocks::getSpriteModel(libscratchcpp::VirtualMachine *vm)
 
 void PenBlocks::setOrChangeColorParam(PenAttributes &penAttributes, ColorParam param, double value, bool change)
 {
-    PenState penState(penAttributes.color);
+    PenState penState;
+    penState.setColor(penAttributes.color);
 
     switch (param) {
         case ColorParam::COLOR:
