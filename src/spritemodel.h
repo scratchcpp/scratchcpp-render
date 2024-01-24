@@ -6,7 +6,7 @@
 #include <QQmlEngine>
 #include <scratchcpp/ispritehandler.h>
 
-#include "penattributes.h"
+#include "penstate.h"
 
 Q_MOC_INCLUDE("renderedtarget.h");
 Q_MOC_INCLUDE("ipenlayer.h");
@@ -58,6 +58,7 @@ class SpriteModel
         IPenLayer *penLayer() const;
         void setPenLayer(IPenLayer *newPenLayer);
 
+        PenState &penState();
         PenAttributes &penAttributes();
 
         bool penDown() const;
@@ -75,8 +76,7 @@ class SpriteModel
         libscratchcpp::Sprite *m_sprite = nullptr;
         IRenderedTarget *m_renderedTarget = nullptr;
         IPenLayer *m_penLayer = nullptr;
-        PenAttributes m_penAttributes;
-        bool m_penDown = false;
+        PenState m_penState;
         SpriteModel *m_cloneRoot = nullptr;
 };
 

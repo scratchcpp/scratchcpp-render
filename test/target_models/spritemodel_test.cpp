@@ -268,6 +268,7 @@ TEST(SpriteModelTest, PenDown)
     sprite.setEngine(&engine);
     model.init(&sprite);
     ASSERT_FALSE(model.penDown());
+    ASSERT_FALSE(model.penState().penDown);
 
     PenLayerMock penLayer;
     model.setPenLayer(&penLayer);
@@ -278,14 +279,17 @@ TEST(SpriteModelTest, PenDown)
     EXPECT_CALL(engine, requestRedraw());
     model.setPenDown(true);
     ASSERT_TRUE(model.penDown());
+    ASSERT_TRUE(model.penState().penDown);
 
     EXPECT_CALL(penLayer, drawPoint(_, 24.6, -48.8));
     EXPECT_CALL(engine, requestRedraw());
     model.setPenDown(true);
     ASSERT_TRUE(model.penDown());
+    ASSERT_TRUE(model.penState().penDown);
 
     EXPECT_CALL(penLayer, drawPoint).Times(0);
     EXPECT_CALL(engine, requestRedraw).Times(0);
     model.setPenDown(false);
     ASSERT_FALSE(model.penDown());
+    ASSERT_FALSE(model.penState().penDown);
 }

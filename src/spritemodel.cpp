@@ -34,8 +34,7 @@ void SpriteModel::onCloned(libscratchcpp::Sprite *clone)
     SpriteModel *cloneModel = new SpriteModel(m_cloneRoot);
     cloneModel->m_cloneRoot = m_cloneRoot;
     cloneModel->m_penLayer = m_penLayer;
-    cloneModel->m_penAttributes = m_penAttributes;
-    cloneModel->m_penDown = m_penDown;
+    cloneModel->m_penState = m_penState;
     clone->setInterface(cloneModel);
     emit cloned(cloneModel);
 }
@@ -66,8 +65,8 @@ void SpriteModel::onYChanged(double y)
 
 void SpriteModel::onMoved(double oldX, double oldY, double newX, double newY)
 {
-    if (m_penDown && m_penLayer) {
-        m_penLayer->drawLine(m_penAttributes, oldX, oldY, newX, newY);
+    if (m_penState.penDown && m_penLayer) {
+        m_penLayer->drawLine(m_penState.penAttributes, oldX, oldY, newX, newY);
         libscratchcpp::IEngine *engine = m_sprite->engine();
 
         if (engine)
@@ -145,22 +144,27 @@ void SpriteModel::setPenLayer(IPenLayer *newPenLayer)
     emit penLayerChanged();
 }
 
+PenState &SpriteModel::penState()
+{
+    return m_penState;
+}
+
 PenAttributes &SpriteModel::penAttributes()
 {
-    return m_penAttributes;
+    return m_penState.penAttributes;
 }
 
 bool SpriteModel::penDown() const
 {
-    return m_penDown;
+    return m_penState.penDown;
 }
 
 void SpriteModel::setPenDown(bool newPenDown)
 {
-    m_penDown = newPenDown;
+    m_penState.penDown = newPenDown;
 
-    if (m_penDown && m_penLayer && m_sprite) {
-        m_penLayer->drawPoint(m_penAttributes, m_sprite->x(), m_sprite->y());
+    if (m_penState.penDown && m_penLayer && m_sprite) {
+        m_penLayer->drawPoint(m_penState.penAttributes, m_sprite->x(), m_sprite->y());
         libscratchcpp::IEngine *engine = m_sprite->engine();
 
         if (engine)
