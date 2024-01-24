@@ -134,7 +134,7 @@ unsigned int PenBlocks::changePenHueBy(libscratchcpp::VirtualMachine *vm)
 
     if (model) {
         const double colorChange = vm->getInput(0, 1)->toDouble() / 2;
-        setOrChangeColorParam(model->penAttributes(), ColorParam::COLOR, colorChange, true);
+        setOrChangeColorParam(ColorParam::COLOR, colorChange, model->penState(), true, true);
     }
 
     return 1;
@@ -147,7 +147,8 @@ unsigned int PenBlocks::setPenColorToColor(libscratchcpp::VirtualMachine *vm)
     if (model) {
         const Value *value = vm->getInput(0, 1);
         std::string stringValue;
-        PenAttributes &attributes = model->penAttributes();
+        PenState &penState = model->penState();
+        QColor newColor;
 
         if (value->isString())
             stringValue = value->toString();
@@ -157,19 +158,24 @@ unsigned int PenBlocks::setPenColorToColor(libscratchcpp::VirtualMachine *vm)
 
             if (stringValue.size() <= 7) // #RRGGBB
             {
-                attributes.color = QColor::fromString(stringValue);
-                valid = attributes.color.isValid();
+                newColor = QColor::fromString(stringValue);
+                valid = newColor.isValid();
             }
 
             if (!valid)
-                attributes.color = QColor(0, 0, 0);
+                newColor = Qt::black;
 
         } else {
-            attributes.color = QColor::fromRgba(static_cast<QRgb>(value->toLong()));
+            newColor = QColor::fromRgba(static_cast<QRgb>(value->toLong()));
 
-            if (attributes.color.alpha() == 0)
-                attributes.color.setAlpha(255);
+            if (newColor.alpha() == 0)
+                newColor.setAlpha(255);
         }
+
+        penState.setColor(newColor);
+
+        // Set the legacy "shade" value the same way Scratch 2 did.
+        penState.shade = penState.brightness / 2;
     }
 
     return 1;
@@ -187,22 +193,31 @@ SpriteModel *PenBlocks::getSpriteModel(libscratchcpp::VirtualMachine *vm)
     return model;
 }
 
-void PenBlocks::setOrChangeColorParam(PenAttributes &penAttributes, ColorParam param, double value, bool change)
+void PenBlocks::setOrChangeColorParam(ColorParam param, double value, PenState &penState, bool change, bool legacy)
 {
-    PenState penState;
-    penState.setColor(penAttributes.color);
-
     switch (param) {
         case ColorParam::COLOR:
             penState.color = wrapClamp(value + (change ? penState.color : 0), 0, 100);
             break;
     }
 
-    const int h = std::round(std::fmod(penState.color * 360 / 100, 360.0));
-    const int s = std::round(penState.saturation * 2.55);
-    const int v = std::round(penState.brightness * 2.55);
-    const int a = std::round((100 - penState.transparency) * 2.55);
-    penAttributes.color = QColor::fromHsv(h, s, v, a);
+    penState.updateColor();
+
+    if (legacy) {
+        // https://github.com/scratchfoundation/scratch-vm/blob/8dbcc1fc8f8d8c4f1e40629fe8a388149d6dfd1c/src/extensions/scratch3_pen/index.js#L750-L767
+        // Create the new color in RGB using the scratch 2 "shade" model
+        QColor rgb = penState.penAttributes.color.toRgb();
+        const double shade = (penState.shade > 100) ? 200 - penState.shade : penState.shade;
+
+        if (shade < 50)
+            rgb = mixRgb(QColor(Qt::black), rgb, (10 + shade) / 60);
+        else
+            rgb = mixRgb(rgb, QColor(Qt::white), (shade - 50) / 60);
+
+        // Update the pen state according to new color
+        const QColor hsv = rgb.toHsv();
+        penState.setColor(hsv);
+    }
 }
 
 double PenBlocks::wrapClamp(double n, double min, double max)
@@ -210,4 +225,16 @@ double PenBlocks::wrapClamp(double n, double min, double max)
     // TODO: Move this to a separate class
     const double range = max - min + 1;
     return n - (std::floor((n - min) / range) * range);
+}
+
+QColor PenBlocks::mixRgb(const QColor &rgb0, const QColor &rgb1, double fraction1)
+{
+    // https://github.com/scratchfoundation/scratch-vm/blob/a4f095db5e03e072ba222fe721eeeb543c9b9c15/src/util/color.js#L192-L201
+    if (fraction1 <= 0)
+        return rgb0;
+    if (fraction1 >= 1)
+        return rgb1;
+
+    const double fraction0 = 1 - fraction1;
+    return QColor((fraction0 * rgb0.red()) + (fraction1 * rgb1.red()), (fraction0 * rgb0.green()) + (fraction1 * rgb1.green()), (fraction0 * rgb0.blue()) + (fraction1 * rgb1.blue()));
 }

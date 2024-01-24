@@ -2,14 +2,15 @@
 
 #pragma once
 
-#include <QColor>
 #include <scratchcpp/iblocksection.h>
+
+class QColor;
 
 namespace scratchcpprender
 {
 
 class SpriteModel;
-class PenAttributes;
+class PenState;
 
 class PenBlocks : public libscratchcpp::IBlockSection
 {
@@ -48,8 +49,9 @@ class PenBlocks : public libscratchcpp::IBlockSection
         };
 
         static SpriteModel *getSpriteModel(libscratchcpp::VirtualMachine *vm);
-        static void setOrChangeColorParam(PenAttributes &penAttributes, ColorParam param, double value, bool change);
+        static void setOrChangeColorParam(ColorParam param, double value, PenState &penState, bool change, bool legacy = false);
         static double wrapClamp(double n, double min, double max);
+        static QColor mixRgb(const QColor &rgb0, const QColor &rgb1, double fraction1);
 };
 
 } // namespace scratchcpprender

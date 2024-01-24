@@ -26,11 +26,18 @@ struct PenState
             this->saturation = hsvColor.saturationF() * 100;
             this->brightness = hsvColor.valueF() * 100;
             this->transparency = 100 * (1 - hsvColor.alphaF());
+
+            penAttributes.color = color;
         }
 
         void updateColor()
         {
-            const int h = std::round(std::fmod(color * 360 / 100, 360.0));
+            int h = std::round(color * 360 / 100);
+            h %= 360;
+
+            if (h < 0)
+                h += 360;
+
             const int s = std::round(saturation * 2.55);
             const int v = std::round(brightness * 2.55);
             const int a = std::round((100 - transparency) * 2.55);

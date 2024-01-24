@@ -467,7 +467,9 @@ TEST_F(PenBlocksTest, ChangePenHueByImpl)
     static Value constValues[] = { 125.7, -114.09 };
 
     SpriteModel model;
-    model.penAttributes().color.setAlpha(150);
+    QColor color = model.penAttributes().color;
+    color.setAlpha(150);
+    model.penState().setColor(color);
     Sprite sprite;
     sprite.setInterface(&model);
 
