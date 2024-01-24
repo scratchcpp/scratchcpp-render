@@ -27,6 +27,16 @@ struct PenState
             this->brightness = hsvColor.valueF() * 100;
             this->transparency = 100 * (1 - hsvColor.alphaF());
         }
+
+        void updateColor()
+        {
+            const int h = std::round(std::fmod(color * 360 / 100, 360.0));
+            const int s = std::round(saturation * 2.55);
+            const int v = std::round(brightness * 2.55);
+            const int a = std::round((100 - transparency) * 2.55);
+
+            penAttributes.color = QColor::fromHsv(h, s, v, a);
+        }
 };
 
 } // namespace scratchcpprender

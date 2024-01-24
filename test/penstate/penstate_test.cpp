@@ -31,3 +31,15 @@ TEST(PenStateTest, SetColor)
     ASSERT_EQ(std::round(state.transparency * 100) / 100, 34.51);
     ASSERT_EQ(state.shade, 50);
 }
+
+TEST(PenStateTest, UpdateColor)
+{
+    PenState state;
+    state.color = 78.64;
+    state.saturation = 45.07;
+    state.brightness = 12.5;
+    state.transparency = 36.09;
+    state.shade = 85;
+    state.updateColor();
+    ASSERT_EQ(state.penAttributes.color, QColor::fromHsv(283, 115, 32, 163));
+}
