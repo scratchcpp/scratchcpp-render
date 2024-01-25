@@ -30,6 +30,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
     engine->addCompileFunction(this, "pen_changePenHueBy", &compileChangePenHueBy);
+    engine->addCompileFunction(this, "pen_setPenHueToNumber", &compileSetPenHueToNumber);
 
     // Inputs
     engine->addInput(this, "COLOR", COLOR);
@@ -74,6 +75,12 @@ void PenBlocks::compileChangePenHueBy(libscratchcpp::Compiler *compiler)
 {
     compiler->addInput(HUE);
     compiler->addFunctionCall(&changePenHueBy);
+}
+
+void PenBlocks::compileSetPenHueToNumber(libscratchcpp::Compiler *compiler)
+{
+    compiler->addInput(HUE);
+    compiler->addFunctionCall(&setPenHueToNumber);
 }
 
 unsigned int PenBlocks::clear(VirtualMachine *vm)
@@ -135,6 +142,20 @@ unsigned int PenBlocks::changePenHueBy(libscratchcpp::VirtualMachine *vm)
     if (model) {
         const double colorChange = vm->getInput(0, 1)->toDouble() / 2;
         setOrChangeColorParam(ColorParam::COLOR, colorChange, model->penState(), true, true);
+    }
+
+    return 1;
+}
+
+unsigned int PenBlocks::setPenHueToNumber(libscratchcpp::VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model) {
+        const double colorValue = vm->getInput(0, 1)->toDouble() / 2;
+        setOrChangeColorParam(ColorParam::COLOR, colorValue, model->penState(), false, true);
+        model->penState().transparency = 0;
+        model->penState().updateColor();
     }
 
     return 1;

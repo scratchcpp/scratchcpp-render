@@ -33,6 +33,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static void compileChangePenSizeBy(libscratchcpp::Compiler *compiler);
         static void compileSetPenSizeTo(libscratchcpp::Compiler *compiler);
         static void compileChangePenHueBy(libscratchcpp::Compiler *compiler);
+        static void compileSetPenHueToNumber(libscratchcpp::Compiler *compiler);
 
         static unsigned int clear(libscratchcpp::VirtualMachine *vm);
         static unsigned int penDown(libscratchcpp::VirtualMachine *vm);
@@ -41,6 +42,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static unsigned int changePenSizeBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenSizeTo(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenHueBy(libscratchcpp::VirtualMachine *vm);
+        static unsigned int setPenHueToNumber(libscratchcpp::VirtualMachine *vm);
 
     private:
         enum class ColorParam
