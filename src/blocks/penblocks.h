@@ -33,6 +33,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static void compileChangePenSizeBy(libscratchcpp::Compiler *compiler);
         static void compileSetPenSizeTo(libscratchcpp::Compiler *compiler);
         static void compileChangePenShadeBy(libscratchcpp::Compiler *compiler);
+        static void compileSetPenShadeToNumber(libscratchcpp::Compiler *compiler);
         static void compileChangePenHueBy(libscratchcpp::Compiler *compiler);
         static void compileSetPenHueToNumber(libscratchcpp::Compiler *compiler);
 
@@ -43,6 +44,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static unsigned int changePenSizeBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenSizeTo(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenShadeBy(libscratchcpp::VirtualMachine *vm);
+        static unsigned int setPenShadeToNumber(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenHueBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenHueToNumber(libscratchcpp::VirtualMachine *vm);
 

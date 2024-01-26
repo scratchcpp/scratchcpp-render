@@ -68,6 +68,7 @@ TEST_F(PenBlocksTest, RegisterBlocks)
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenSizeBy", &PenBlocks::compileChangePenSizeBy));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenSizeTo", &PenBlocks::compileSetPenSizeTo));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenShadeBy", &PenBlocks::compileChangePenShadeBy));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenShadeToNumber", &PenBlocks::compileSetPenShadeToNumber));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenHueBy", &PenBlocks::compileChangePenHueBy));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenHueToNumber", &PenBlocks::compileSetPenHueToNumber));
 
@@ -503,6 +504,72 @@ TEST_F(PenBlocksTest, ChangePenShadeByImpl)
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
     ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 255, 55, 150));
+}
+
+TEST_F(PenBlocksTest, SetPenShadeToNumber)
+{
+    Compiler compiler(&m_engineMock);
+
+    // set pen shade to (4.5)
+    auto block1 = std::make_shared<Block>("a", "pen_setPenShadeToNumber");
+    addValueInput(block1, "SHADE", PenBlocks::SHADE, 4.5);
+
+    // set pen shade to (null block)
+    auto block2 = std::make_shared<Block>("b", "pen_setPenShadeToNumber");
+    addObscuredInput(block2, "SHADE", PenBlocks::SHADE, createNullBlock("c"));
+
+    compiler.init();
+
+    EXPECT_CALL(m_engineMock, functionIndex(&PenBlocks::setPenShadeToNumber)).WillOnce(Return(2));
+    compiler.setBlock(block1);
+    PenBlocks::compileSetPenShadeToNumber(&compiler);
+
+    EXPECT_CALL(m_engineMock, functionIndex(&PenBlocks::setPenShadeToNumber)).WillOnce(Return(2));
+    compiler.setBlock(block2);
+    PenBlocks::compileSetPenShadeToNumber(&compiler);
+
+    compiler.end();
+
+    ASSERT_EQ(compiler.bytecode(), std::vector<unsigned int>({ vm::OP_START, vm::OP_CONST, 0, vm::OP_EXEC, 2, vm::OP_NULL, vm::OP_EXEC, 2, vm::OP_HALT }));
+    ASSERT_EQ(compiler.constValues().size(), 1);
+    ASSERT_EQ(compiler.constValues()[0].toDouble(), 4.5);
+    ASSERT_TRUE(compiler.variables().empty());
+    ASSERT_TRUE(compiler.lists().empty());
+}
+
+TEST_F(PenBlocksTest, SetPenShadeToNumberImpl)
+{
+    static unsigned int bytecode1[] = { vm::OP_START, vm::OP_CONST, 0, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode2[] = { vm::OP_START, vm::OP_CONST, 1, vm::OP_EXEC, 0, vm::OP_HALT };
+    static unsigned int bytecode3[] = { vm::OP_START, vm::OP_CONST, 2, vm::OP_EXEC, 0, vm::OP_HALT };
+    static BlockFunc functions[] = { &PenBlocks::setPenShadeToNumber };
+    static Value constValues[] = { 125.7, -114.09, 489.4 };
+
+    SpriteModel model;
+    model.penState().transparency = 100 * (1 - 150 / 255.0);
+    Sprite sprite;
+    sprite.setInterface(&model);
+
+    VirtualMachine vm(&sprite, &m_engineMock, nullptr);
+    vm.setBytecode(bytecode1);
+    vm.setFunctions(functions);
+    vm.setConstValues(constValues);
+
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 148, 253, 150));
+
+    vm.reset();
+    vm.setBytecode(bytecode2);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 102, 255, 150));
+
+    vm.reset();
+    vm.setBytecode(bytecode3);
+    vm.run();
+    ASSERT_EQ(vm.registerCount(), 0);
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 89, 255, 150));
 }
 
 TEST_F(PenBlocksTest, ChangePenHueBy)

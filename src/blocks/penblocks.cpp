@@ -30,6 +30,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
     engine->addCompileFunction(this, "pen_changePenShadeBy", &compileChangePenShadeBy);
+    engine->addCompileFunction(this, "pen_setPenShadeToNumber", &compileSetPenShadeToNumber);
     engine->addCompileFunction(this, "pen_changePenHueBy", &compileChangePenHueBy);
     engine->addCompileFunction(this, "pen_setPenHueToNumber", &compileSetPenHueToNumber);
 
@@ -77,6 +78,12 @@ void PenBlocks::compileChangePenShadeBy(Compiler *compiler)
 {
     compiler->addInput(SHADE);
     compiler->addFunctionCall(&changePenShadeBy);
+}
+
+void PenBlocks::compileSetPenShadeToNumber(libscratchcpp::Compiler *compiler)
+{
+    compiler->addInput(SHADE);
+    compiler->addFunctionCall(&setPenShadeToNumber);
 }
 
 void PenBlocks::compileChangePenHueBy(libscratchcpp::Compiler *compiler)
@@ -151,6 +158,16 @@ unsigned int PenBlocks::changePenShadeBy(libscratchcpp::VirtualMachine *vm)
         PenState &penState = model->penState();
         setPenShade(penState.shade + vm->getInput(0, 1)->toDouble(), penState);
     }
+
+    return 1;
+}
+
+unsigned int PenBlocks::setPenShadeToNumber(libscratchcpp::VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model)
+        setPenShade(vm->getInput(0, 1)->toInt(), model->penState());
 
     return 1;
 }
