@@ -17,6 +17,8 @@ class PenBlocks : public libscratchcpp::IBlockSection
         enum Inputs
         {
             COLOR,
+            COLOR_PARAM,
+            VALUE,
             SIZE,
             SHADE,
             HUE
@@ -30,6 +32,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static void compilePenDown(libscratchcpp::Compiler *compiler);
         static void compilePenUp(libscratchcpp::Compiler *compiler);
         static void compileSetPenColorToColor(libscratchcpp::Compiler *compiler);
+        static void compileChangePenColorParamBy(libscratchcpp::Compiler *compiler);
         static void compileChangePenSizeBy(libscratchcpp::Compiler *compiler);
         static void compileSetPenSizeTo(libscratchcpp::Compiler *compiler);
         static void compileChangePenShadeBy(libscratchcpp::Compiler *compiler);
@@ -41,6 +44,13 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static unsigned int penDown(libscratchcpp::VirtualMachine *vm);
         static unsigned int penUp(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenColorToColor(libscratchcpp::VirtualMachine *vm);
+
+        static unsigned int changePenColorParamBy(libscratchcpp::VirtualMachine *vm);
+        static unsigned int changePenColorBy(libscratchcpp::VirtualMachine *vm);
+        static unsigned int changePenSaturationBy(libscratchcpp::VirtualMachine *vm);
+        static unsigned int changePenBrightnessBy(libscratchcpp::VirtualMachine *vm);
+        static unsigned int changePenTransparencyBy(libscratchcpp::VirtualMachine *vm);
+
         static unsigned int changePenSizeBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenSizeTo(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenShadeBy(libscratchcpp::VirtualMachine *vm);
@@ -51,7 +61,10 @@ class PenBlocks : public libscratchcpp::IBlockSection
     private:
         enum class ColorParam
         {
-            COLOR
+            COLOR,
+            SATURATION,
+            BRIGHTNESS,
+            TRANSPARENCY
         };
 
         static SpriteModel *getSpriteModel(libscratchcpp::VirtualMachine *vm);
@@ -60,6 +73,8 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static void legacyUpdatePenColor(PenState &penState);
         static double wrapClamp(double n, double min, double max);
         static QRgb mixRgb(QRgb rgb0, QRgb rgb1, double fraction1);
+
+        static const std::unordered_map<std::string, ColorParam> COLOR_PARAM_MAP;
 };
 
 } // namespace scratchcpprender

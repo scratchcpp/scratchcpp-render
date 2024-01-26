@@ -2,6 +2,7 @@
 
 #include <scratchcpp/compiler.h>
 #include <scratchcpp/sprite.h>
+#include <scratchcpp/input.h>
 
 #include "penblocks.h"
 #include "penlayer.h"
@@ -15,6 +16,12 @@ using namespace libscratchcpp;
 static const double PEN_SIZE_MIN = 1;
 static const double PEN_SIZE_MAX = 1200;
 
+static const double COLOR_PARAM_MIN = 0;
+static const double COLOR_PARAM_MAX = 100;
+
+const std::unordered_map<std::string, PenBlocks::ColorParam>
+    PenBlocks::COLOR_PARAM_MAP = { { "color", ColorParam::COLOR }, { "saturation", ColorParam::SATURATION }, { "brightness", ColorParam::BRIGHTNESS }, { "transparency", ColorParam::TRANSPARENCY } };
+
 std::string PenBlocks::name() const
 {
     return "Pen";
@@ -27,6 +34,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
     engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
     engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
+    engine->addCompileFunction(this, "pen_changePenColorParamBy", &compileChangePenColorParamBy);
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
     engine->addCompileFunction(this, "pen_changePenShadeBy", &compileChangePenShadeBy);
@@ -36,6 +44,8 @@ void PenBlocks::registerBlocks(IEngine *engine)
 
     // Inputs
     engine->addInput(this, "COLOR", COLOR);
+    engine->addInput(this, "COLOR_PARAM", COLOR_PARAM);
+    engine->addInput(this, "VALUE", VALUE);
     engine->addInput(this, "SIZE", SIZE);
     engine->addInput(this, "SHADE", SHADE);
     engine->addInput(this, "HUE", HUE);
@@ -60,6 +70,35 @@ void PenBlocks::compileSetPenColorToColor(libscratchcpp::Compiler *compiler)
 {
     compiler->addInput(COLOR);
     compiler->addFunctionCall(&setPenColorToColor);
+}
+
+void PenBlocks::compileChangePenColorParamBy(libscratchcpp::Compiler *compiler)
+{
+    Input *input = compiler->input(COLOR_PARAM);
+
+    if (input->type() != Input::Type::ObscuredShadow) {
+        assert(input->pointsToDropdownMenu());
+        std::string value = input->selectedMenuItem();
+        BlockFunc f = nullptr;
+
+        if (value == "color")
+            f = &changePenColorBy;
+        else if (value == "saturation")
+            f = &changePenSaturationBy;
+        else if (value == "brightness")
+            f = &changePenBrightnessBy;
+        else if (value == "transparency")
+            f = &changePenTransparencyBy;
+
+        if (f) {
+            compiler->addInput(VALUE);
+            compiler->addFunctionCall(f);
+        }
+    } else {
+        compiler->addInput(input);
+        compiler->addInput(VALUE);
+        compiler->addFunctionCall(&changePenColorParamBy);
+    }
 }
 
 void PenBlocks::compileChangePenSizeBy(libscratchcpp::Compiler *compiler)
@@ -248,6 +287,62 @@ unsigned int PenBlocks::setPenColorToColor(libscratchcpp::VirtualMachine *vm)
     return 1;
 }
 
+unsigned int PenBlocks::changePenColorParamBy(VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model) {
+        const auto it = COLOR_PARAM_MAP.find(vm->getInput(0, 2)->toString());
+
+        if (it == COLOR_PARAM_MAP.cend())
+            return 2;
+
+        setOrChangeColorParam(it->second, vm->getInput(1, 2)->toDouble(), model->penState(), true);
+    }
+
+    return 2;
+}
+
+unsigned int PenBlocks::changePenColorBy(VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model)
+        setOrChangeColorParam(ColorParam::COLOR, vm->getInput(0, 1)->toDouble(), model->penState(), true);
+
+    return 1;
+}
+
+unsigned int PenBlocks::changePenSaturationBy(VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model)
+        setOrChangeColorParam(ColorParam::SATURATION, vm->getInput(0, 1)->toDouble(), model->penState(), true);
+
+    return 1;
+}
+
+unsigned int PenBlocks::changePenBrightnessBy(VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model)
+        setOrChangeColorParam(ColorParam::BRIGHTNESS, vm->getInput(0, 1)->toDouble(), model->penState(), true);
+
+    return 1;
+}
+
+unsigned int PenBlocks::changePenTransparencyBy(VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model)
+        setOrChangeColorParam(ColorParam::TRANSPARENCY, vm->getInput(0, 1)->toDouble(), model->penState(), true);
+
+    return 1;
+}
+
 SpriteModel *PenBlocks::getSpriteModel(libscratchcpp::VirtualMachine *vm)
 {
     Target *target = vm->target();
@@ -265,6 +360,18 @@ void PenBlocks::setOrChangeColorParam(ColorParam param, double value, PenState &
     switch (param) {
         case ColorParam::COLOR:
             penState.color = wrapClamp(value + (change ? penState.color : 0), 0, 100);
+            break;
+
+        case ColorParam::SATURATION:
+            penState.saturation = std::clamp(value + (change ? penState.saturation : 0), COLOR_PARAM_MIN, COLOR_PARAM_MAX);
+            break;
+
+        case ColorParam::BRIGHTNESS:
+            penState.brightness = std::clamp(value + (change ? penState.brightness : 0), COLOR_PARAM_MIN, COLOR_PARAM_MAX);
+            break;
+
+        case ColorParam::TRANSPARENCY:
+            penState.transparency = std::clamp(value + (change ? penState.transparency : 0), COLOR_PARAM_MIN, COLOR_PARAM_MAX);
             break;
     }
 
