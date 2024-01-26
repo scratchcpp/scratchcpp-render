@@ -29,12 +29,14 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
+    engine->addCompileFunction(this, "pen_changePenShadeBy", &compileChangePenShadeBy);
     engine->addCompileFunction(this, "pen_changePenHueBy", &compileChangePenHueBy);
     engine->addCompileFunction(this, "pen_setPenHueToNumber", &compileSetPenHueToNumber);
 
     // Inputs
     engine->addInput(this, "COLOR", COLOR);
     engine->addInput(this, "SIZE", SIZE);
+    engine->addInput(this, "SHADE", SHADE);
     engine->addInput(this, "HUE", HUE);
 }
 
@@ -69,6 +71,12 @@ void PenBlocks::compileSetPenSizeTo(libscratchcpp::Compiler *compiler)
 {
     compiler->addInput(SIZE);
     compiler->addFunctionCall(&setPenSizeTo);
+}
+
+void PenBlocks::compileChangePenShadeBy(Compiler *compiler)
+{
+    compiler->addInput(SHADE);
+    compiler->addFunctionCall(&changePenShadeBy);
 }
 
 void PenBlocks::compileChangePenHueBy(libscratchcpp::Compiler *compiler)
@@ -131,6 +139,18 @@ unsigned int PenBlocks::setPenSizeTo(libscratchcpp::VirtualMachine *vm)
 
     if (model)
         model->penAttributes().diameter = std::clamp(vm->getInput(0, 1)->toDouble(), PEN_SIZE_MIN, PEN_SIZE_MAX);
+
+    return 1;
+}
+
+unsigned int PenBlocks::changePenShadeBy(libscratchcpp::VirtualMachine *vm)
+{
+    SpriteModel *model = getSpriteModel(vm);
+
+    if (model) {
+        PenState &penState = model->penState();
+        setPenShade(penState.shade + vm->getInput(0, 1)->toDouble(), penState);
+    }
 
     return 1;
 }
@@ -232,6 +252,21 @@ void PenBlocks::setOrChangeColorParam(ColorParam param, double value, PenState &
     }
 
     penState.updateColor();
+}
+
+void PenBlocks::setPenShade(int shade, PenState &penState)
+{
+    // https://github.com/scratchfoundation/scratch-vm/blob/8dbcc1fc8f8d8c4f1e40629fe8a388149d6dfd1c/src/extensions/scratch3_pen/index.js#L718-L730
+    // Wrap clamp the new shade value the way Scratch 2 did
+    shade = shade % 200;
+
+    if (shade < 0)
+        shade += 200;
+
+    // And store the shade that was used to compute this new color for later use
+    penState.shade = shade;
+
+    legacyUpdatePenColor(penState);
 }
 
 void PenBlocks::legacyUpdatePenColor(PenState &penState)

@@ -18,6 +18,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         {
             COLOR,
             SIZE,
+            SHADE,
             HUE
         };
 
@@ -31,6 +32,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static void compileSetPenColorToColor(libscratchcpp::Compiler *compiler);
         static void compileChangePenSizeBy(libscratchcpp::Compiler *compiler);
         static void compileSetPenSizeTo(libscratchcpp::Compiler *compiler);
+        static void compileChangePenShadeBy(libscratchcpp::Compiler *compiler);
         static void compileChangePenHueBy(libscratchcpp::Compiler *compiler);
         static void compileSetPenHueToNumber(libscratchcpp::Compiler *compiler);
 
@@ -40,6 +42,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static unsigned int setPenColorToColor(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenSizeBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenSizeTo(libscratchcpp::VirtualMachine *vm);
+        static unsigned int changePenShadeBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenHueBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenHueToNumber(libscratchcpp::VirtualMachine *vm);
 
@@ -51,6 +54,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
 
         static SpriteModel *getSpriteModel(libscratchcpp::VirtualMachine *vm);
         static void setOrChangeColorParam(ColorParam param, double value, PenState &penState, bool change);
+        static void setPenShade(int shade, PenState &penState);
         static void legacyUpdatePenColor(PenState &penState);
         static double wrapClamp(double n, double min, double max);
         static QRgb mixRgb(QRgb rgb0, QRgb rgb1, double fraction1);
