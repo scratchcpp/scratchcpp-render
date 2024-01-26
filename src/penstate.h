@@ -19,28 +19,17 @@ struct PenState
         double shade = 50; // for legacy blocks
         PenAttributes penAttributes;
 
-        void setColor(const QColor &color)
-        {
-            QColor hsvColor = color.toHsv();
-            this->color = hsvColor.hue() * 100 / 360.0;
-            this->saturation = hsvColor.saturationF() * 100;
-            this->brightness = hsvColor.valueF() * 100;
-            this->transparency = 100 * (1 - hsvColor.alphaF());
-
-            penAttributes.color = color;
-        }
-
         void updateColor()
         {
-            int h = std::round(color * 360 / 100);
+            int h = color * 360 / 100;
             h %= 360;
 
             if (h < 0)
                 h += 360;
 
-            const int s = std::round(saturation * 2.55);
-            const int v = std::round(brightness * 2.55);
-            const int a = std::round((100 - transparency) * 2.55);
+            const int s = saturation * 255 / 100;
+            const int v = brightness * 255 / 100;
+            const int a = 255 - transparency * 255 / 100;
 
             penAttributes.color = QColor::fromHsv(h, s, v, a);
         }

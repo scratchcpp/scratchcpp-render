@@ -252,43 +252,43 @@ TEST_F(PenBlocksTest, SetPenColorToColorImpl)
 
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor(170, 187, 204));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(210, 42, 204));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor(0, 51, 255));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(228, 255, 255));
 
     vm.reset();
     vm.setBytecode(bytecode3);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor(0, 0, 0));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(359, 0, 0));
 
     vm.reset();
     vm.setBytecode(bytecode4);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor(0, 0, 0));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(359, 0, 0));
 
     vm.reset();
     vm.setBytecode(bytecode5);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor(0, 0, 0));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(359, 0, 0));
 
     vm.reset();
     vm.setBytecode(bytecode6);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromRgba(1228097602));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(162, 74, 72, 73));
 
     vm.reset();
     vm.setBytecode(bytecode7);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromRgb(255));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(239, 255, 255));
 }
 
 TEST_F(PenBlocksTest, ChangePenSizeBy)
@@ -468,9 +468,7 @@ TEST_F(PenBlocksTest, ChangePenHueByImpl)
     static Value constValues[] = { 125.7, -114.09 };
 
     SpriteModel model;
-    QColor color = model.penAttributes().color;
-    color.setAlpha(150);
-    model.penState().setColor(color);
+    model.penState().transparency = 100 * (1 - 150 / 255.0);
     Sprite sprite;
     sprite.setInterface(&model);
 
@@ -481,28 +479,28 @@ TEST_F(PenBlocksTest, ChangePenHueByImpl)
 
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(103, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(106, 255, 255, 150));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(329, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(332, 255, 255, 150));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(192, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(199, 255, 255, 150));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(350, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(353, 255, 255, 150));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(145, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(148, 255, 255, 150));
 }
 
 TEST_F(PenBlocksTest, SetPenHueToNumber)
@@ -545,9 +543,7 @@ TEST_F(PenBlocksTest, SetPenHueToNumberImpl)
     static Value constValues[] = { 125.7, -114.09, 489.4 };
 
     SpriteModel model;
-    QColor color = model.penAttributes().color;
-    color.setAlpha(150);
-    model.penState().setColor(color);
+    model.penState().transparency = 100 * (1 - 150 / 255.0);
     Sprite sprite;
     sprite.setInterface(&model);
 
@@ -564,11 +560,11 @@ TEST_F(PenBlocksTest, SetPenHueToNumberImpl)
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(158, 255, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(154, 255, 255, 255));
 
     vm.reset();
     vm.setBytecode(bytecode3);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(154, 255, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(160, 255, 255, 255));
 }

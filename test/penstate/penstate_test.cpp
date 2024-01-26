@@ -19,19 +19,6 @@ TEST(PenStateTest, DefaultPenState)
     ASSERT_EQ(state.penAttributes.diameter, defaultAttributes.diameter);
 }
 
-TEST(PenStateTest, SetColor)
-{
-    PenState state;
-    QColor color(64, 20, 189, 167);
-    state.setColor(color);
-    ASSERT_FALSE(state.penDown);
-    ASSERT_EQ(std::round(state.color * 100) / 100, 70.83);
-    ASSERT_EQ(std::round(state.saturation * 100) / 100, 89.42);
-    ASSERT_EQ(std::round(state.brightness * 100) / 100, 74.12);
-    ASSERT_EQ(std::round(state.transparency * 100) / 100, 34.51);
-    ASSERT_EQ(state.shade, 50);
-}
-
 TEST(PenStateTest, UpdateColor)
 {
     PenState state;
@@ -41,5 +28,5 @@ TEST(PenStateTest, UpdateColor)
     state.transparency = 36.09;
     state.shade = 85;
     state.updateColor();
-    ASSERT_EQ(state.penAttributes.color, QColor::fromHsv(283, 115, 32, 163));
+    ASSERT_EQ(state.penAttributes.color, QColor::fromHsv(283, 114, 31, 162));
 }
