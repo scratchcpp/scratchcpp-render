@@ -82,11 +82,11 @@ TEST(ProjectSceneTest, HandleKeyPressAndRelease)
         KeyEvent event(scratchKey);
         EXPECT_CALL(engine, setKeyState(event.name(), true));
         EXPECT_CALL(engine, setAnyKeyPressed(true));
-        scene.handleKeyPress(qtKey, "test");
+        scene.handleKeyPress(qtKey, "");
 
         EXPECT_CALL(engine, setKeyState(event.name(), false));
         EXPECT_CALL(engine, setAnyKeyPressed(false));
-        scene.handleKeyRelease(qtKey, "test");
+        scene.handleKeyRelease(qtKey, "");
     }
 
     EXPECT_CALL(engine, setKeyState("a", true));
