@@ -33,6 +33,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static void compilePenUp(libscratchcpp::Compiler *compiler);
         static void compileSetPenColorToColor(libscratchcpp::Compiler *compiler);
         static void compileChangePenColorParamBy(libscratchcpp::Compiler *compiler);
+        static void compileSetPenColorParamTo(libscratchcpp::Compiler *compiler);
         static void compileChangePenSizeBy(libscratchcpp::Compiler *compiler);
         static void compileSetPenSizeTo(libscratchcpp::Compiler *compiler);
         static void compileChangePenShadeBy(libscratchcpp::Compiler *compiler);
@@ -50,6 +51,12 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static unsigned int changePenSaturationBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenBrightnessBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int changePenTransparencyBy(libscratchcpp::VirtualMachine *vm);
+
+        static unsigned int setPenColorParamTo(libscratchcpp::VirtualMachine *vm);
+        static unsigned int setPenColorTo(libscratchcpp::VirtualMachine *vm);
+        static unsigned int setPenSaturationTo(libscratchcpp::VirtualMachine *vm);
+        static unsigned int setPenBrightnessTo(libscratchcpp::VirtualMachine *vm);
+        static unsigned int setPenTransparencyTo(libscratchcpp::VirtualMachine *vm);
 
         static unsigned int changePenSizeBy(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenSizeTo(libscratchcpp::VirtualMachine *vm);
