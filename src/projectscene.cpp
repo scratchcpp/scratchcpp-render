@@ -76,15 +76,15 @@ void ProjectScene::handleKeyPress(Qt::Key key, const QString &text)
     m_pressedKeys.insert(key);
 
     if (m_engine) {
-        if (!text.isEmpty()) {
-            auto it = SPECIAL_KEY_MAP.find(key);
+        auto it = SPECIAL_KEY_MAP.find(key);
 
-            if (it == SPECIAL_KEY_MAP.cend())
+        if (it == SPECIAL_KEY_MAP.cend()) {
+            if (!text.isEmpty())
                 m_engine->setKeyState(text.toStdString(), true);
-            else {
-                KeyEvent event(it->second);
-                m_engine->setKeyState(event.name(), true);
-            }
+        } else {
+            KeyEvent event(it->second);
+            // TODO: Use event instead of even.name()
+            m_engine->setKeyState(event.name(), true);
         }
 
         m_engine->setAnyKeyPressed(!m_pressedKeys.empty());
@@ -96,15 +96,15 @@ void ProjectScene::handleKeyRelease(Qt::Key key, const QString &text)
     m_pressedKeys.erase(key);
 
     if (m_engine) {
-        if (!text.isEmpty()) {
-            auto it = SPECIAL_KEY_MAP.find(key);
+        auto it = SPECIAL_KEY_MAP.find(key);
 
-            if (it == SPECIAL_KEY_MAP.cend())
+        if (it == SPECIAL_KEY_MAP.cend()) {
+            if (!text.isEmpty())
                 m_engine->setKeyState(text.toStdString(), false);
-            else {
-                KeyEvent event(it->second);
-                m_engine->setKeyState(event.name(), false);
-            }
+        } else {
+            KeyEvent event(it->second);
+            // TODO: Use event instead of even.name()
+            m_engine->setKeyState(event.name(), false);
         }
 
         if (m_pressedKeys.empty()) // avoid setting 'true' when a key is released
