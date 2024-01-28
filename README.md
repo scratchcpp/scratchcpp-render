@@ -142,7 +142,7 @@ qputenv("QSG_RENDER_LOOP", "basic");
 - [x] Sprite dragging
 - [ ] Touching sprite block
 - [ ] Touching color blocks
-- [ ] Pen blocks
+- [ ] Pen blocks (all blocks except the stamp block are implemented)
 - [x] Monitors
 - [ ] Graphics effects (maybe using shaders)
 - [ ] Speech and thought bubbles
