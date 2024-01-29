@@ -11,31 +11,29 @@ using ::testing::ReturnRef;
 class TargetPainterTest : public testing::Test
 {
     public:
-        void createContextAndSurface(QOpenGLContext *context, QOffscreenSurface *surface)
+        void SetUp() override
         {
-            QSurfaceFormat surfaceFormat;
-            surfaceFormat.setMajorVersion(4);
-            surfaceFormat.setMinorVersion(3);
+            m_context.create();
+            ASSERT_TRUE(m_context.isValid());
 
-            context->setFormat(surfaceFormat);
-            context->create();
-            ASSERT_TRUE(context->isValid());
-
-            surface->setFormat(surfaceFormat);
-            surface->create();
-            ASSERT_TRUE(surface->isValid());
-
-            context->makeCurrent(surface);
-            ASSERT_EQ(QOpenGLContext::currentContext(), context);
+            m_surface.setFormat(m_context.format());
+            m_surface.create();
+            Q_ASSERT(m_surface.isValid());
+            m_context.makeCurrent(&m_surface);
         }
+
+        void TearDown() override
+        {
+            ASSERT_EQ(m_context.surface(), &m_surface);
+            m_context.doneCurrent();
+        }
+
+        QOpenGLContext m_context;
+        QOffscreenSurface m_surface;
 };
 
 TEST_F(TargetPainterTest, Paint)
 {
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
-
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
@@ -48,8 +46,10 @@ TEST_F(TargetPainterTest, Paint)
     // Paint reference
     refPainter.setAntialias(0);
     refPainter.setStrokeStyle(QNanoColor(255, 0, 0, 128));
-    refPainter.ellipse(refFbo.width() / 2, refFbo.height() / 2, refFbo.width() / 2, refFbo.height() / 2);
+    refPainter.setFillStyle(QNanoColor(0, 0, 100, 150));
+    refPainter.rect(5, 5, refFbo.width() - 10, refFbo.height() - 10);
     refPainter.stroke();
+    refPainter.fill();
     refPainter.endFrame();
 
     // Begin painting
@@ -76,7 +76,9 @@ TEST_F(TargetPainterTest, Paint)
 
     // Paint
     Texture texture(refFbo.texture(), refFbo.size());
+    std::unordered_map<ShaderManager::Effect, double> effects;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
+    EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
     EXPECT_CALL(target, updateHullPoints(&fbo));
     targetPainter.paint(&painter);
     painter.endFrame();
@@ -84,9 +86,28 @@ TEST_F(TargetPainterTest, Paint)
     // Compare resulting images
     ASSERT_EQ(fbo.toImage(), refFbo.toImage());
 
+    // Paint with color effects
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    effects[ShaderManager::Effect::Color] = 46;
+    effects[ShaderManager::Effect::Brightness] = 20;
+    effects[ShaderManager::Effect::Ghost] = 84;
+    EXPECT_CALL(target, texture()).WillOnce(Return(texture));
+    EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
+    EXPECT_CALL(target, updateHullPoints(&fbo));
+    targetPainter.paint(&painter);
+    painter.endFrame();
+    effects.clear();
+
+    // Compare with reference image
+    QBuffer refBuffer1;
+    fbo.toImage().save(&refBuffer1, "png");
+    QFile ref1("color_effects.png");
+    ref1.open(QFile::ReadOnly);
+    refBuffer1.open(QBuffer::ReadOnly);
+    ASSERT_EQ(ref1.readAll(), refBuffer1.readAll());
+
     // Release
     fbo.release();
     refFbo.release();
-
-    context.doneCurrent();
 }
