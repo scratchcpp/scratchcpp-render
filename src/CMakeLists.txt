@@ -58,6 +58,8 @@ qt_add_qml_module(scratchcpp-render
 	penlayerpainter.h
 	penattributes.h
 	penstate.h
+	shadermanager.cpp
+	shadermanager.h
 	graphicseffect.cpp
 	graphicseffect.h
 	blocks/penextension.cpp
