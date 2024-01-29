@@ -6,6 +6,8 @@
 #include <qnanoquickitem.h>
 #include <scratchcpp/sprite.h>
 
+#include "shadermanager.h"
+
 class QBuffer;
 class QNanoPainter;
 class QOpenGLContext;
@@ -74,6 +76,10 @@ class IRenderedTarget : public QNanoQuickItem
         virtual bool mirrorHorizontally() const = 0;
 
         virtual Texture texture() const = 0;
+
+        virtual const std::unordered_map<ShaderManager::Effect, double> &graphicEffects() const = 0;
+        virtual void setGraphicEffect(ShaderManager::Effect effect, double value) = 0;
+        virtual void clearGraphicEffects() = 0;
 
         virtual void updateHullPoints(QOpenGLFramebufferObject *fbo) = 0;
         virtual const std::vector<QPointF> &hullPoints() const = 0;
