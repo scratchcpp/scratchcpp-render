@@ -144,7 +144,7 @@ qputenv("QSG_RENDER_LOOP", "basic");
 - [ ] Touching color blocks
 - [ ] Pen blocks (all blocks except the stamp block are implemented)
 - [x] Monitors
-- [ ] Graphics effects (maybe using shaders)
+- [ ] Graphics effects (color, brightness and ghost are implemented)
 - [ ] Speech and thought bubbles
 - [ ] Question text box ("ask and wait" block)
 
