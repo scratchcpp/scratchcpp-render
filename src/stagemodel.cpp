@@ -4,6 +4,7 @@
 
 #include "stagemodel.h"
 #include "renderedtarget.h"
+#include "graphicseffect.h"
 
 using namespace scratchcpprender;
 
@@ -37,10 +38,16 @@ void StageModel::onVideoTransparencyChanged(int videoTransparency)
 
 void StageModel::onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value)
 {
+    GraphicsEffect *graphicsEffect = dynamic_cast<GraphicsEffect *>(effect);
+
+    if (graphicsEffect && m_renderedTarget)
+        m_renderedTarget->setGraphicEffect(graphicsEffect->effect(), value);
 }
 
 void StageModel::onGraphicsEffectsCleared()
 {
+    if (m_renderedTarget)
+        m_renderedTarget->clearGraphicEffects();
 }
 
 void StageModel::loadCostume()

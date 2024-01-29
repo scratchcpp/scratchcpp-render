@@ -82,6 +82,10 @@ class RenderedTarget : public IRenderedTarget
 
         Texture texture() const override;
 
+        const std::unordered_map<ShaderManager::Effect, double> &graphicEffects() const override;
+        void setGraphicEffect(ShaderManager::Effect effect, double value) override;
+        void clearGraphicEffects() override;
+
         void updateHullPoints(QOpenGLFramebufferObject *fbo) override;
         const std::vector<QPointF> &hullPoints() const override;
 
@@ -119,6 +123,7 @@ class RenderedTarget : public IRenderedTarget
         Skin *m_skin = nullptr;
         Texture m_texture;
         Texture m_oldTexture;
+        std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
         double m_size = 1;
         double m_x = 0;
         double m_y = 0;

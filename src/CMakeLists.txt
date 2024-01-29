@@ -12,6 +12,8 @@ qt_add_qml_module(scratchcpp-render
         internal/ValueMonitor.qml
 	internal/MonitorSlider.qml
 	internal/ListMonitor.qml
+	shaders/sprite.vert
+	shaders/sprite.frag
     SOURCES
         global.h
 	projectloader.cpp
@@ -56,6 +58,10 @@ qt_add_qml_module(scratchcpp-render
 	penlayerpainter.h
 	penattributes.h
 	penstate.h
+	shadermanager.cpp
+	shadermanager.h
+	graphicseffect.cpp
+	graphicseffect.h
 	blocks/penextension.cpp
 	blocks/penextension.h
 	blocks/penblocks.cpp

@@ -1,6 +1,7 @@
 #include <QtTest/QSignalSpy>
 #include <scratchcpp/costume.h>
 #include <spritemodel.h>
+#include <graphicseffect.h>
 #include <renderedtargetmock.h>
 #include <penlayermock.h>
 #include <enginemock.h>
@@ -216,6 +217,31 @@ TEST(SpriteModelTest, OnLayerOrderChanged)
 
     EXPECT_CALL(renderedTarget, updateLayerOrder(7));
     model.onLayerOrderChanged(7);
+}
+
+TEST(SpriteModelTest, OnGraphicsEffectChanged)
+{
+    SpriteModel model;
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    GraphicsEffect effect1(ShaderManager::Effect::Brightness, "brightness");
+    EXPECT_CALL(renderedTarget, setGraphicEffect(ShaderManager::Effect::Brightness, 78.4));
+    model.onGraphicsEffectChanged(&effect1, 78.4);
+
+    GraphicsEffect effect2(ShaderManager::Effect::Ghost, "ghost");
+    EXPECT_CALL(renderedTarget, setGraphicEffect(ShaderManager::Effect::Ghost, 0.0));
+    model.onGraphicsEffectChanged(&effect2, 0.0);
+}
+
+TEST(SpriteModelTest, OnGraphicsEffectsCleared)
+{
+    SpriteModel model;
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    EXPECT_CALL(renderedTarget, clearGraphicEffects());
+    model.onGraphicsEffectsCleared();
 }
 
 TEST(SpriteModelTest, BoundingRect)

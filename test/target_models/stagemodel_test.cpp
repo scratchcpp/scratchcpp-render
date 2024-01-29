@@ -1,6 +1,7 @@
 #include <QtTest/QSignalSpy>
 #include <scratchcpp/costume.h>
 #include <stagemodel.h>
+#include <graphicseffect.h>
 #include <renderedtargetmock.h>
 
 #include "../common.h"
@@ -36,6 +37,31 @@ TEST(StageModelTest, OnCostumeChanged)
 
     EXPECT_CALL(renderedTarget, updateCostume(&costume));
     model.onCostumeChanged(&costume);
+}
+
+TEST(StageModelTest, OnGraphicsEffectChanged)
+{
+    StageModel model;
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    GraphicsEffect effect1(ShaderManager::Effect::Brightness, "brightness");
+    EXPECT_CALL(renderedTarget, setGraphicEffect(ShaderManager::Effect::Brightness, 78.4));
+    model.onGraphicsEffectChanged(&effect1, 78.4);
+
+    GraphicsEffect effect2(ShaderManager::Effect::Ghost, "ghost");
+    EXPECT_CALL(renderedTarget, setGraphicEffect(ShaderManager::Effect::Ghost, 0.0));
+    model.onGraphicsEffectChanged(&effect2, 0.0);
+}
+
+TEST(StageModelTest, OnGraphicsEffectsCleared)
+{
+    StageModel model;
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    EXPECT_CALL(renderedTarget, clearGraphicEffects());
+    model.onGraphicsEffectsCleared();
 }
 
 TEST(StageModelTest, RenderedTarget)

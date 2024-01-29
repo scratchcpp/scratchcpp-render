@@ -425,6 +425,42 @@ Texture RenderedTarget::texture() const
     return m_texture;
 }
 
+const std::unordered_map<ShaderManager::Effect, double> &RenderedTarget::graphicEffects() const
+{
+    return m_graphicEffects;
+}
+
+void RenderedTarget::setGraphicEffect(ShaderManager::Effect effect, double value)
+{
+    bool changed = false;
+    auto it = m_graphicEffects.find(effect);
+
+    if (value == 0) {
+        if (it != m_graphicEffects.cend()) {
+            changed = true;
+            m_graphicEffects.erase(effect);
+        }
+    } else {
+        if (it != m_graphicEffects.cend())
+            changed = it->second != value;
+        else
+            changed = true;
+
+        m_graphicEffects[effect] = value;
+    }
+
+    if (changed)
+        update();
+}
+
+void RenderedTarget::clearGraphicEffects()
+{
+    if (!m_graphicEffects.empty())
+        update();
+
+    m_graphicEffects.clear();
+}
+
 void RenderedTarget::updateHullPoints(QOpenGLFramebufferObject *fbo)
 {
     if (m_stageModel)

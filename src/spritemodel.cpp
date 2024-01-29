@@ -7,6 +7,7 @@
 #include "spritemodel.h"
 #include "renderedtarget.h"
 #include "ipenlayer.h"
+#include "graphicseffect.h"
 
 namespace scratchcpprender
 {
@@ -100,10 +101,16 @@ void SpriteModel::onLayerOrderChanged(int layerOrder)
 
 void SpriteModel::onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value)
 {
+    GraphicsEffect *graphicsEffect = dynamic_cast<GraphicsEffect *>(effect);
+
+    if (graphicsEffect && m_renderedTarget)
+        m_renderedTarget->setGraphicEffect(graphicsEffect->effect(), value);
 }
 
 void SpriteModel::onGraphicsEffectsCleared()
 {
+    if (m_renderedTarget)
+        m_renderedTarget->clearGraphicEffects();
 }
 
 libscratchcpp::Rect SpriteModel::boundingRect() const

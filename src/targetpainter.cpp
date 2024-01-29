@@ -8,6 +8,7 @@
 #include "irenderedtarget.h"
 #include "spritemodel.h"
 #include "bitmapskin.h"
+#include "shadermanager.h"
 
 using namespace scratchcpprender;
 
@@ -59,15 +60,57 @@ void TargetPainter::paint(QNanoPainter *painter)
         return;
     }
 
-    // Blit the FBO to the Qt Quick FBO
-    glF.glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-    glF.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFbo->handle());
-    glF.glBlitFramebuffer(0, 0, texture.width(), texture.height(), 0, 0, targetFbo->width(), targetFbo->height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    glF.glBindFramebuffer(GL_FRAMEBUFFER, targetFbo->handle());
+    // Get the shader program for the current set of effects
+    ShaderManager *shaderManager = ShaderManager::instance();
 
+    const auto &effects = m_target->graphicEffects();
+    QOpenGLShaderProgram *shaderProgram = shaderManager->getShaderProgram(effects);
+    Q_ASSERT(shaderProgram);
+    Q_ASSERT(shaderProgram->isLinked());
+
+    // Set up vertex data and buffers for a quad
+    float vertices[] = {
+        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+    };
+
+    GLuint VBO, VAO;
+    glF.glGenVertexArrays(1, &VAO);
+    glF.glGenBuffers(1, &VBO);
+
+    glF.glBindVertexArray(VAO);
+
+    glF.glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glF.glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glF.glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+    glF.glEnableVertexAttribArray(0);
+
+    // Texture coordinate attribute
+    glF.glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+    glF.glEnableVertexAttribArray(1);
+
+    // Render to the target framebuffer
+    glF.glBindFramebuffer(GL_FRAMEBUFFER, targetFbo->handle());
+    shaderProgram->bind();
+    glF.glBindVertexArray(VAO);
+    glF.glActiveTexture(GL_TEXTURE0);
+    glF.glBindTexture(GL_TEXTURE_2D, texture.handle());
+    shaderManager->setUniforms(shaderProgram, 0, effects); // set texture and effect uniforms
+    glF.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // Process the resulting texture
+    // NOTE: This must happen now, not later, because the alpha channel can be used here
+    m_target->updateHullPoints(targetFbo);
+
+    // Cleanup
+    shaderProgram->release();
+    glF.glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glF.glDeleteFramebuffers(1, &fbo);
 
-    m_target->updateHullPoints(targetFbo);
+    // Delete vertex array and buffer
+    glF.glDeleteVertexArrays(1, &VAO);
+    glF.glDeleteBuffers(1, &VBO);
 }
 
 void TargetPainter::synchronize(QNanoQuickItem *item)

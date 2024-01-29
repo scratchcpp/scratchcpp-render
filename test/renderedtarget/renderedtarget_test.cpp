@@ -556,6 +556,34 @@ TEST_F(RenderedTargetTest, StageScale)
     ASSERT_EQ(target.stageScale(), 6.4);
 }
 
+TEST_F(RenderedTargetTest, GraphicEffects)
+{
+    RenderedTarget target;
+    ASSERT_TRUE(target.graphicEffects().empty());
+
+    target.setGraphicEffect(ShaderManager::Effect::Color, 23.5);
+    target.setGraphicEffect(ShaderManager::Effect::Ghost, 95.7);
+    std::unordered_map<ShaderManager::Effect, double> expected;
+    expected[ShaderManager::Effect::Color] = 23.5;
+    expected[ShaderManager::Effect::Ghost] = 95.7;
+    ASSERT_EQ(target.graphicEffects(), expected);
+
+    target.setGraphicEffect(ShaderManager::Effect::Color, 0);
+    expected.erase(ShaderManager::Effect::Color);
+    ASSERT_EQ(target.graphicEffects(), expected);
+
+    target.setGraphicEffect(ShaderManager::Effect::Ghost, 0.5);
+    expected[ShaderManager::Effect::Ghost] = 0.5;
+    ASSERT_EQ(target.graphicEffects(), expected);
+
+    target.setGraphicEffect(ShaderManager::Effect::Brightness, -150.7);
+    expected[ShaderManager::Effect::Brightness] = -150.7;
+    ASSERT_EQ(target.graphicEffects(), expected);
+
+    target.clearGraphicEffects();
+    ASSERT_TRUE(target.graphicEffects().empty());
+}
+
 TEST_F(RenderedTargetTest, GetBounds)
 {
     QOpenGLContext context;
