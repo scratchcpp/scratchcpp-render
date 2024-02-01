@@ -113,6 +113,14 @@ void SpriteModel::onGraphicsEffectsCleared()
         m_renderedTarget->clearGraphicEffects();
 }
 
+void SpriteModel::onBubbleTypeChanged(libscratchcpp::Target::BubbleType type)
+{
+}
+
+void SpriteModel::onBubbleTextChanged(const std::string &text)
+{
+}
+
 libscratchcpp::Rect SpriteModel::boundingRect() const
 {
     return m_renderedTarget->getBounds();

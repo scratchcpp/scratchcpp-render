@@ -48,6 +48,9 @@ class SpriteModel
         void onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value) override;
         void onGraphicsEffectsCleared() override;
 
+        void onBubbleTypeChanged(libscratchcpp::Target::BubbleType type) override;
+        void onBubbleTextChanged(const std::string &text) override;
+
         libscratchcpp::Rect boundingRect() const override;
 
         libscratchcpp::Sprite *sprite() const;

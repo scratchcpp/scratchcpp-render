@@ -50,6 +50,14 @@ void StageModel::onGraphicsEffectsCleared()
         m_renderedTarget->clearGraphicEffects();
 }
 
+void StageModel::onBubbleTypeChanged(libscratchcpp::Target::BubbleType type)
+{
+}
+
+void StageModel::onBubbleTextChanged(const std::string &text)
+{
+}
+
 void StageModel::loadCostume()
 {
     if (m_renderedTarget && m_stage) {
