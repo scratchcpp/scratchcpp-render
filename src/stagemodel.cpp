@@ -52,10 +52,29 @@ void StageModel::onGraphicsEffectsCleared()
 
 void StageModel::onBubbleTypeChanged(libscratchcpp::Target::BubbleType type)
 {
+    if (type == libscratchcpp::Target::BubbleType::Say) {
+        if (m_bubbleType == TextBubbleShape::Type::Say)
+            return;
+
+        m_bubbleType = TextBubbleShape::Type::Say;
+    } else {
+        if (m_bubbleType == TextBubbleShape::Type::Think)
+            return;
+
+        m_bubbleType = TextBubbleShape::Type::Think;
+    }
+
+    emit bubbleTypeChanged();
 }
 
 void StageModel::onBubbleTextChanged(const std::string &text)
 {
+    QString newText = QString::fromStdString(text);
+
+    if (m_bubbleText != newText) {
+        m_bubbleText = newText;
+        emit bubbleTextChanged();
+    }
 }
 
 void StageModel::loadCostume()
@@ -85,4 +104,14 @@ void StageModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
     loadCostume();
 
     emit renderedTargetChanged();
+}
+
+const TextBubbleShape::Type &StageModel::bubbleType() const
+{
+    return m_bubbleType;
+}
+
+const QString &StageModel::bubbleText() const
+{
+    return m_bubbleText;
 }
