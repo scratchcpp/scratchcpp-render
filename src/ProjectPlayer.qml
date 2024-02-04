@@ -134,6 +134,7 @@ ProjectScene {
 
             Item {
                 anchors.fill: parent
+                z: targetItem.z
 
                 RenderedTarget {
                     id: targetItem
