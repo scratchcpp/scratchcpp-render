@@ -366,6 +366,19 @@ Rect RenderedTarget::getBounds() const
     return Rect(left + m_x, top + m_y, right + m_x, bottom + m_y);
 }
 
+QRectF RenderedTarget::getBoundsForBubble() const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/86dcb0151a04bc8c1ff39559e8531e7921102b56/src/Drawable.js#L536-L551
+    Rect rect = getBounds();
+    const int slice = 8; // px, how tall the top slice to measure should be
+
+    if (rect.height() > slice)
+        rect.setBottom(rect.top() - slice);
+
+    Q_ASSERT(rect.height() <= 8);
+    return QRectF(QPointF(rect.left(), rect.top()), QPointF(rect.right(), rect.bottom()));
+}
+
 QPointF RenderedTarget::mapFromScene(const QPointF &point) const
 {
     return QNanoQuickItem::mapFromScene(point);

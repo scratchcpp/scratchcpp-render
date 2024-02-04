@@ -75,6 +75,7 @@ class RenderedTarget : public IRenderedTarget
         void setHeight(qreal height) override;
 
         libscratchcpp::Rect getBounds() const override;
+        Q_INVOKABLE QRectF getBoundsForBubble() const override;
 
         QPointF mapFromScene(const QPointF &point) const override;
 

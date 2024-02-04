@@ -674,6 +674,12 @@ TEST_F(RenderedTargetTest, GetBounds)
     ASSERT_EQ(std::round(bounds.right() * 100) / 100, 66.72);
     ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -125.11);
 
+    QRectF bubbleBounds = target.getBoundsForBubble();
+    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 66.13);
+    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -124.52);
+    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 66.72);
+    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -125.11);
+
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
@@ -684,6 +690,12 @@ TEST_F(RenderedTargetTest, GetBounds)
     ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.29);
     ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -110.89);
 
+    bubbleBounds = target.getBoundsForBubble();
+    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 71.87);
+    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -110.47);
+    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 72.29);
+    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -110.89);
+
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.setStageScale(20.75);
@@ -693,6 +705,28 @@ TEST_F(RenderedTargetTest, GetBounds)
     ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.47);
     ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.29);
     ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -110.89);
+
+    bubbleBounds = target.getBoundsForBubble();
+    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 71.87);
+    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -110.47);
+    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 72.29);
+    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -110.89);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateSize(9780.6);
+
+    bounds = target.getBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -466.05);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1294.13);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, -405.87);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, 1233.94);
+
+    bubbleBounds = target.getBoundsForBubble();
+    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, -466.05);
+    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, 1294.13);
+    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, -405.87);
+    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, 1286.13);
 
     context.doneCurrent();
 }
