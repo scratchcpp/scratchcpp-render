@@ -62,6 +62,10 @@ qt_add_qml_module(scratchcpp-render
 	shadermanager.h
 	graphicseffect.cpp
 	graphicseffect.h
+	textbubbleshape.cpp
+	textbubbleshape.h
+	textbubblepainter.cpp
+	textbubblepainter.h
 	blocks/penextension.cpp
 	blocks/penextension.h
 	blocks/penblocks.cpp
