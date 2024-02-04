@@ -109,6 +109,20 @@ ProjectScene {
             onStageModelChanged: stageModel.renderedTarget = this
         }
 
+        Loader {
+            readonly property alias model: stageTarget.stageModel
+            active: model ? model.bubbleText !== "" : false
+
+            sourceComponent: TextBubble {
+                type: model ? model.bubbleType : TextBubbleShape.Say
+                text: model ? model.bubbleText : ""
+                target: stageTarget
+                stageScale: root.stageScale
+                stageWidth: root.stageWidth
+                stageHeight: root.stageHeight
+            }
+        }
+
         PenLayer {
             id: projectPenLayer
             engine: loader.engine
@@ -118,16 +132,34 @@ ProjectScene {
         Component {
             id: renderedSprite
 
-            RenderedTarget {
-                id: target
-                mouseArea: sceneMouseArea
-                stageScale: root.stageScale
-                transform: Scale { xScale: mirrorHorizontally ? -1 : 1 }
-                Component.onCompleted: {
-                    engine = loader.engine;
-                    spriteModel = modelData;
-                    spriteModel.renderedTarget = this;
-                    spriteModel.penLayer = projectPenLayer;
+            Item {
+                anchors.fill: parent
+
+                RenderedTarget {
+                    id: targetItem
+                    mouseArea: sceneMouseArea
+                    stageScale: root.stageScale
+                    transform: Scale { xScale: targetItem.mirrorHorizontally ? -1 : 1 }
+                    Component.onCompleted: {
+                        engine = loader.engine;
+                        spriteModel = modelData;
+                        spriteModel.renderedTarget = this;
+                        spriteModel.penLayer = projectPenLayer;
+                    }
+                }
+
+                Loader {
+                    readonly property alias model: targetItem.spriteModel
+                    active: model ? model.bubbleText !== "" : false
+
+                    sourceComponent: TextBubble {
+                        type: model ? model.bubbleType : TextBubbleShape.Say
+                        text: model ? model.bubbleText : ""
+                        target: targetItem
+                        stageScale: root.stageScale
+                        stageWidth: root.stageWidth
+                        stageHeight: root.stageHeight
+                    }
                 }
             }
         }
