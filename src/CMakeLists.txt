@@ -12,6 +12,7 @@ qt_add_qml_module(scratchcpp-render
         internal/ValueMonitor.qml
 	internal/MonitorSlider.qml
 	internal/ListMonitor.qml
+	internal/TextBubble.qml
 	shaders/sprite.vert
 	shaders/sprite.frag
     SOURCES
@@ -62,6 +63,10 @@ qt_add_qml_module(scratchcpp-render
 	shadermanager.h
 	graphicseffect.cpp
 	graphicseffect.h
+	textbubbleshape.cpp
+	textbubbleshape.h
+	textbubblepainter.cpp
+	textbubblepainter.h
 	blocks/penextension.cpp
 	blocks/penextension.h
 	blocks/penblocks.cpp

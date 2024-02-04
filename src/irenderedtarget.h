@@ -70,6 +70,7 @@ class IRenderedTarget : public QNanoQuickItem
         virtual void setHeight(qreal width) = 0;
 
         virtual libscratchcpp::Rect getBounds() const = 0;
+        virtual QRectF getBoundsForBubble() const = 0;
 
         virtual QPointF mapFromScene(const QPointF &point) const = 0;
 

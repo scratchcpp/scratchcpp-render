@@ -113,6 +113,33 @@ void SpriteModel::onGraphicsEffectsCleared()
         m_renderedTarget->clearGraphicEffects();
 }
 
+void SpriteModel::onBubbleTypeChanged(libscratchcpp::Target::BubbleType type)
+{
+    if (type == libscratchcpp::Target::BubbleType::Say) {
+        if (m_bubbleType == TextBubbleShape::Type::Say)
+            return;
+
+        m_bubbleType = TextBubbleShape::Type::Say;
+    } else {
+        if (m_bubbleType == TextBubbleShape::Type::Think)
+            return;
+
+        m_bubbleType = TextBubbleShape::Type::Think;
+    }
+
+    emit bubbleTypeChanged();
+}
+
+void SpriteModel::onBubbleTextChanged(const std::string &text)
+{
+    QString newText = QString::fromStdString(text);
+
+    if (m_bubbleText != newText) {
+        m_bubbleText = newText;
+        emit bubbleTextChanged();
+    }
+}
+
 libscratchcpp::Rect SpriteModel::boundingRect() const
 {
     return m_renderedTarget->getBounds();
@@ -185,6 +212,16 @@ SpriteModel *SpriteModel::cloneRoot() const
         return nullptr;
     else
         return m_cloneRoot;
+}
+
+const TextBubbleShape::Type &SpriteModel::bubbleType() const
+{
+    return m_bubbleType;
+}
+
+const QString &SpriteModel::bubbleText() const
+{
+    return m_bubbleText;
 }
 
 } // namespace scratchcpprender
