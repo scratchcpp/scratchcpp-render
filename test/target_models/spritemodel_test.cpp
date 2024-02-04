@@ -244,6 +244,48 @@ TEST(SpriteModelTest, OnGraphicsEffectsCleared)
     model.onGraphicsEffectsCleared();
 }
 
+TEST(SpriteModelTest, OnBubbleTypeChanged)
+{
+    SpriteModel model;
+    QSignalSpy spy(&model, &SpriteModel::bubbleTypeChanged);
+    ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Say);
+
+    model.onBubbleTypeChanged(Target::BubbleType::Think);
+    ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Think);
+    ASSERT_EQ(spy.count(), 1);
+
+    model.onBubbleTypeChanged(Target::BubbleType::Think);
+    ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Think);
+    ASSERT_EQ(spy.count(), 1);
+
+    model.onBubbleTypeChanged(Target::BubbleType::Say);
+    ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Say);
+    ASSERT_EQ(spy.count(), 2);
+
+    model.onBubbleTypeChanged(Target::BubbleType::Say);
+    ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Say);
+    ASSERT_EQ(spy.count(), 2);
+}
+
+TEST(SpriteModelTest, OnBubbleTextChanged)
+{
+    SpriteModel model;
+    QSignalSpy spy(&model, &SpriteModel::bubbleTextChanged);
+    ASSERT_TRUE(model.bubbleText().isEmpty());
+
+    model.onBubbleTextChanged("Hello!");
+    ASSERT_EQ(model.bubbleText(), "Hello!");
+    ASSERT_EQ(spy.count(), 1);
+
+    model.onBubbleTextChanged("Hello!");
+    ASSERT_EQ(model.bubbleText(), "Hello!");
+    ASSERT_EQ(spy.count(), 1);
+
+    model.onBubbleTextChanged("test");
+    ASSERT_EQ(model.bubbleText(), "test");
+    ASSERT_EQ(spy.count(), 2);
+}
+
 TEST(SpriteModelTest, BoundingRect)
 {
     SpriteModel model;

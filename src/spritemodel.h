@@ -7,6 +7,7 @@
 #include <scratchcpp/ispritehandler.h>
 
 #include "penstate.h"
+#include "textbubbleshape.h"
 
 Q_MOC_INCLUDE("renderedtarget.h");
 Q_MOC_INCLUDE("ipenlayer.h");
@@ -25,6 +26,8 @@ class SpriteModel
         QML_ELEMENT
         Q_PROPERTY(IRenderedTarget *renderedTarget READ renderedTarget WRITE setRenderedTarget NOTIFY renderedTargetChanged)
         Q_PROPERTY(IPenLayer *penLayer READ penLayer WRITE setPenLayer NOTIFY penLayerChanged)
+        Q_PROPERTY(TextBubbleShape::Type bubbleType READ bubbleType NOTIFY bubbleTypeChanged)
+        Q_PROPERTY(QString bubbleText READ bubbleText NOTIFY bubbleTextChanged)
 
     public:
         SpriteModel(QObject *parent = nullptr);
@@ -69,9 +72,15 @@ class SpriteModel
 
         SpriteModel *cloneRoot() const;
 
+        const TextBubbleShape::Type &bubbleType() const;
+
+        const QString &bubbleText() const;
+
     signals:
         void renderedTargetChanged();
         void penLayerChanged();
+        void bubbleTypeChanged();
+        void bubbleTextChanged();
         void cloned(SpriteModel *cloneModel);
         void cloneDeleted(SpriteModel *clone);
 
@@ -81,6 +90,8 @@ class SpriteModel
         IPenLayer *m_penLayer = nullptr;
         PenState m_penState;
         SpriteModel *m_cloneRoot = nullptr;
+        TextBubbleShape::Type m_bubbleType = TextBubbleShape::Type::Say;
+        QString m_bubbleText;
 };
 
 } // namespace scratchcpprender
