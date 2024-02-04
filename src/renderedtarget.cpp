@@ -463,9 +463,6 @@ void RenderedTarget::clearGraphicEffects()
 
 void RenderedTarget::updateHullPoints(QOpenGLFramebufferObject *fbo)
 {
-    if (m_stageModel)
-        return; // hull points are useless for the stage
-
     Q_ASSERT(fbo);
     int width = fbo->width();
     int height = fbo->height();
