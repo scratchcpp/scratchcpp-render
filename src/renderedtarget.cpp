@@ -23,6 +23,7 @@ static const double pi = std::acos(-1);    // TODO: Use std::numbers::pi in C++2
 RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
     IRenderedTarget(parent)
 {
+    setSmooth(false);
 }
 
 RenderedTarget::~RenderedTarget()
