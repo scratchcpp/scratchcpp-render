@@ -295,6 +295,7 @@ void ProjectLoader::redraw()
 void ProjectLoader::addClone(SpriteModel *model)
 {
     connect(model, &SpriteModel::cloneDeleted, this, &ProjectLoader::deleteClone);
+    connect(model, &SpriteModel::cloned, this, &ProjectLoader::addClone);
     m_clones.push_back(model);
     emit cloneCreated(model);
     emit clonesChanged();
