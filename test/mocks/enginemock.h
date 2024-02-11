@@ -49,6 +49,9 @@ class EngineMock : public IEngine
         MOCK_METHOD(void, setKeyState, (const KeyEvent &, bool), (override));
         MOCK_METHOD(void, setAnyKeyPressed, (bool), (override));
 
+        MOCK_METHOD(void, mouseWheelUp, (), (override));
+        MOCK_METHOD(void, mouseWheelDown, (), (override));
+
         MOCK_METHOD(double, mouseX, (), (const, override));
         MOCK_METHOD(void, setMouseX, (double x), (override));
 
@@ -103,6 +106,7 @@ class EngineMock : public IEngine
         MOCK_METHOD(void, addBackdropChangeScript, (std::shared_ptr<Block>, int), (override));
         MOCK_METHOD(void, addCloneInitScript, (std::shared_ptr<Block>), (override));
         MOCK_METHOD(void, addKeyPressScript, (std::shared_ptr<Block>, int), (override));
+        MOCK_METHOD(void, addTargetClickScript, (std::shared_ptr<Block>), (override));
 
         MOCK_METHOD(const std::vector<std::shared_ptr<Target>> &, targets, (), (const, override));
         MOCK_METHOD(void, setTargets, (const std::vector<std::shared_ptr<Target>> &), (override));
@@ -122,10 +126,19 @@ class EngineMock : public IEngine
         MOCK_METHOD(void, setAddMonitorHandler, (const std::function<void(Monitor *)> &), (override));
         MOCK_METHOD(void, setRemoveMonitorHandler, (const std::function<void(Monitor *, IMonitorHandler *)> &), (override));
 
+        MOCK_METHOD(const std::function<void(const std::string &)> &, questionAsked, (), (const, override));
+        MOCK_METHOD(void, setQuestionAsked, (const std::function<void(const std::string &)> &), (override));
+
+        MOCK_METHOD(const std::function<void(const std::string &)> &, questionAnswered, (), (const, override));
+        MOCK_METHOD(void, setQuestionAnswered, (const std::function<void(const std::string &)> &), (override));
+
         MOCK_METHOD(std::vector<std::string> &, extensions, (), (const, override));
         MOCK_METHOD(void, setExtensions, (const std::vector<std::string> &), (override));
 
         MOCK_METHOD(const ScriptMap &, scripts, (), (const, override));
+
+        MOCK_METHOD(const std::string &, userAgent, (), (const, override));
+        MOCK_METHOD(void, setUserAgent, (const std::string &), (override));
 };
 
 } // namespace scratchcpprender
