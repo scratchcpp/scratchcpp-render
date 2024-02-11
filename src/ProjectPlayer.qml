@@ -81,6 +81,12 @@ ProjectScene {
             if(i !== monitors.model.count)
                 monitors.model.remove(i);
         }
+
+        onQuestionAsked: (question)=> {
+            questionLoader.active = true;
+            questionLoader.item.clear();
+            questionLoader.item.question = question;
+        }
     }
 
     function start() {
@@ -266,6 +272,24 @@ ProjectScene {
 
                 Item { Layout.fillHeight: true }
             }
+        }
+    }
+
+    Loader {
+        id: questionLoader
+        anchors.left: contentRect.left
+        anchors.right: contentRect.right
+        anchors.bottom: contentRect.bottom
+        anchors.margins: 9
+        active: false
+
+        sourceComponent: Question {
+            onClosed: {
+                loader.answerQuestion(answer);
+                questionLoader.active = false;
+            }
+
+            Component.onCompleted: forceActiveFocus()
         }
     }
 }
