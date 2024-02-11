@@ -13,8 +13,10 @@ qt_add_qml_module(scratchcpp-render
 	internal/MonitorSlider.qml
 	internal/ListMonitor.qml
 	internal/TextBubble.qml
+	internal/Question.qml
 	shaders/sprite.vert
 	shaders/sprite.frag
+	icons/enter.svg
     SOURCES
         global.h
 	projectloader.cpp
