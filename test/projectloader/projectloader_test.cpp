@@ -14,6 +14,7 @@ using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 using ::testing::Return;
+using ::testing::ReturnRef;
 
 class ProjectLoaderTest : public testing::Test
 {
@@ -57,6 +58,11 @@ class ProjectLoaderTest : public testing::Test
             ASSERT_EQ(monitorsSpy.count(), loader->monitorList().size());
             ASSERT_EQ(monitorAddedSpy.count(), loader->monitorList().size());
         }
+};
+
+struct AnswerQuestionMock
+{
+        MOCK_METHOD(void, answer, (const std::string &), ());
 };
 
 TEST_F(ProjectLoaderTest, Constructors)
@@ -160,6 +166,38 @@ TEST_F(ProjectLoaderTest, TimerEvent)
 
     EXPECT_CALL(engine, step());
     QCoreApplication::sendEvent(&loader, &event);
+}
+
+TEST_F(ProjectLoaderTest, QuestionAsked)
+{
+    ProjectLoader loader;
+    QSignalSpy spy(&loader, &ProjectLoader::questionAsked);
+
+    load(&loader, "load_test.sb3");
+
+    auto engine = loader.engine();
+    auto f = engine->questionAsked();
+    ASSERT_TRUE(f);
+    ASSERT_TRUE(spy.isEmpty());
+    f("test");
+    ASSERT_EQ(spy.count(), 1);
+
+    auto args = spy.takeFirst();
+    ASSERT_EQ(args.size(), 1);
+    ASSERT_EQ(args.first().toString(), "test");
+}
+
+TEST_F(ProjectLoaderTest, AnswerQuestion)
+{
+    ProjectLoader loader;
+    EngineMock engine;
+    loader.setEngine(&engine);
+
+    AnswerQuestionMock mock;
+    std::function<void(const std::string &)> f = std::bind(&AnswerQuestionMock::answer, &mock, std::placeholders::_1);
+    EXPECT_CALL(engine, questionAnswered()).WillOnce(ReturnRef(f));
+    EXPECT_CALL(mock, answer("hello"));
+    loader.answerQuestion("hello");
 }
 
 TEST_F(ProjectLoaderTest, Fps)

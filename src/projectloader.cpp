@@ -166,6 +166,16 @@ void ProjectLoader::stop()
     }
 }
 
+void ProjectLoader::answerQuestion(const QString &answer)
+{
+    if (m_engine) {
+        auto f = m_engine->questionAnswered();
+
+        if (f)
+            f(answer.toStdString());
+    }
+}
+
 void ProjectLoader::timerEvent(QTimerEvent *event)
 {
     if (m_loadThread.isRunning())
@@ -219,6 +229,8 @@ void ProjectLoader::load()
 
     auto removeMonitorHandler = std::bind(&ProjectLoader::removeMonitor, this, std::placeholders::_1, std::placeholders::_2);
     m_engine->setRemoveMonitorHandler(std::function<void(Monitor *, IMonitorHandler *)>(removeMonitorHandler));
+
+    m_engine->setQuestionAsked([this](const std::string &question) { emit questionAsked(QString::fromStdString(question)); });
 
     // Load targets
     const auto &targets = m_engine->targets();

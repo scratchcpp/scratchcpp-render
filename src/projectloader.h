@@ -64,6 +64,8 @@ class ProjectLoader : public QObject
         Q_INVOKABLE void start();
         Q_INVOKABLE void stop();
 
+        Q_INVOKABLE void answerQuestion(const QString &answer);
+
         double fps() const;
         void setFps(double newFps);
 
@@ -107,6 +109,7 @@ class ProjectLoader : public QObject
         void cloneDeleted(SpriteModel *model);
         void monitorAdded(MonitorModel *model);
         void monitorRemoved(MonitorModel *model);
+        void questionAsked(QString question);
 
     protected:
         void timerEvent(QTimerEvent *event) override;
