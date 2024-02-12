@@ -67,6 +67,19 @@ TEST(ProjectSceneTest, HandleMouseRelease)
     scene.handleMouseRelease();
 }
 
+TEST(ProjectSceneTest, HandleMouseWheel)
+{
+    ProjectScene scene;
+    EngineMock engine;
+    scene.setEngine(&engine);
+
+    EXPECT_CALL(engine, mouseWheelUp());
+    scene.handleMouseWheelUp();
+
+    EXPECT_CALL(engine, mouseWheelDown());
+    scene.handleMouseWheelDown();
+}
+
 TEST(ProjectSceneTest, HandleKeyPressAndRelease)
 {
     static const std::unordered_map<Qt::Key, KeyEvent::Type> SPECIAL_KEY_MAP = {

@@ -405,3 +405,25 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     pressedSpy.clear();
     releasedSpy.clear();
 }
+
+TEST(MouseEventHandlerTest, WheelEvent)
+{
+    MouseEventHandler handler;
+    QSignalSpy upSpy(&handler, &MouseEventHandler::mouseWheelUp);
+    QSignalSpy downSpy(&handler, &MouseEventHandler::mouseWheelDown);
+    QWheelEvent event1(QPointF(), QPointF(), QPoint(2, 3), QPoint(10, 15), Qt::LeftButton, Qt::NoModifier, Qt::NoScrollPhase, false);    // up
+    QWheelEvent event2(QPointF(), QPointF(), QPoint(1, -5), QPoint(10, -50), Qt::LeftButton, Qt::NoModifier, Qt::NoScrollPhase, false);  // down
+    QWheelEvent event3(QPointF(), QPointF(), QPoint(-10, 0), QPoint(-100, 0), Qt::LeftButton, Qt::NoModifier, Qt::NoScrollPhase, false); // none
+
+    handler.eventFilter(nullptr, &event1);
+    ASSERT_EQ(upSpy.count(), 1);
+    ASSERT_EQ(downSpy.count(), 0);
+
+    handler.eventFilter(nullptr, &event2);
+    ASSERT_EQ(upSpy.count(), 1);
+    ASSERT_EQ(downSpy.count(), 1);
+
+    handler.eventFilter(nullptr, &event3);
+    ASSERT_EQ(upSpy.count(), 1);
+    ASSERT_EQ(downSpy.count(), 1);
+}

@@ -34,6 +34,8 @@ class MouseEventHandler : public QObject
         void mouseMoved(qreal x, qreal y);
         void mousePressed();
         void mouseReleased();
+        void mouseWheelUp();
+        void mouseWheelDown();
 
     private:
         void getSprites();

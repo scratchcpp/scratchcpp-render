@@ -34,6 +34,8 @@ class ProjectScene : public QQuickItem
         Q_INVOKABLE void handleMouseMove(qreal x, qreal y);
         Q_INVOKABLE void handleMousePress();
         Q_INVOKABLE void handleMouseRelease();
+        Q_INVOKABLE void handleMouseWheelUp();
+        Q_INVOKABLE void handleMouseWheelDown();
 
         void handleKeyPress(Qt::Key key, const QString &text);
         void handleKeyRelease(Qt::Key key, const QString &text);
