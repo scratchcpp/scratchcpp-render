@@ -77,6 +77,18 @@ bool MouseEventHandler::eventFilter(QObject *obj, QEvent *event)
             return true;
         }
 
+        case QEvent::Wheel: {
+            QWheelEvent *wheelEvent = static_cast<QWheelEvent *>(event);
+            const int delta = wheelEvent->angleDelta().y();
+
+            if (delta > 0)
+                emit mouseWheelUp();
+            else if (delta < 0)
+                emit mouseWheelDown();
+
+            break;
+        }
+
         default:
             break;
     }
