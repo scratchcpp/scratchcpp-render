@@ -71,6 +71,19 @@ void ProjectScene::handleMouseRelease()
         m_engine->setMousePressed(false);
 }
 
+void ProjectScene::handleMouseWheelUp()
+{
+    if (m_engine)
+        m_engine->mouseWheelUp();
+}
+
+void ProjectScene::handleMouseWheelDown()
+{
+
+    if (m_engine)
+        m_engine->mouseWheelDown();
+}
+
 void ProjectScene::handleKeyPress(Qt::Key key, const QString &text)
 {
     m_pressedKeys.insert(key);
