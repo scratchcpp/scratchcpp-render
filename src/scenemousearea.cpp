@@ -15,6 +15,8 @@ SceneMouseArea::SceneMouseArea(QQuickItem *parent) :
     connect(m_mouseHandler, &MouseEventHandler::mouseMoved, this, &SceneMouseArea::mouseMoved);
     connect(m_mouseHandler, &MouseEventHandler::mousePressed, this, &SceneMouseArea::mousePressed);
     connect(m_mouseHandler, &MouseEventHandler::mouseReleased, this, &SceneMouseArea::mouseReleased);
+    connect(m_mouseHandler, &MouseEventHandler::mouseWheelUp, this, &SceneMouseArea::mouseWheelUp);
+    connect(m_mouseHandler, &MouseEventHandler::mouseWheelDown, this, &SceneMouseArea::mouseWheelDown);
 
     setAcceptHoverEvents(true);
     setAcceptTouchEvents(true);

@@ -34,6 +34,8 @@ class SceneMouseArea : public QQuickItem
         void mouseMoved(qreal x, qreal y);
         void mousePressed();
         void mouseReleased();
+        void mouseWheelUp();
+        void mouseWheelDown();
         void stageChanged();
         void projectLoaderChanged();
 
