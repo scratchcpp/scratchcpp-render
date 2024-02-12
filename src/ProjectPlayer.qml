@@ -191,6 +191,8 @@ ProjectScene {
             onMouseMoved: (x, y)=> root.handleMouseMove(x, y)
             onMousePressed: root.handleMousePress()
             onMouseReleased: root.handleMouseRelease()
+            onMouseWheelUp: root.handleMouseWheelUp()
+            onMouseWheelDown: root.handleMouseWheelDown()
         }
 
         Component {
