@@ -307,6 +307,7 @@ void RenderedTarget::setStageScale(double newStageScale)
     m_stageScale = newStageScale;
     calculateSize();
     calculatePos();
+    beforeRedraw();
     emit stageScaleChanged();
 }
 

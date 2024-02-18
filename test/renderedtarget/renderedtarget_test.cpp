@@ -270,6 +270,13 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_EQ(texture.width(), 26);
     ASSERT_EQ(texture.height(), 26);
 
+    // Stage scale (SVG) - should update width and height
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setStageScale(3.5);
+    ASSERT_EQ(target.width(), 52);
+    ASSERT_EQ(target.height(), 52);
+
     context.doneCurrent();
 }
 
