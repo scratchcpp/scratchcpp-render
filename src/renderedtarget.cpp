@@ -307,6 +307,7 @@ void RenderedTarget::setStageScale(double newStageScale)
     m_stageScale = newStageScale;
     calculateSize();
     calculatePos();
+    beforeRedraw();
     emit stageScaleChanged();
 }
 
@@ -602,11 +603,10 @@ void RenderedTarget::calculateRotation()
 void RenderedTarget::calculateSize()
 {
     if (m_skin && m_costume) {
-        Texture texture = m_skin->getTexture(m_size * m_stageScale);
-        m_texture = texture;
-        m_width = texture.width();
-        m_height = texture.height();
-        setScale(m_size * m_stageScale / m_skin->getTextureScale(texture) / m_costume->bitmapResolution());
+        m_texture = m_skin->getTexture(m_size * m_stageScale);
+        m_width = m_texture.width();
+        m_height = m_texture.height();
+        setScale(m_size * m_stageScale / m_skin->getTextureScale(m_texture) / m_costume->bitmapResolution());
     }
 }
 
