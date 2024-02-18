@@ -114,6 +114,8 @@ void RenderedTarget::updateCostume(Costume *costume)
             m_skin = it->second;
     }
 
+    setSmooth(m_costume->dataFormat() == "svg");
+
     calculateSize();
     calculatePos();
 }

@@ -89,6 +89,7 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_EQ(target.transformOriginPoint(), QPointF(-23, 72));
     ASSERT_EQ(target.transformOrigin(), QQuickItem::Center);
     ASSERT_EQ(target.scale(), 0.4);
+    ASSERT_FALSE(target.smooth());
 
     target.setStageModel(nullptr);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
@@ -128,6 +129,7 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_EQ(target.transformOrigin(), QQuickItem::Center);
     ASSERT_EQ(std::round(target.scale() * 100) / 100, 0.58);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
+    ASSERT_FALSE(target.smooth());
 
     texture = target.texture();
     ASSERT_TRUE(texture.isValid());
@@ -264,6 +266,7 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_EQ(target.transformOriginPoint().y(), -16);
     ASSERT_EQ(target.transformOrigin(), QQuickItem::Center);
     ASSERT_EQ(std::round(target.scale() * 100) / 100, 0.75);
+    ASSERT_TRUE(target.smooth());
 
     texture = target.texture();
     ASSERT_TRUE(texture.isValid());
