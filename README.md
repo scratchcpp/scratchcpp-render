@@ -146,7 +146,7 @@ qputenv("QSG_RENDER_LOOP", "basic");
 - [x] Monitors
 - [ ] Graphics effects (color, brightness and ghost are implemented)
 - [x] Speech and thought bubbles
-- [ ] Question text box ("ask and wait" block)
+- [x] Question text box ("ask and wait" block)
 
 See the [open issues](https://github.com/scratchcpp/scratchcpp-render/issues) for a full list of proposed features (and known issues).
 
