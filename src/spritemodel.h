@@ -55,6 +55,7 @@ class SpriteModel
         void onBubbleTextChanged(const std::string &text) override;
 
         libscratchcpp::Rect boundingRect() const override;
+        libscratchcpp::Rect fastBoundingRect() const override;
 
         libscratchcpp::Sprite *sprite() const;
 
