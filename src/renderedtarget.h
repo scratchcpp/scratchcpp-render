@@ -76,6 +76,7 @@ class RenderedTarget : public IRenderedTarget
 
         libscratchcpp::Rect getBounds() const override;
         Q_INVOKABLE QRectF getBoundsForBubble() const override;
+        libscratchcpp::Rect getFastBounds() const override;
 
         QPointF mapFromScene(const QPointF &point) const override;
 

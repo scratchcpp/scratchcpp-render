@@ -56,6 +56,7 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(QPointF, mapFromScene, (const QPointF &), (const, override));
 
         MOCK_METHOD(libscratchcpp::Rect, getBounds, (), (const, override));
+        MOCK_METHOD(libscratchcpp::Rect, getFastBounds, (), (const, override));
         MOCK_METHOD(QRectF, getBoundsForBubble, (), (const, override));
 
         MOCK_METHOD(bool, mirrorHorizontally, (), (const, override));

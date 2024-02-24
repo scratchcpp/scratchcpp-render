@@ -383,6 +383,39 @@ QRectF RenderedTarget::getBoundsForBubble() const
     return QRectF(QPointF(rect.left(), rect.top()), QPointF(rect.right(), rect.bottom()));
 }
 
+Rect RenderedTarget::getFastBounds() const
+{
+    if (!m_costume || !m_skin || !m_texture.isValid())
+        return Rect(m_x, m_y, m_x, m_y);
+
+    const double scale = this->scale();
+    const double width = this->width() / m_stageScale;
+    const double height = this->height() / m_stageScale;
+    const double originX = m_costume->rotationCenterX() * m_size / scale / m_costume->bitmapResolution() - width / 2;
+    const double originY = -m_costume->rotationCenterY() * m_size / scale / m_costume->bitmapResolution() + height / 2;
+    const double rot = -rotation() * pi / 180;
+
+    QPointF topLeft = transformPoint(-width / 2, height / 2, originX, originY, rot);
+    QPointF topRight = transformPoint(width / 2, height / 2, originX, originY, rot);
+    QPointF bottomRight = transformPoint(width / 2, -height / 2, originX, originY, rot);
+    QPointF bottomLeft = transformPoint(-width / 2, -height / 2, originX, originY, rot);
+
+    if (m_mirrorHorizontally) {
+        topLeft.setX(-topLeft.x());
+        topRight.setX(-topRight.x());
+        bottomRight.setX(-bottomRight.x());
+        bottomLeft.setX(-bottomLeft.x());
+    }
+    const auto xList = { topLeft.x(), topRight.x(), bottomRight.x(), bottomLeft.x() };
+    const auto yList = { topLeft.y(), topRight.y(), bottomRight.y(), bottomLeft.y() };
+    const double minX = std::min(xList);
+    const double maxX = std::max(xList);
+    const double minY = std::min(yList);
+    const double maxY = std::max(yList);
+
+    return Rect(minX * scale + m_x, maxY * scale + m_y, maxX * scale + m_x, minY * scale + m_y);
+}
+
 QPointF RenderedTarget::mapFromScene(const QPointF &point) const
 {
     return QNanoQuickItem::mapFromScene(point);
