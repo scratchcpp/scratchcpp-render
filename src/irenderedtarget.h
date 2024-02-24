@@ -71,6 +71,7 @@ class IRenderedTarget : public QNanoQuickItem
 
         virtual libscratchcpp::Rect getBounds() const = 0;
         virtual QRectF getBoundsForBubble() const = 0;
+        virtual libscratchcpp::Rect getFastBounds() const = 0;
 
         virtual QPointF mapFromScene(const QPointF &point) const = 0;
 

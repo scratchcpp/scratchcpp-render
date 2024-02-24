@@ -740,3 +740,75 @@ TEST_F(RenderedTargetTest, GetBounds)
 
     context.doneCurrent();
 }
+
+TEST_F(RenderedTargetTest, GetFastBounds)
+{
+    QOpenGLContext context;
+    QOffscreenSurface surface;
+    createContextAndSurface(&context, &surface);
+    QOpenGLExtraFunctions glF(&context);
+    glF.initializeOpenGLFunctions();
+    RenderedTarget target;
+
+    Sprite sprite;
+    sprite.setX(75.64);
+    sprite.setY(-120.3);
+    sprite.setDirection(-46.37);
+    sprite.setSize(67.98);
+    SpriteModel spriteModel;
+    sprite.setInterface(&spriteModel);
+    target.setSpriteModel(&spriteModel);
+    EngineMock engine;
+    target.setEngine(&engine);
+    auto costume = std::make_shared<Costume>("", "", "png");
+    std::string costumeData = readFileStr("image.png");
+    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    costume->setRotationCenterX(-15);
+    costume->setRotationCenterY(48);
+    costume->setBitmapResolution(3.25);
+    sprite.addCostume(costume);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.loadCostumes();
+    target.updateCostume(costume.get());
+    target.beforeRedraw();
+
+    Rect bounds = target.getFastBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 65.84);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -123.92);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 67.31);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -125.4);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
+
+    bounds = target.getFastBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 71.67);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.26);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.5);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -111.51);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.setStageScale(20.75);
+
+    bounds = target.getFastBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 71.67);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.26);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.5);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -111.51);
+
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    target.updateSize(9780.6);
+
+    bounds = target.getFastBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -496.15);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1324.22);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, -375.77);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, 1143.65);
+
+    context.doneCurrent();
+}

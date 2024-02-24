@@ -145,6 +145,11 @@ libscratchcpp::Rect SpriteModel::boundingRect() const
     return m_renderedTarget->getBounds();
 }
 
+libscratchcpp::Rect SpriteModel::fastBoundingRect() const
+{
+    return m_renderedTarget->getFastBounds();
+}
+
 libscratchcpp::Sprite *SpriteModel::sprite() const
 {
     return m_sprite;
