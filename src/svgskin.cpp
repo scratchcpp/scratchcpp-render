@@ -28,11 +28,6 @@ SVGSkin::SVGSkin(libscratchcpp::Costume *costume, bool antialiasing) :
     const int i1 = std::log2(MAX_TEXTURE_DIMENSION / viewBox.width()) + INDEX_OFFSET;
     const int i2 = std::log2(MAX_TEXTURE_DIMENSION / viewBox.height()) + INDEX_OFFSET;
     m_maxIndex = std::min(i1, i2);
-
-    // Create all possible textures (the 1.0 scale is stored at INDEX_OFFSET)
-    // TODO: Is this necessary?
-    for (int i = 0; i <= m_maxIndex; i++)
-        createScaledTexture(i);
 }
 
 SVGSkin::~SVGSkin()
