@@ -114,11 +114,15 @@ Button {
 }
 ```
 
-Please note that the ScratchCPP renderer only works with the basic scene graph render loop.
-Qt 6 uses the threaded render loop by default, so you'll have to disable it by calling this
-before constructing your application object:
+**The library must be initialized by the application.**
+**To initialize the library, call `scratchcpprender::init()` before constructing the Q(Gui)Application object.**
 ```cpp
-qputenv("QSG_RENDER_LOOP", "basic");
+#include <scratchcpp-render/scratchcpp-render.h>
+int main(int argc, char **argv) {
+    scratchcpprender::init();
+    QApplication a(argc, argv);
+    ...
+}
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

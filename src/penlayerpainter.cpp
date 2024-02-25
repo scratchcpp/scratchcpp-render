@@ -12,10 +12,8 @@ PenLayerPainter::PenLayerPainter(QOpenGLFramebufferObject *fbo)
 
 void PenLayerPainter::paint(QNanoPainter *painter)
 {
-    if (QThread::currentThread() != qApp->thread()) {
-        qFatal("Error: Rendering must happen in the GUI thread to work correctly. Please disable threaded render loop using qputenv(\"QSG_RENDER_LOOP\", \"basic\") before constructing your "
-               "application object.");
-    }
+    if (QThread::currentThread() != qApp->thread())
+        qFatal("Error: Rendering must happen in the GUI thread to work correctly. Did you initialize the library using scratchcpprender::init()?");
 
     QOpenGLContext *context = QOpenGLContext::currentContext();
     Q_ASSERT(context);
