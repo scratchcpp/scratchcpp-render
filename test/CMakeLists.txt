@@ -20,6 +20,7 @@ endfunction()
 
 add_subdirectory(mocks)
 
+add_subdirectory(global_functions)
 add_subdirectory(projectloader)
 add_subdirectory(renderedtarget)
 add_subdirectory(targetpainter)

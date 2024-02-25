@@ -18,11 +18,12 @@ qt_add_qml_module(scratchcpp-render
 	shaders/sprite.frag
 	icons/enter.svg
     SOURCES
-        global.h
+    global.h
+    global_functions.cpp
 	projectloader.cpp
 	projectloader.h
-        projectscene.cpp
-        projectscene.h
+    projectscene.cpp
+    projectscene.h
 	stagemodel.cpp
 	stagemodel.h
 	spritemodel.cpp
@@ -44,8 +45,8 @@ qt_add_qml_module(scratchcpp-render
 	bitmapskin.h
 	svgskin.cpp
 	svgskin.h
-        renderedtarget.cpp
-        renderedtarget.h
+    renderedtarget.cpp
+    renderedtarget.h
 	targetpainter.cpp
 	targetpainter.h
 	scenemousearea.cpp

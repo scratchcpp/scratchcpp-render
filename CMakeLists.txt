@@ -20,6 +20,13 @@ target_compile_definitions(scratchcpp-render PRIVATE SCRATCHCPPRENDER_LIBRARY)
 
 linkQt(scratchcpp-render)
 
+target_sources(scratchcpp-render
+  PUBLIC
+    include/scratchcpp-render/scratchcpp-render.h
+)
+
+target_include_directories(scratchcpp-render PUBLIC include)
+
 include(build/SetUpLibscratchcpp.cmake)
 target_link_libraries(scratchcpp-render PRIVATE scratchcpp)
 
