@@ -379,7 +379,7 @@ QRectF RenderedTarget::getBoundsForBubble() const
     if (rect.height() > slice)
         rect.setBottom(rect.top() - slice);
 
-    Q_ASSERT(rect.height() <= 8);
+    Q_ASSERT(rect.height() <= 8 || std::abs(rect.bottom()) == std::numeric_limits<double>::infinity() || std::abs(rect.top()) == std::numeric_limits<double>::infinity());
     return QRectF(QPointF(rect.left(), rect.top()), QPointF(rect.right(), rect.bottom()));
 }
 
@@ -441,7 +441,6 @@ void RenderedTarget::mouseReleaseEvent(QMouseEvent *event)
 {
     m_clicked = false;
     Q_ASSERT(m_mouseArea);
-    Q_ASSERT(m_engine);
 
     // Stop dragging
     if (m_mouseArea->draggedSprite() == this)
