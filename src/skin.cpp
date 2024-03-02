@@ -18,6 +18,9 @@ Texture Skin::createAndPaintTexture(int width, int height, bool multisampled)
     if (!context || !context->isValid() || (width <= 0 || height <= 0))
         return Texture();
 
+    QOpenGLFunctions glF(context);
+    glF.initializeOpenGLFunctions();
+
     // Create offscreen surface
     QOffscreenSurface surface;
     surface.setFormat(context->format());
@@ -48,8 +51,8 @@ Texture Skin::createAndPaintTexture(int width, int height, bool multisampled)
     QPainter painter(&device);
     painter.beginNativePainting();
     painter.setRenderHint(QPainter::Antialiasing, false);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glF.glClear(GL_COLOR_BUFFER_BIT);
 
     // Call the skin-specific paint method
     paint(&painter);

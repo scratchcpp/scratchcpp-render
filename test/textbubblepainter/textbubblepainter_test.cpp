@@ -33,6 +33,9 @@ TEST_F(TextBubblePainterTest, PaintSayBubble)
     QOffscreenSurface surface;
     createContextAndSurface(&context, &surface);
 
+    QOpenGLExtraFunctions glF(&context);
+    glF.initializeOpenGLFunctions();
+
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
@@ -40,8 +43,8 @@ TEST_F(TextBubblePainterTest, PaintSayBubble)
     QNanoPainter painter;
     QOpenGLFramebufferObject fbo(425, 250, format);
     fbo.bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glF.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     painter.beginFrame(fbo.width(), fbo.height());
     painter.setAntialias(0);
 
@@ -77,6 +80,9 @@ TEST_F(TextBubblePainterTest, PaintThinkBubble)
     QOffscreenSurface surface;
     createContextAndSurface(&context, &surface);
 
+    QOpenGLExtraFunctions glF(&context);
+    glF.initializeOpenGLFunctions();
+
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
@@ -84,8 +90,8 @@ TEST_F(TextBubblePainterTest, PaintThinkBubble)
     QNanoPainter painter;
     QOpenGLFramebufferObject fbo(156, 117, format);
     fbo.bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glF.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     painter.beginFrame(fbo.width(), fbo.height());
     painter.setAntialias(0);
 

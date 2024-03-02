@@ -37,6 +37,9 @@ TEST_F(TargetPainterTest, Paint)
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
+    QOpenGLExtraFunctions glF(&m_context);
+    glF.initializeOpenGLFunctions();
+
     // Begin painting reference
     QNanoPainter refPainter;
     QOpenGLFramebufferObject refFbo(40, 60, format);
@@ -87,8 +90,8 @@ TEST_F(TargetPainterTest, Paint)
     ASSERT_EQ(fbo.toImage(), refFbo.toImage());
 
     // Paint with color effects
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glF.glClear(GL_COLOR_BUFFER_BIT);
     effects[ShaderManager::Effect::Color] = 46;
     effects[ShaderManager::Effect::Brightness] = 20;
     effects[ShaderManager::Effect::Ghost] = 84;
