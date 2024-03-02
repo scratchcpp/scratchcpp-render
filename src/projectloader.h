@@ -120,6 +120,7 @@ class ProjectLoader : public QObject
         void initTimer();
         void redraw();
         void addClone(SpriteModel *model);
+        void deleteCloneObject(SpriteModel *model);
         void deleteClone(SpriteModel *model);
         void addMonitor(libscratchcpp::Monitor *monitor);
         void removeMonitor(libscratchcpp::Monitor *monitor, libscratchcpp::IMonitorHandler *iface);
