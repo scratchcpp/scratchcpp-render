@@ -199,6 +199,22 @@ void RenderedTarget::setEngine(IEngine *newEngine)
         return;
 
     m_engine = newEngine;
+    m_costume = nullptr;
+    m_costumesLoaded = false;
+
+    if (!m_skinsInherited) {
+        for (const auto &[costume, skin] : m_skins)
+            delete skin;
+
+        m_skins.clear();
+    }
+
+    m_skin = nullptr;
+    m_texture = Texture();
+    m_oldTexture = Texture();
+    clearGraphicEffects();
+    m_hullPoints.clear();
+
     emit engineChanged();
 }
 

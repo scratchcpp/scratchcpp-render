@@ -79,10 +79,8 @@ void StageModel::onBubbleTextChanged(const std::string &text)
 
 void StageModel::loadCostume()
 {
-    if (m_renderedTarget && m_stage) {
-        if (m_stage)
-            m_renderedTarget->updateCostume(m_stage->currentCostume().get());
-    }
+    if (m_renderedTarget && m_stage)
+        m_renderedTarget->updateCostume(m_stage->currentCostume().get());
 }
 
 libscratchcpp::Stage *StageModel::stage() const
@@ -101,7 +99,6 @@ void StageModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
         return;
 
     m_renderedTarget = newRenderedTarget;
-    loadCostume();
 
     emit renderedTargetChanged();
 }

@@ -56,6 +56,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     createContextAndSurface(&context, &surface);
     RenderedTarget parent; // a parent item is needed for setVisible() to work
     RenderedTarget target(&parent);
+    EngineMock engine;
+    target.setEngine(&engine);
     QSignalSpy mirrorHorizontallySpy(&target, &RenderedTarget::mirrorHorizontallyChanged);
     ASSERT_FALSE(target.costumesLoaded());
 
@@ -73,8 +75,6 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     stage.addCostume(costume);
     target.loadCostumes();
     ASSERT_TRUE(target.costumesLoaded());
-    EngineMock engine;
-    target.setEngine(&engine);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
