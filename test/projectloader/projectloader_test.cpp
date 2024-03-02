@@ -29,6 +29,7 @@ class ProjectLoaderTest : public testing::Test
             QSignalSpy engineSpy(loader, &ProjectLoader::engineChanged);
             QSignalSpy stageSpy(loader, &ProjectLoader::stageChanged);
             QSignalSpy spritesSpy(loader, &ProjectLoader::spritesChanged);
+            QSignalSpy clonesSpy(loader, &ProjectLoader::clonesChanged);
             QSignalSpy monitorsSpy(loader, &ProjectLoader::monitorsChanged);
             QSignalSpy monitorAddedSpy(loader, &ProjectLoader::monitorAdded);
 
@@ -37,10 +38,11 @@ class ProjectLoaderTest : public testing::Test
             ASSERT_EQ(fileNameSpy.count(), 1);
             ASSERT_EQ(loadStatusSpy.count(), 1);
             ASSERT_TRUE(loadingFinishedSpy.empty());
-            ASSERT_TRUE(engineSpy.empty());
+            ASSERT_EQ(engineSpy.count(), 1);
             ASSERT_TRUE(stageSpy.empty());
-            ASSERT_TRUE(spritesSpy.empty());
-            ASSERT_TRUE(monitorsSpy.empty());
+            ASSERT_EQ(spritesSpy.count(), 1);
+            ASSERT_EQ(clonesSpy.count(), 1);
+            ASSERT_EQ(monitorsSpy.count(), 1);
             ASSERT_TRUE(monitorAddedSpy.empty());
             ASSERT_EQ(loader->fileName(), fileName);
             ASSERT_FALSE(loader->loadStatus());
@@ -52,10 +54,11 @@ class ProjectLoaderTest : public testing::Test
             ASSERT_EQ(fileNameSpy.count(), 1);
             ASSERT_EQ(loadStatusSpy.count(), 2);
             ASSERT_EQ(loadingFinishedSpy.count(), 1);
-            ASSERT_EQ(engineSpy.count(), 1);
+            ASSERT_EQ(engineSpy.count(), 2);
             ASSERT_EQ(stageSpy.count(), 1);
-            ASSERT_EQ(spritesSpy.count(), 1);
-            ASSERT_EQ(monitorsSpy.count(), loader->monitorList().size());
+            ASSERT_EQ(spritesSpy.count(), 2);
+            ASSERT_EQ(clonesSpy.count(), 1);
+            ASSERT_EQ(monitorsSpy.count(), loader->monitorList().size() + 1);
             ASSERT_EQ(monitorAddedSpy.count(), loader->monitorList().size());
         }
 };
@@ -113,13 +116,13 @@ TEST_F(ProjectLoaderTest, Clones)
     load(&loader, "clones.sb3");
     ASSERT_TRUE(cloneCreatedSpy.empty());
     ASSERT_TRUE(cloneDeletedSpy.empty());
-    ASSERT_TRUE(clonesChangedSpy.empty());
+    ASSERT_EQ(clonesChangedSpy.count(), 1);
 
     auto engine = loader.engine();
     engine->run();
     ASSERT_EQ(cloneCreatedSpy.count(), 3);
     ASSERT_EQ(cloneDeletedSpy.count(), 0);
-    ASSERT_EQ(clonesChangedSpy.count(), 3);
+    ASSERT_EQ(clonesChangedSpy.count(), 4);
 
     const auto &sprites = loader.spriteList();
     const auto &clones = loader.cloneList();
@@ -138,7 +141,7 @@ TEST_F(ProjectLoaderTest, Clones)
     clones[1]->sprite()->deleteClone();
     ASSERT_EQ(cloneCreatedSpy.count(), 3);
     ASSERT_EQ(cloneDeletedSpy.count(), 1);
-    ASSERT_EQ(clonesChangedSpy.count(), 4);
+    ASSERT_EQ(clonesChangedSpy.count(), 5);
     ASSERT_EQ(clones.size(), 2);
 }
 

@@ -64,6 +64,46 @@ void ProjectLoader::setFileName(const QString &newFileName)
 
     m_fileName = newFileName;
 
+    // Stop the project
+    if (m_engine)
+        m_engine->stop();
+
+    // Reset stage model
+    m_stage.init(nullptr);
+
+    if (m_stage.renderedTarget())
+        m_stage.renderedTarget()->update();
+
+    // Delete old sprites
+    for (SpriteModel *sprite : m_sprites)
+        sprite->deleteLater();
+
+    m_sprites.clear();
+    emit spritesChanged();
+
+    // Delete old clones
+    for (SpriteModel *clone : m_clones)
+        deleteCloneObject(clone);
+
+    m_clones.clear();
+    emit clonesChanged();
+
+    // Delete old monitors
+    for (MonitorModel *monitor : m_monitors) {
+        emit monitorRemoved(monitor);
+        monitor->deleteLater();
+    }
+
+    m_monitors.clear();
+    emit monitorsChanged();
+
+    // Clear the engine
+    if (m_engine)
+        m_engine->clear();
+
+    m_engine = nullptr;
+    emit engineChanged();
+
     m_project.setScratchVersion(ScratchVersion::Scratch3);
     m_project.setFileName(m_fileName.toStdString());
     m_loadStatus = false;
@@ -198,12 +238,6 @@ void ProjectLoader::load()
     m_engineMutex.lock();
     m_engine = m_project.engine().get();
 
-    // Delete old sprites
-    for (SpriteModel *sprite : m_sprites)
-        sprite->deleteLater();
-
-    m_sprites.clear();
-
     if (!m_engine || m_stopLoading) {
         m_engineMutex.unlock();
         emit fileNameChanged();
@@ -313,13 +347,18 @@ void ProjectLoader::addClone(SpriteModel *model)
     emit clonesChanged();
 }
 
-void ProjectLoader::deleteClone(SpriteModel *model)
+void ProjectLoader::deleteCloneObject(SpriteModel *model)
 {
-    m_clones.removeAll(model);
     emit cloneDeleted(model);
     Q_ASSERT(model->renderedTarget());
     model->renderedTarget()->deinitClone();
     model->deleteLater();
+}
+
+void ProjectLoader::deleteClone(SpriteModel *model)
+{
+    m_clones.removeAll(model);
+    deleteCloneObject(model);
     emit clonesChanged();
 }
 

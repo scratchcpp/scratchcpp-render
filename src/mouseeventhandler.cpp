@@ -113,6 +113,14 @@ void scratchcpprender::MouseEventHandler::getSprites()
         Q_ASSERT(sprite->scratchTarget());
         m_sprites.push_back(sprite);
     }
+
+    // Make sure the clicked and hovered item pointers are in the list
+    // If not, make them nullptr
+    if (std::find(m_sprites.begin(), m_sprites.end(), m_clickedItem) == m_sprites.end())
+        m_clickedItem = nullptr;
+
+    if (std::find(m_sprites.begin(), m_sprites.end(), m_hoveredItem) == m_sprites.end())
+        m_hoveredItem = nullptr;
 }
 
 void scratchcpprender::MouseEventHandler::addClone(SpriteModel *model)

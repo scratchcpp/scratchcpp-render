@@ -133,6 +133,7 @@ ProjectScene {
             id: projectPenLayer
             engine: loader.engine
             anchors.fill: parent
+            visible: !priv.loading
         }
 
         Component {
