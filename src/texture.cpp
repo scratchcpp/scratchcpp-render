@@ -114,8 +114,12 @@ QImage Texture::toImage() const
 
 void Texture::release()
 {
-    if (m_isValid) {
-        glDeleteTextures(1, &m_handle);
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+
+    if (m_isValid && context) {
+        QOpenGLExtraFunctions glF(context);
+        glF.initializeOpenGLFunctions();
+        glF.glDeleteTextures(1, &m_handle);
         m_isValid = false;
     }
 }

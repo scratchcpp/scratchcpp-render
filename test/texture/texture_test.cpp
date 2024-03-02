@@ -49,6 +49,9 @@ TEST(TextureTest, ToImage)
     Q_ASSERT(surface.isValid());
     context.makeCurrent(&surface);
 
+    QOpenGLExtraFunctions glF(&context);
+    glF.initializeOpenGLFunctions();
+
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
@@ -59,8 +62,8 @@ TEST(TextureTest, ToImage)
     QPainter painter(&device);
     painter.beginNativePainting();
     painter.setRenderHint(QPainter::Antialiasing, false);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glF.glClear(GL_COLOR_BUFFER_BIT);
     painter.drawEllipse(0, 0, fbo.width(), fbo.height());
     painter.endNativePainting();
     painter.end();
@@ -86,15 +89,18 @@ TEST(TextureTest, Release)
     Q_ASSERT(surface.isValid());
     context.makeCurrent(&surface);
 
+    QOpenGLExtraFunctions glF(&context);
+    glF.initializeOpenGLFunctions();
+
     QOpenGLFramebufferObject fbo(1, 1);
     GLuint handle = fbo.takeTexture();
-    ASSERT_TRUE(glIsTexture(handle));
+    ASSERT_TRUE(glF.glIsTexture(handle));
 
     Texture tex(handle, fbo.width(), fbo.height());
-    ASSERT_TRUE(glIsTexture(handle));
+    ASSERT_TRUE(glF.glIsTexture(handle));
 
     tex.release();
-    ASSERT_FALSE(glIsTexture(handle));
+    ASSERT_FALSE(glF.glIsTexture(handle));
     ASSERT_FALSE(tex.isValid());
 
     context.doneCurrent();

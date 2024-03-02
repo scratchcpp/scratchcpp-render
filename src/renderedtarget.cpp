@@ -513,6 +513,12 @@ void RenderedTarget::clearGraphicEffects()
 void RenderedTarget::updateHullPoints(QOpenGLFramebufferObject *fbo)
 {
     Q_ASSERT(fbo);
+
+    if (!m_glF) {
+        m_glF = std::make_unique<QOpenGLFunctions>();
+        m_glF->initializeOpenGLFunctions();
+    }
+
     int width = fbo->width();
     int height = fbo->height();
     m_hullPoints.clear();
@@ -521,7 +527,7 @@ void RenderedTarget::updateHullPoints(QOpenGLFramebufferObject *fbo)
     // Read pixels from framebuffer
     size_t size = width * height * 4;
     GLubyte *pixelData = new GLubyte[size];
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+    m_glF->glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
 
     // Flip vertically
     int rowSize = width * 4;
