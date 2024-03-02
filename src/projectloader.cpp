@@ -71,6 +71,9 @@ void ProjectLoader::setFileName(const QString &newFileName)
     // Reset stage model
     m_stage.init(nullptr);
 
+    if (m_stage.renderedTarget())
+        m_stage.renderedTarget()->update();
+
     // Delete old sprites
     for (SpriteModel *sprite : m_sprites)
         sprite->deleteLater();
