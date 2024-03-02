@@ -13,8 +13,6 @@ PenLayer::PenLayer(QNanoQuickItem *parent) :
 {
     m_fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
     m_fboFormat.setSamples(m_antialiasingEnabled ? 4 : 0);
-
-    m_glF.initializeOpenGLFunctions();
 }
 
 PenLayer::~PenLayer()
@@ -66,11 +64,16 @@ void scratchcpprender::PenLayer::clear()
     if (!m_fbo)
         return;
 
+    if (!m_glF) {
+        m_glF = std::make_unique<QOpenGLFunctions>();
+        m_glF->initializeOpenGLFunctions();
+    }
+
     m_fbo->bind();
-    m_glF.glDisable(GL_SCISSOR_TEST);
-    m_glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    m_glF.glClear(GL_COLOR_BUFFER_BIT);
-    m_glF.glEnable(GL_SCISSOR_TEST);
+    m_glF->glDisable(GL_SCISSOR_TEST);
+    m_glF->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    m_glF->glClear(GL_COLOR_BUFFER_BIT);
+    m_glF->glEnable(GL_SCISSOR_TEST);
     m_fbo->release();
 
     update();

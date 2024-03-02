@@ -50,7 +50,7 @@ class PenLayer : public IPenLayer
         std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
         std::unique_ptr<QOpenGLPaintDevice> m_paintDevice;
         QOpenGLFramebufferObjectFormat m_fboFormat;
-        QOpenGLFunctions m_glF;
+        std::unique_ptr<QOpenGLFunctions> m_glF;
 };
 
 } // namespace scratchcpprender
