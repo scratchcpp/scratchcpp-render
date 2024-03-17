@@ -21,7 +21,7 @@ BitmapSkin::BitmapSkin(libscratchcpp::Costume *costume) :
 
     {
         QImageReader reader(&buffer);
-        format = reader.format();
+        format = reader.format().toStdString().c_str();
     }
 
     buffer.close();
