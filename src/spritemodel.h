@@ -57,6 +57,9 @@ class SpriteModel
         libscratchcpp::Rect boundingRect() const override;
         libscratchcpp::Rect fastBoundingRect() const override;
 
+        bool touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const override;
+        bool touchingPoint(double x, double y) const override;
+
         libscratchcpp::Sprite *sprite() const;
 
         IRenderedTarget *renderedTarget() const;

@@ -40,6 +40,12 @@ class StageModel
         void onBubbleTypeChanged(libscratchcpp::Target::BubbleType type) override;
         void onBubbleTextChanged(const std::string &text) override;
 
+        libscratchcpp::Rect boundingRect() const override;
+        libscratchcpp::Rect fastBoundingRect() const override;
+
+        bool touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const override;
+        bool touchingPoint(double x, double y) const override;
+
         Q_INVOKABLE void loadCostume();
 
         libscratchcpp::Stage *stage() const;
