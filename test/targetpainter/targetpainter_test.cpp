@@ -82,7 +82,6 @@ TEST_F(TargetPainterTest, Paint)
     std::unordered_map<ShaderManager::Effect, double> effects;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
     EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
-    EXPECT_CALL(target, updateHullPoints(&fbo));
     targetPainter.paint(&painter);
     painter.endFrame();
 
@@ -97,7 +96,6 @@ TEST_F(TargetPainterTest, Paint)
     effects[ShaderManager::Effect::Ghost] = 84;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
     EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
-    EXPECT_CALL(target, updateHullPoints(&fbo));
     targetPainter.paint(&painter);
     painter.endFrame();
     effects.clear();

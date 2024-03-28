@@ -67,8 +67,7 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(void, setGraphicEffect, (ShaderManager::Effect effect, double value), (override));
         MOCK_METHOD(void, clearGraphicEffects, (), (override));
 
-        MOCK_METHOD(void, updateHullPoints, (QOpenGLFramebufferObject *), (override));
-        MOCK_METHOD(const std::vector<QPointF> &, hullPoints, (), (const, override));
+        MOCK_METHOD(const std::vector<QPoint> &, hullPoints, (), (const, override));
 
         MOCK_METHOD(bool, contains, (const QPointF &), (const, override));
         MOCK_METHOD(QNanoQuickItemPainter *, createItemPainter, (), (const, override));

@@ -19,6 +19,7 @@ namespace scratchcpprender
 {
 
 class Skin;
+class CpuTextureManager;
 
 class RenderedTarget : public IRenderedTarget
 {
@@ -88,8 +89,7 @@ class RenderedTarget : public IRenderedTarget
         void setGraphicEffect(ShaderManager::Effect effect, double value) override;
         void clearGraphicEffects() override;
 
-        void updateHullPoints(QOpenGLFramebufferObject *fbo) override;
-        const std::vector<QPointF> &hullPoints() const override;
+        const std::vector<QPoint> &hullPoints() const override;
 
         Q_INVOKABLE bool contains(const QPointF &point) const override;
 
@@ -112,7 +112,10 @@ class RenderedTarget : public IRenderedTarget
         void calculateRotation();
         void calculateSize();
         void handleSceneMouseMove(qreal x, qreal y);
+        bool convexHullPointsNeeded() const;
+        void updateHullPoints();
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const;
+        CpuTextureManager *textureManager();
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
@@ -125,6 +128,7 @@ class RenderedTarget : public IRenderedTarget
         Skin *m_skin = nullptr;
         Texture m_texture;
         Texture m_oldTexture;
+        std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
         std::unique_ptr<QOpenGLFunctions> m_glF;
         std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
         double m_size = 1;
@@ -138,7 +142,8 @@ class RenderedTarget : public IRenderedTarget
         double m_stageScale = 1;
         qreal m_maximumWidth = std::numeric_limits<double>::infinity();
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();
-        std::vector<QPointF> m_hullPoints;
+        bool m_convexHullDirty = true;
+        std::vector<QPoint> m_hullPoints;
         bool m_clicked = false; // left mouse button only!
         double m_dragDeltaX = 0;
         double m_dragDeltaY = 0;

@@ -13,6 +13,7 @@
 #include "scenemousearea.h"
 #include "bitmapskin.h"
 #include "svgskin.h"
+#include "cputexturemanager.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -41,6 +42,7 @@ void RenderedTarget::updateVisibility(bool visible)
 
     setVisible(visible);
     calculatePos();
+    m_convexHullDirty = true;
 }
 
 void RenderedTarget::updateX(double x)
@@ -212,6 +214,7 @@ void RenderedTarget::setEngine(IEngine *newEngine)
     m_skin = nullptr;
     m_texture = Texture();
     m_oldTexture = Texture();
+    m_convexHullDirty = true;
     clearGraphicEffects();
     m_hullPoints.clear();
 
@@ -256,9 +259,12 @@ void RenderedTarget::setSpriteModel(SpriteModel *newSpriteModel)
         SpriteModel *cloneRoot = m_spriteModel->cloneRoot();
 
         if (cloneRoot) {
-            // Inherit skins from the clone root
+            // Inherit skins, texture mananger, convex hull points, etc. from the clone root
             RenderedTarget *target = dynamic_cast<RenderedTarget *>(cloneRoot->renderedTarget());
             Q_ASSERT(target);
+            m_textureManager = target->m_textureManager;
+            m_convexHullDirty = target->m_convexHullDirty;
+            m_hullPoints = target->m_hullPoints;
 
             if (target->costumesLoaded()) {
                 m_skins = target->m_skins; // TODO: Avoid copying - maybe using a pointer?
@@ -365,7 +371,9 @@ Rect RenderedTarget::getBounds() const
     double right = -std::numeric_limits<double>::infinity();
     double bottom = std::numeric_limits<double>::infinity();
 
-    for (const QPointF &point : m_hullPoints) {
+    const std::vector<QPoint> &points = hullPoints();
+
+    for (const QPointF &point : points) {
         QPointF transformed = transformPoint(point.x() - width / 2, height / 2 - point.y(), originX, originY, rot);
         const double x = transformed.x() * scale() / m_stageScale * (m_mirrorHorizontally ? -1 : 1);
         const double y = transformed.y() * scale() / m_stageScale;
@@ -516,6 +524,8 @@ void RenderedTarget::setGraphicEffect(ShaderManager::Effect effect, double value
 
     if (changed)
         update();
+
+    // TODO: Set m_convexHullDirty to true if the effect changes shape
 }
 
 void RenderedTarget::clearGraphicEffects()
@@ -523,60 +533,15 @@ void RenderedTarget::clearGraphicEffects()
     if (!m_graphicEffects.empty())
         update();
 
+    // TODO: Set m_convexHullDirty to true if any of the previous effects changed shape
     m_graphicEffects.clear();
 }
 
-void RenderedTarget::updateHullPoints(QOpenGLFramebufferObject *fbo)
+const std::vector<QPoint> &RenderedTarget::hullPoints() const
 {
-    Q_ASSERT(fbo);
+    if (convexHullPointsNeeded())
+        const_cast<RenderedTarget *>(this)->updateHullPoints();
 
-    if (!m_glF) {
-        m_glF = std::make_unique<QOpenGLFunctions>();
-        m_glF->initializeOpenGLFunctions();
-    }
-
-    int width = fbo->width();
-    int height = fbo->height();
-    m_hullPoints.clear();
-    m_hullPoints.reserve(width * height);
-
-    // Read pixels from framebuffer
-    size_t size = width * height * 4;
-    GLubyte *pixelData = new GLubyte[size];
-    m_glF->glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
-
-    // Flip vertically
-    int rowSize = width * 4;
-    GLubyte *tempRow = new GLubyte[rowSize];
-
-    for (size_t i = 0; i < height / 2; ++i) {
-        size_t topRowIndex = i * rowSize;
-        size_t bottomRowIndex = (height - 1 - i) * rowSize;
-
-        // Swap rows
-        memcpy(tempRow, &pixelData[topRowIndex], rowSize);
-        memcpy(&pixelData[topRowIndex], &pixelData[bottomRowIndex], rowSize);
-        memcpy(&pixelData[bottomRowIndex], tempRow, rowSize);
-    }
-
-    delete[] tempRow;
-
-    // Fill hull points vector
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int index = (y * width + x) * 4; // RGBA channels
-
-            // Check alpha channel
-            if (pixelData[index + 3] > 0)
-                m_hullPoints.push_back(QPointF(x, y));
-        }
-    }
-
-    delete[] pixelData;
-}
-
-const std::vector<QPointF> &RenderedTarget::hullPoints() const
-{
     return m_hullPoints;
 }
 
@@ -588,12 +553,12 @@ bool RenderedTarget::contains(const QPointF &point) const
     if (!boundingRect().contains(point))
         return false;
 
-    QPoint intPoint = point.toPoint();
-    auto it = std::lower_bound(m_hullPoints.begin(), m_hullPoints.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) {
-        return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x());
-    });
+    const std::vector<QPoint> &points = hullPoints();
 
-    if (it == m_hullPoints.end()) {
+    QPoint intPoint = point.toPoint();
+    auto it = std::lower_bound(points.begin(), points.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) { return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x()); });
+
+    if (it == points.end()) {
         // The point is beyond the last point in the convex hull
         return false;
     }
@@ -659,10 +624,15 @@ void RenderedTarget::calculateRotation()
 void RenderedTarget::calculateSize()
 {
     if (m_skin && m_costume) {
+        GLuint oldTexture = m_texture.handle();
+        bool wasValid = m_texture.isValid();
         m_texture = m_skin->getTexture(m_size * m_stageScale);
         m_width = m_texture.width();
         m_height = m_texture.height();
         setScale(m_size * m_stageScale / m_skin->getTextureScale(m_texture) / m_costume->bitmapResolution());
+
+        if (wasValid && m_texture.handle() != oldTexture)
+            m_convexHullDirty = true;
     }
 }
 
@@ -679,6 +649,24 @@ void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
     }
 }
 
+bool RenderedTarget::convexHullPointsNeeded() const
+{
+    return m_convexHullDirty || m_hullPoints.empty();
+}
+
+void RenderedTarget::updateHullPoints()
+{
+    m_convexHullDirty = false;
+
+    if (!isVisible()) {
+        m_hullPoints.clear();
+        return;
+    }
+
+    m_hullPoints = textureManager()->getTextureConvexHullPoints(m_texture);
+    // TODO: Apply graphic effects (#117)
+}
+
 QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const
 {
     const double cosRot = std::cos(rot);
@@ -686,6 +674,14 @@ QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double 
     const double x = (scratchX - originX) * cosRot - (scratchY - originY) * sinRot;
     const double y = (scratchX - originX) * sinRot + (scratchY - originY) * cosRot;
     return QPointF(x, y);
+}
+
+CpuTextureManager *RenderedTarget::textureManager()
+{
+    if (!m_textureManager)
+        m_textureManager = std::make_shared<CpuTextureManager>();
+
+    return m_textureManager.get();
 }
 
 bool RenderedTarget::mirrorHorizontally() const
