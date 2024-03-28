@@ -20,7 +20,7 @@ using namespace libscratchcpp;
 ProjectLoader::ProjectLoader(QObject *parent) :
     QObject(parent)
 {
-    m_project.setDownloadProgressCallback([this](unsigned int finished, unsigned int all) {
+    m_project.downloadProgressChanged().connect([this](unsigned int finished, unsigned int all) {
         if (finished != m_downloadedAssets) {
             m_downloadedAssets = finished;
             emit downloadedAssetsChanged();
@@ -208,12 +208,8 @@ void ProjectLoader::stop()
 
 void ProjectLoader::answerQuestion(const QString &answer)
 {
-    if (m_engine) {
-        auto f = m_engine->questionAnswered();
-
-        if (f)
-            f(answer.toStdString());
-    }
+    if (m_engine)
+        m_engine->questionAnswered()(answer.toStdString());
 }
 
 void ProjectLoader::timerEvent(QTimerEvent *event)
@@ -255,16 +251,11 @@ void ProjectLoader::load()
     m_engine->setCloneLimit(m_cloneLimit);
     m_engine->setSpriteFencingEnabled(m_spriteFencing);
 
-    auto redrawHandler = std::bind(&ProjectLoader::redraw, this);
-    m_engine->setRedrawHandler(std::function<void()>(redrawHandler));
+    m_engine->aboutToRender().connect(&ProjectLoader::redraw, this);
+    m_engine->monitorAdded().connect(&ProjectLoader::addMonitor, this);
+    m_engine->monitorRemoved().connect(&ProjectLoader::removeMonitor, this);
 
-    auto addMonitorHandler = std::bind(&ProjectLoader::addMonitor, this, std::placeholders::_1);
-    m_engine->setAddMonitorHandler(std::function<void(Monitor *)>(addMonitorHandler));
-
-    auto removeMonitorHandler = std::bind(&ProjectLoader::removeMonitor, this, std::placeholders::_1, std::placeholders::_2);
-    m_engine->setRemoveMonitorHandler(std::function<void(Monitor *, IMonitorHandler *)>(removeMonitorHandler));
-
-    m_engine->setQuestionAsked([this](const std::string &question) { emit questionAsked(QString::fromStdString(question)); });
+    m_engine->questionAsked().connect([this](const std::string &question) { emit questionAsked(QString::fromStdString(question)); });
 
     // Load targets
     const auto &targets = m_engine->targets();

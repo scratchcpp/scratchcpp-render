@@ -77,6 +77,26 @@ void StageModel::onBubbleTextChanged(const std::string &text)
     }
 }
 
+libscratchcpp::Rect StageModel::boundingRect() const
+{
+    return libscratchcpp::Rect();
+}
+
+libscratchcpp::Rect StageModel::fastBoundingRect() const
+{
+    return libscratchcpp::Rect();
+}
+
+bool StageModel::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
+{
+    return false;
+}
+
+bool StageModel::touchingPoint(double x, double y) const
+{
+    return false;
+}
+
 void StageModel::loadCostume()
 {
     if (m_renderedTarget && m_stage)

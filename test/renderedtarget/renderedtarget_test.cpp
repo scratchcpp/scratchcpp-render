@@ -43,10 +43,10 @@ class RenderedTargetTest : public testing::Test
 
 TEST_F(RenderedTargetTest, Constructors)
 {
-    RenderedTarget target1;
-    RenderedTarget target2(&target1);
-    ASSERT_EQ(target2.parent(), &target1);
-    ASSERT_EQ(target2.parentItem(), &target1);
+    QQuickItem item1;
+    QQuickItem item2(&item1);
+    ASSERT_EQ(item2.parent(), &item1);
+    ASSERT_EQ(item2.parentItem(), &item1);
 }
 
 TEST_F(RenderedTargetTest, UpdateMethods)
@@ -305,7 +305,10 @@ TEST_F(RenderedTargetTest, HullPoints)
     SpriteModel model;
     model.init(&sprite);
 
-    RenderedTarget target;
+    QQuickItem parent;
+    parent.setWidth(200);
+    parent.setHeight(100);
+    RenderedTarget target(&parent);
     target.setEngine(&engine);
     target.setSpriteModel(&model);
 
@@ -314,27 +317,23 @@ TEST_F(RenderedTargetTest, HullPoints)
     QOffscreenSurface surface;
     createContextAndSurface(&context, &surface);
 
-    // Create a painter
-    QNanoPainter painter;
-
-    QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-
-    // Begin painting
-    QOpenGLFramebufferObject fbo(4, 6, format);
-    fbo.bind();
-    painter.beginFrame(fbo.width(), fbo.height());
-
-    // Paint
-    QNanoImage image = QNanoImage::fromCache(&painter, "image.png");
-    painter.drawImage(image, 0, 0);
-    painter.endFrame();
+    // Load costume
+    EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
+    auto costume = std::make_shared<Costume>("", "", "png");
+    std::string costumeData = readFileStr("image.png");
+    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    sprite.addCostume(costume);
+    target.loadCostumes();
+    target.updateCostume(costume.get());
+    target.setStageScale(2);
+    target.setX(25);
+    target.setY(30);
 
     // Test hull points
     target.setWidth(3);
     target.setHeight(3);
-    target.updateHullPoints(&fbo);
-    ASSERT_EQ(target.hullPoints(), std::vector<QPointF>({ { 1, 1 }, { 2, 1 }, { 3, 1 }, { 1, 2 }, { 3, 2 }, { 1, 3 }, { 2, 3 }, { 3, 3 } }));
+    ASSERT_EQ(target.hullPoints(), std::vector<QPoint>({ { 1, 1 }, { 2, 1 }, { 3, 1 }, { 1, 2 }, { 3, 2 }, { 1, 3 }, { 2, 3 }, { 3, 3 } }));
 
     // Test contains()
     ASSERT_FALSE(target.contains({ 0, 0 }));
@@ -358,49 +357,29 @@ TEST_F(RenderedTargetTest, HullPoints)
     ASSERT_TRUE(target.contains({ 3, 3 }));
     ASSERT_FALSE(target.contains({ 3.3, 3.5 }));
 
-    // Stage: hull points
-    Stage stage;
-    StageModel stageModel;
-    stageModel.init(&stage);
-    target.setSpriteModel(nullptr);
-    target.setStageModel(&stageModel);
+    // Test containsScratchPoint()
+    ASSERT_FALSE(target.containsScratchPoint(-227.5, 165)); // [0, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-226.5, 165)); // [1, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-225.5, 165)); // [2, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-224.5, 165)); // [3, 0]
 
-    target.setWidth(3);
-    target.setHeight(3);
-    fbo.release();
-    QOpenGLFramebufferObject emptyFbo(fbo.size(), format);
-    emptyFbo.bind();
-    target.updateHullPoints(&emptyFbo); // clear the convex hull points list
-    ASSERT_TRUE(target.hullPoints().empty());
-    emptyFbo.release();
-    fbo.bind();
-    target.updateHullPoints(&fbo);
-    ASSERT_EQ(target.hullPoints(), std::vector<QPointF>({ { 1, 1 }, { 2, 1 }, { 3, 1 }, { 1, 2 }, { 3, 2 }, { 1, 3 }, { 2, 3 }, { 3, 3 } }));
+    ASSERT_FALSE(target.containsScratchPoint(-227.5, 164));   // [0, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-226.5, 164));    // [1, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-226.1, 163.75)); // [1.4, 1.25]
+    ASSERT_TRUE(target.containsScratchPoint(-225.5, 164));    // [2, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-224.5, 164));    // [3, 1]
 
-    // Stage: contains()
-    ASSERT_TRUE(target.contains({ 0, 0 }));
-    ASSERT_TRUE(target.contains({ 1, 0 }));
-    ASSERT_TRUE(target.contains({ 2, 0 }));
-    ASSERT_TRUE(target.contains({ 3, 0 }));
+    ASSERT_TRUE(target.containsScratchPoint(-226.5, 163));  // [1, 2]
+    ASSERT_FALSE(target.containsScratchPoint(-225.5, 163)); // [2, 2]
+    ASSERT_TRUE(target.containsScratchPoint(-224.5, 163));  // [3, 2]
+    ASSERT_FALSE(target.containsScratchPoint(-224, 162.9)); // [3.5, 2.1]
 
-    ASSERT_TRUE(target.contains({ 0, 1 }));
-    ASSERT_TRUE(target.contains({ 1, 1 }));
-    ASSERT_TRUE(target.contains({ 1.4, 1.25 }));
-    ASSERT_TRUE(target.contains({ 2, 1 }));
-    ASSERT_TRUE(target.contains({ 3, 1 }));
+    ASSERT_TRUE(target.containsScratchPoint(-226.5, 162));    // [1, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-225.5, 162));    // [2, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-224.5, 162));    // [3, 3]
+    ASSERT_FALSE(target.containsScratchPoint(-224.2, 161.5)); // [3.3, 3.5]
 
-    ASSERT_TRUE(target.contains({ 1, 2 }));
-    ASSERT_TRUE(target.contains({ 2, 2 }));
-    ASSERT_TRUE(target.contains({ 3, 2 }));
-    ASSERT_TRUE(target.contains({ 3.5, 2.1 }));
-
-    ASSERT_TRUE(target.contains({ 1, 3 }));
-    ASSERT_TRUE(target.contains({ 2, 3 }));
-    ASSERT_TRUE(target.contains({ 3, 3 }));
-    ASSERT_TRUE(target.contains({ 3.3, 3.5 }));
-
-    // Release
-    fbo.release();
+    // Cleanup
     context.doneCurrent();
 }
 
@@ -640,8 +619,6 @@ TEST_F(RenderedTargetTest, GetBounds)
     QOpenGLContext context;
     QOffscreenSurface surface;
     createContextAndSurface(&context, &surface);
-    QOpenGLExtraFunctions glF(&context);
-    glF.initializeOpenGLFunctions();
     RenderedTarget target;
 
     Sprite sprite;
@@ -667,16 +644,6 @@ TEST_F(RenderedTargetTest, GetBounds)
     target.loadCostumes();
     target.updateCostume(costume.get());
     target.beforeRedraw();
-
-    Texture texture = target.texture();
-    QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-
-    QOpenGLFramebufferObject fbo(texture.size(), format);
-    fbo.bind();
-    glF.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.handle(), 0);
-    target.updateHullPoints(&fbo);
-    fbo.release();
 
     Rect bounds = target.getBounds();
     ASSERT_EQ(std::round(bounds.left() * 100) / 100, 66.13);

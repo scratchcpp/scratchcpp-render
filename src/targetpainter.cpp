@@ -99,7 +99,7 @@ void TargetPainter::paint(QNanoPainter *painter)
 
     // Process the resulting texture
     // NOTE: This must happen now, not later, because the alpha channel can be used here
-    m_target->updateHullPoints(targetFbo);
+    // Currently nothing is happening here...
 
     // Cleanup
     shaderProgram->release();
