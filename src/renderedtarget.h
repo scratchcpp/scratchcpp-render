@@ -33,7 +33,7 @@ class RenderedTarget : public IRenderedTarget
         Q_PROPERTY(double stageScale READ stageScale WRITE setStageScale NOTIFY stageScaleChanged)
 
     public:
-        RenderedTarget(QNanoQuickItem *parent = nullptr);
+        RenderedTarget(QQuickItem *parent = nullptr);
         ~RenderedTarget();
 
         void updateVisibility(bool visible) override;

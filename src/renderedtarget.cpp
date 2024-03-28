@@ -21,7 +21,7 @@ using namespace libscratchcpp;
 static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions are multiplied by this
 static const double pi = std::acos(-1);    // TODO: Use std::numbers::pi in C++20
 
-RenderedTarget::RenderedTarget(QNanoQuickItem *parent) :
+RenderedTarget::RenderedTarget(QQuickItem *parent) :
     IRenderedTarget(parent)
 {
     setSmooth(false);

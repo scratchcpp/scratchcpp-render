@@ -43,10 +43,10 @@ class RenderedTargetTest : public testing::Test
 
 TEST_F(RenderedTargetTest, Constructors)
 {
-    RenderedTarget target1;
-    RenderedTarget target2(&target1);
-    ASSERT_EQ(target2.parent(), &target1);
-    ASSERT_EQ(target2.parentItem(), &target1);
+    QQuickItem item1;
+    QQuickItem item2(&item1);
+    ASSERT_EQ(item2.parent(), &item1);
+    ASSERT_EQ(item2.parentItem(), &item1);
 }
 
 TEST_F(RenderedTargetTest, UpdateMethods)

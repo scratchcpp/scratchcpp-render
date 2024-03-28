@@ -23,7 +23,7 @@ class Texture;
 class IRenderedTarget : public QNanoQuickItem
 {
     public:
-        IRenderedTarget(QNanoQuickItem *parent = nullptr) :
+        IRenderedTarget(QQuickItem *parent = nullptr) :
             QNanoQuickItem(parent)
         {
         }
