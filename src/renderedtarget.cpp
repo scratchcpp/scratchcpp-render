@@ -567,6 +567,20 @@ bool RenderedTarget::contains(const QPointF &point) const
     return *it == intPoint;
 }
 
+bool RenderedTarget::containsScratchPoint(double x, double y) const
+{
+    if (!m_engine || !parentItem())
+        return false;
+
+    // contains() expects item coordinates, so translate the Scratch coordinates first
+    double stageWidth = m_engine->stageWidth();
+    double stageHeight = m_engine->stageHeight();
+    x = m_stageScale * (x + stageWidth / 2);
+    y = m_stageScale * (stageHeight / 2 - y);
+
+    return contains(mapFromItem(parentItem(), QPointF(x, y)));
+}
+
 void RenderedTarget::calculatePos()
 {
     if (!m_skin || !m_costume || !m_engine)

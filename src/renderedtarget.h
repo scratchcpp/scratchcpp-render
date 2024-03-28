@@ -92,6 +92,7 @@ class RenderedTarget : public IRenderedTarget
         const std::vector<QPoint> &hullPoints() const override;
 
         Q_INVOKABLE bool contains(const QPointF &point) const override;
+        bool containsScratchPoint(double x, double y) const override;
 
     signals:
         void engineChanged();

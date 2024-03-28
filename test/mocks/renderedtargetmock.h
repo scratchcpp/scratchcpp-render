@@ -70,6 +70,8 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(const std::vector<QPoint> &, hullPoints, (), (const, override));
 
         MOCK_METHOD(bool, contains, (const QPointF &), (const, override));
+        MOCK_METHOD(bool, containsScratchPoint, (double, double), (const, override));
+
         MOCK_METHOD(QNanoQuickItemPainter *, createItemPainter, (), (const, override));
         MOCK_METHOD(void, hoverEnterEvent, (QHoverEvent *), (override));
         MOCK_METHOD(void, hoverLeaveEvent, (QHoverEvent *), (override));

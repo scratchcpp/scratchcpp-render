@@ -305,7 +305,10 @@ TEST_F(RenderedTargetTest, HullPoints)
     SpriteModel model;
     model.init(&sprite);
 
-    RenderedTarget target;
+    QQuickItem parent;
+    parent.setWidth(200);
+    parent.setHeight(100);
+    RenderedTarget target(&parent);
     target.setEngine(&engine);
     target.setSpriteModel(&model);
 
@@ -315,14 +318,17 @@ TEST_F(RenderedTargetTest, HullPoints)
     createContextAndSurface(&context, &surface);
 
     // Load costume
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
     auto costume = std::make_shared<Costume>("", "", "png");
     std::string costumeData = readFileStr("image.png");
     costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
     sprite.addCostume(costume);
     target.loadCostumes();
     target.updateCostume(costume.get());
+    target.setStageScale(2);
+    target.setX(25);
+    target.setY(30);
 
     // Test hull points
     target.setWidth(3);
@@ -350,6 +356,28 @@ TEST_F(RenderedTargetTest, HullPoints)
     ASSERT_TRUE(target.contains({ 2, 3 }));
     ASSERT_TRUE(target.contains({ 3, 3 }));
     ASSERT_FALSE(target.contains({ 3.3, 3.5 }));
+
+    // Test containsScratchPoint()
+    ASSERT_FALSE(target.containsScratchPoint(-227.5, 165)); // [0, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-226.5, 165)); // [1, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-225.5, 165)); // [2, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-224.5, 165)); // [3, 0]
+
+    ASSERT_FALSE(target.containsScratchPoint(-227.5, 164));   // [0, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-226.5, 164));    // [1, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-226.1, 163.75)); // [1.4, 1.25]
+    ASSERT_TRUE(target.containsScratchPoint(-225.5, 164));    // [2, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-224.5, 164));    // [3, 1]
+
+    ASSERT_TRUE(target.containsScratchPoint(-226.5, 163));  // [1, 2]
+    ASSERT_FALSE(target.containsScratchPoint(-225.5, 163)); // [2, 2]
+    ASSERT_TRUE(target.containsScratchPoint(-224.5, 163));  // [3, 2]
+    ASSERT_FALSE(target.containsScratchPoint(-224, 162.9)); // [3.5, 2.1]
+
+    ASSERT_TRUE(target.containsScratchPoint(-226.5, 162));    // [1, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-225.5, 162));    // [2, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-224.5, 162));    // [3, 3]
+    ASSERT_FALSE(target.containsScratchPoint(-224.2, 161.5)); // [3.3, 3.5]
 
     // Cleanup
     context.doneCurrent();
