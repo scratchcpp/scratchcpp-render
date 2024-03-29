@@ -214,6 +214,7 @@ void RenderedTarget::setEngine(IEngine *newEngine)
     m_skin = nullptr;
     m_texture = Texture();
     m_oldTexture = Texture();
+    m_cpuTexture = Texture();
     m_convexHullDirty = true;
     clearGraphicEffects();
     m_hullPoints.clear();
@@ -547,6 +548,9 @@ const std::vector<QPoint> &RenderedTarget::hullPoints() const
 
 bool RenderedTarget::contains(const QPointF &point) const
 {
+    if (!m_costume || !m_texture.isValid() || !m_cpuTexture.isValid())
+        return false;
+
     if (m_stageModel)
         return true; // the stage contains any point within the scene
 
@@ -555,7 +559,8 @@ bool RenderedTarget::contains(const QPointF &point) const
 
     const std::vector<QPoint> &points = hullPoints();
 
-    QPoint intPoint = point.toPoint();
+    const double scaleRatio = m_skin->getTextureScale(m_texture) / m_skin->getTextureScale(m_cpuTexture);
+    QPoint intPoint = (point / scaleRatio).toPoint();
     auto it = std::lower_bound(points.begin(), points.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) { return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x()); });
 
     if (it == points.end()) {
@@ -638,14 +643,15 @@ void RenderedTarget::calculateRotation()
 void RenderedTarget::calculateSize()
 {
     if (m_skin && m_costume) {
-        GLuint oldTexture = m_texture.handle();
-        bool wasValid = m_texture.isValid();
+        GLuint oldTexture = m_cpuTexture.handle();
+        bool wasValid = m_cpuTexture.isValid();
         m_texture = m_skin->getTexture(m_size * m_stageScale);
+        m_cpuTexture = m_skin->getTexture(m_size);
         m_width = m_texture.width();
         m_height = m_texture.height();
         setScale(m_size * m_stageScale / m_skin->getTextureScale(m_texture) / m_costume->bitmapResolution());
 
-        if (wasValid && m_texture.handle() != oldTexture)
+        if (wasValid && m_cpuTexture.handle() != oldTexture)
             m_convexHullDirty = true;
     }
 }
@@ -677,7 +683,7 @@ void RenderedTarget::updateHullPoints()
         return;
     }
 
-    m_hullPoints = textureManager()->getTextureConvexHullPoints(m_texture);
+    m_hullPoints = textureManager()->getTextureConvexHullPoints(m_cpuTexture);
     // TODO: Apply graphic effects (#117)
 }
 

@@ -129,6 +129,7 @@ class RenderedTarget : public IRenderedTarget
         Skin *m_skin = nullptr;
         Texture m_texture;
         Texture m_oldTexture;
+        Texture m_cpuTexture;                                // without stage scale
         std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
         std::unique_ptr<QOpenGLFunctions> m_glF;
         std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
