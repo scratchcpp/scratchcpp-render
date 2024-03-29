@@ -306,8 +306,8 @@ TEST_F(RenderedTargetTest, HullPoints)
     model.init(&sprite);
 
     QQuickItem parent;
-    parent.setWidth(200);
-    parent.setHeight(100);
+    parent.setWidth(480);
+    parent.setHeight(360);
     RenderedTarget target(&parent);
     target.setEngine(&engine);
     target.setSpriteModel(&model);
@@ -357,7 +357,23 @@ TEST_F(RenderedTargetTest, HullPoints)
     ASSERT_TRUE(target.contains({ 3, 3 }));
     ASSERT_FALSE(target.contains({ 3.3, 3.5 }));
 
+    // Test contains() with horizontal mirroring
+    target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
+    target.updateDirection(-45);
+    target.setX(25);
+    target.setY(30);
+    ASSERT_FALSE(target.contains({ 0, 0 }));
+    ASSERT_TRUE(target.contains({ -1, 1 }));
+    ASSERT_FALSE(target.contains({ -2, 2 }));
+    ASSERT_TRUE(target.contains({ -3, 2 }));
+    ASSERT_FALSE(target.contains({ -3.5, 2.1 }));
+    ASSERT_TRUE(target.contains({ -2, 3 }));
+    ASSERT_FALSE(target.contains({ -3.3, 3.5 }));
+
     // Test containsScratchPoint()
+    target.updateDirection(0);
+    target.setX(25);
+    target.setY(30);
     ASSERT_FALSE(target.containsScratchPoint(-227.5, 165)); // [0, 0]
     ASSERT_FALSE(target.containsScratchPoint(-226.5, 165)); // [1, 0]
     ASSERT_FALSE(target.containsScratchPoint(-225.5, 165)); // [2, 0]

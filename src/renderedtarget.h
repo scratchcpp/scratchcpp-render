@@ -116,6 +116,7 @@ class RenderedTarget : public IRenderedTarget
         bool convexHullPointsNeeded() const;
         void updateHullPoints();
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const;
+        QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
         CpuTextureManager *textureManager();
 
         libscratchcpp::IEngine *m_engine = nullptr;

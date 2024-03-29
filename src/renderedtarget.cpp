@@ -548,19 +548,22 @@ const std::vector<QPoint> &RenderedTarget::hullPoints() const
 
 bool RenderedTarget::contains(const QPointF &point) const
 {
-    if (!m_costume || !m_texture.isValid() || !m_cpuTexture.isValid())
+    if (!m_costume || !m_texture.isValid() || !m_cpuTexture.isValid() || !parentItem())
         return false;
 
     if (m_stageModel)
         return true; // the stage contains any point within the scene
 
-    if (!boundingRect().contains(point))
+    const double scaleRatio = m_skin->getTextureScale(m_texture) / m_skin->getTextureScale(m_cpuTexture);
+    QPointF translatedPoint = mapToItem(parentItem(), point);
+    translatedPoint = mapFromStageWithOriginPoint(translatedPoint);
+    translatedPoint /= scaleRatio;
+
+    if (!boundingRect().contains(translatedPoint))
         return false;
 
     const std::vector<QPoint> &points = hullPoints();
-
-    const double scaleRatio = m_skin->getTextureScale(m_texture) / m_skin->getTextureScale(m_cpuTexture);
-    QPoint intPoint = (point / scaleRatio).toPoint();
+    QPoint intPoint = translatedPoint.toPoint();
     auto it = std::lower_bound(points.begin(), points.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) { return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x()); });
 
     if (it == points.end()) {
@@ -694,6 +697,23 @@ QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double 
     const double x = (scratchX - originX) * cosRot - (scratchY - originY) * sinRot;
     const double y = (scratchX - originX) * sinRot + (scratchY - originY) * cosRot;
     return QPointF(x, y);
+}
+
+QPointF RenderedTarget::mapFromStageWithOriginPoint(const QPointF &scenePoint) const
+{
+    // mapFromItem() doesn't use the transformOriginPoint property, so we must do this ourselves
+    QTransform t;
+    const double mirror = m_mirrorHorizontally ? -1 : 1;
+    const double originX = transformOriginPoint().x();
+    const double originY = transformOriginPoint().y();
+    t.translate(originX, originY);
+    t.rotate(-rotation());
+    t.scale(1 / scale() * mirror, 1 / scale());
+    t.translate(-originX * mirror, -originY);
+    t.translate(-x(), -y());
+
+    QPointF localPoint = t.map(scenePoint);
+    return localPoint;
 }
 
 CpuTextureManager *RenderedTarget::textureManager()
