@@ -94,7 +94,7 @@ bool StageModel::touchingClones(const std::vector<libscratchcpp::Sprite *> &clon
 
 bool StageModel::touchingPoint(double x, double y) const
 {
-    return false;
+    return m_renderedTarget->containsScratchPoint(x, y);
 }
 
 void StageModel::loadCostume()

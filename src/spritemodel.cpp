@@ -157,7 +157,7 @@ bool SpriteModel::touchingClones(const std::vector<libscratchcpp::Sprite *> &clo
 
 bool SpriteModel::touchingPoint(double x, double y) const
 {
-    return false;
+    return m_renderedTarget->containsScratchPoint(x, y);
 }
 
 libscratchcpp::Sprite *SpriteModel::sprite() const

@@ -318,6 +318,20 @@ TEST(SpriteModelTest, FastBoundingRect)
     ASSERT_EQ(bounds.bottom(), rect.bottom());
 }
 
+TEST(SpriteModelTest, TouchingPoint)
+{
+    SpriteModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    EXPECT_CALL(renderedTarget, containsScratchPoint(56.3, -179.4)).WillOnce(Return(false));
+    ASSERT_FALSE(model.touchingPoint(56.3, -179.4));
+
+    EXPECT_CALL(renderedTarget, containsScratchPoint(-20.08, 109.47)).WillOnce(Return(true));
+    ASSERT_TRUE(model.touchingPoint(-20.08, 109.47));
+}
+
 TEST(SpriteModelTest, RenderedTarget)
 {
     SpriteModel model;

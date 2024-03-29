@@ -9,6 +9,8 @@
 using namespace scratchcpprender;
 using namespace libscratchcpp;
 
+using ::testing::Return;
+
 TEST(StageModelTest, Constructors)
 {
     StageModel model1;
@@ -104,6 +106,20 @@ TEST(StageModelTest, OnBubbleTextChanged)
     model.onBubbleTextChanged("test");
     ASSERT_EQ(model.bubbleText(), "test");
     ASSERT_EQ(spy.count(), 2);
+}
+
+TEST(StageModelTest, TouchingPoint)
+{
+    StageModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    EXPECT_CALL(renderedTarget, containsScratchPoint(56.3, -179.4)).WillOnce(Return(false));
+    ASSERT_FALSE(model.touchingPoint(56.3, -179.4));
+
+    EXPECT_CALL(renderedTarget, containsScratchPoint(-20.08, 109.47)).WillOnce(Return(true));
+    ASSERT_TRUE(model.touchingPoint(-20.08, 109.47));
 }
 
 TEST(StageModelTest, RenderedTarget)
