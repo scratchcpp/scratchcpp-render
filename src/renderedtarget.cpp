@@ -551,9 +551,6 @@ bool RenderedTarget::contains(const QPointF &point) const
     if (!m_costume || !m_texture.isValid() || !m_cpuTexture.isValid() || !parentItem())
         return false;
 
-    if (m_stageModel)
-        return true; // the stage contains any point within the scene
-
     const double scaleRatio = m_skin->getTextureScale(m_texture) / m_skin->getTextureScale(m_cpuTexture);
     QPointF translatedPoint = mapToItem(parentItem(), point);
     translatedPoint = mapFromStageWithOriginPoint(translatedPoint);
