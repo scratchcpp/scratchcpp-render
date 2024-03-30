@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 - [x] Sprite click events
 - [x] Clones
 - [x] Sprite dragging
-- [ ] Touching sprite block
+- [x] Touching sprite block
 - [ ] Touching color blocks
 - [ ] Pen blocks (all blocks except the stamp block are implemented)
 - [x] Monitors
