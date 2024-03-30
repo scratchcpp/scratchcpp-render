@@ -395,6 +395,12 @@ Rect RenderedTarget::getBounds() const
     return Rect(left + m_x, top + m_y, right + m_x, bottom + m_y);
 }
 
+QRectF scratchcpprender::RenderedTarget::getQmlBounds() const
+{
+    Rect bounds = getBounds();
+    return QRectF(QPointF(bounds.left(), bounds.top()), QPointF(bounds.right(), bounds.bottom()));
+}
+
 QRectF RenderedTarget::getBoundsForBubble() const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/86dcb0151a04bc8c1ff39559e8531e7921102b56/src/Drawable.js#L536-L551

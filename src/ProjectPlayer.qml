@@ -156,6 +156,52 @@ ProjectScene {
                     }
                 }
 
+                // Uncomment to display sprite bounding boxes (for debugging)
+                /*Rectangle {
+                    function translateX(x) {
+                        // Translates Scratch X-coordinate to the scene coordinate system
+                        return root.stageScale * (root.stageWidth / 2 + x)
+                    }
+
+                    function translateY(y) {
+                        // Translates Scratch Y-coordinate to the scene coordinate system
+                        return root.stageScale * (root.stageHeight / 2 - y)
+                    }
+
+                    id: boundRect
+                    color: "transparent"
+                    border.color: "red"
+                    border.width: 3
+
+                    function updatePosition() {
+                        let bounds = targetItem.getQmlBounds();
+                        boundRect.x = translateX(bounds.left);
+                        boundRect.y = translateY(bounds.top);
+                        width = bounds.width * root.stageScale;
+                        height = -bounds.height * root.stageScale;
+                    }
+
+                    Connections {
+                        target: targetItem
+
+                        function onXChanged() { boundRect.updatePosition() }
+                        function onYChanged() { boundRect.updatePosition() }
+                        function onRotationChanged() { boundRect.updatePosition() }
+                        function onWidthChanged() { boundRect.updatePosition() }
+                        function onHeightChanged() { boundRect.updatePosition() }
+                        function onScaleChanged() { boundRect.updatePosition() }
+                    }
+
+                    Connections {
+                        property Scale transform: Scale {}
+                        target: transform
+
+                        function onXScaleChanged() { boundRect.updatePosition() }
+
+                        Component.onCompleted: transform = targetItem.transform[0]
+                    }
+                }*/
+
                 Loader {
                     readonly property alias model: targetItem.spriteModel
                     active: model ? model.bubbleText !== "" : false
