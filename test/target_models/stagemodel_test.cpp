@@ -10,6 +10,9 @@ using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 using ::testing::Return;
+using ::testing::WithArgs;
+using ::testing::Invoke;
+using ::testing::_;
 
 TEST(StageModelTest, Constructors)
 {
@@ -106,6 +109,32 @@ TEST(StageModelTest, OnBubbleTextChanged)
     model.onBubbleTextChanged("test");
     ASSERT_EQ(model.bubbleText(), "test");
     ASSERT_EQ(spy.count(), 2);
+}
+
+TEST(SpriteModelTest, TouchingClones)
+{
+    StageModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    Sprite clone1, clone2;
+    std::vector<Sprite *> clones = { &clone1, &clone2 };
+    std::vector<Sprite *> actualClones;
+
+    EXPECT_CALL(renderedTarget, touchingClones(_)).WillOnce(WithArgs<0>(Invoke([&actualClones](const std::vector<Sprite *> &candidates) {
+        actualClones = candidates;
+        return false;
+    })));
+    ASSERT_FALSE(model.touchingClones(clones));
+    ASSERT_EQ(actualClones, clones);
+
+    EXPECT_CALL(renderedTarget, touchingClones(_)).WillOnce(WithArgs<0>(Invoke([&actualClones](const std::vector<Sprite *> &candidates) {
+        actualClones = candidates;
+        return true;
+    })));
+    ASSERT_TRUE(model.touchingClones(clones));
+    ASSERT_EQ(actualClones, clones);
 }
 
 TEST(StageModelTest, TouchingPoint)

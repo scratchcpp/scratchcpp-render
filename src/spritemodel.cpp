@@ -152,7 +152,7 @@ libscratchcpp::Rect SpriteModel::fastBoundingRect() const
 
 bool SpriteModel::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
 {
-    return false;
+    return m_renderedTarget->touchingClones(clones);
 }
 
 bool SpriteModel::touchingPoint(double x, double y) const

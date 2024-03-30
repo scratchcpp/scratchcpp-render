@@ -89,7 +89,7 @@ libscratchcpp::Rect StageModel::fastBoundingRect() const
 
 bool StageModel::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
 {
-    return false;
+    return m_renderedTarget->touchingClones(clones);
 }
 
 bool StageModel::touchingPoint(double x, double y) const
