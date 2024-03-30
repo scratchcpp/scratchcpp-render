@@ -11,6 +11,7 @@
 #include <scratchcpp/costume.h>
 #include <scratchcpp/rect.h>
 #include <enginemock.h>
+#include <renderedtargetmock.h>
 
 #include "../common.h"
 
@@ -793,5 +794,110 @@ TEST_F(RenderedTargetTest, GetFastBounds)
     ASSERT_EQ(std::round(bounds.right() * 100) / 100, -375.77);
     ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, 737.38);
 
+    context.doneCurrent();
+}
+
+TEST_F(RenderedTargetTest, TouchingClones)
+{
+    EngineMock engine;
+    Sprite sprite, clone1, clone2;
+    SpriteModel model, model1, model2;
+    model.init(&sprite);
+    clone1.setInterface(&model1);
+    clone2.setInterface(&model2);
+
+    QQuickItem parent;
+    parent.setWidth(480);
+    parent.setHeight(360);
+
+    RenderedTarget target(&parent);
+    target.setEngine(&engine);
+    target.setSpriteModel(&model);
+
+    RenderedTargetMock target1, target2;
+    model1.setRenderedTarget(&target1);
+    model2.setRenderedTarget(&target2);
+
+    // Create OpenGL context
+    QOpenGLContext context;
+    QOffscreenSurface surface;
+    createContextAndSurface(&context, &surface);
+
+    // Load costume
+    EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
+    auto costume = std::make_shared<Costume>("", "", "png");
+    std::string costumeData = readFileStr("image.png");
+    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    sprite.addCostume(costume);
+    target.loadCostumes();
+    target.updateCostume(costume.get());
+    target.setWidth(3);
+    target.setHeight(3);
+
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -1, 1.8, -8)));
+    EXPECT_CALL(target1, containsScratchPoint(1, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(1, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(2, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(2, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(3, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(3, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(1, -2)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(1, -2)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(3, -2)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(3, -2)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(1, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(1, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(2, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(2, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(3, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(3, -1)).WillOnce(Return(false));
+    ASSERT_FALSE(target.touchingClones({ &clone1, &clone2 }));
+
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -1, 1.8, -8)));
+    EXPECT_CALL(target1, containsScratchPoint(1, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(1, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(2, -3)).WillOnce(Return(true));
+    ASSERT_TRUE(target.touchingClones({ &clone1, &clone2 }));
+
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(5, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -1, 1.8, -8)));
+    EXPECT_CALL(target1, containsScratchPoint(1, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(1, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(1, -2)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(1, -2)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(1, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(1, -1)).WillOnce(Return(false));
+    ASSERT_FALSE(target.touchingClones({ &clone1, &clone2 }));
+
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6.5, 1.8, -8)));
+    EXPECT_CALL(target1, containsScratchPoint(2, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(2, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(3, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(3, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(3, -2)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(3, -2)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(2, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(2, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target1, containsScratchPoint(3, -1)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(3, -1)).WillOnce(Return(false));
+    ASSERT_FALSE(target.touchingClones({ &clone1, &clone2 }));
+
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6.5, 1.8, -8)));
+    EXPECT_CALL(target1, containsScratchPoint(2, -3)).WillOnce(Return(false));
+    EXPECT_CALL(target2, containsScratchPoint(2, -3)).WillOnce(Return(true));
+    ASSERT_TRUE(target.touchingClones({ &clone1, &clone2 }));
+
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(5, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6.5, 1.8, -8)));
+    EXPECT_CALL(target1, containsScratchPoint).Times(0);
+    EXPECT_CALL(target2, containsScratchPoint).Times(0);
+    ASSERT_FALSE(target.touchingClones({ &clone1, &clone2 }));
+
+    // Cleanup
     context.doneCurrent();
 }

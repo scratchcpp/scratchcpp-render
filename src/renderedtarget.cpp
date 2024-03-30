@@ -592,6 +592,58 @@ bool RenderedTarget::containsScratchPoint(double x, double y) const
     return contains(mapFromItem(parentItem(), QPointF(x, y)));
 }
 
+bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/941562438fe3dd6e7d98d9387607d535dcd68d24/src/RenderWebGL.js#L967-L1002
+    // TODO: Use Rect methods and do not use QRects
+    Rect scratchRect = getFastBounds();
+    const QRectF myRect(QPointF(scratchRect.left(), scratchRect.bottom()), QPointF(scratchRect.right(), scratchRect.top()));
+    QRectF united;
+    std::vector<IRenderedTarget *> candidates;
+
+    // Calculate the union of the bounding rectangle intersections
+    for (auto clone : clones) {
+        Q_ASSERT(clone);
+
+        if (!clone)
+            continue;
+
+        SpriteModel *model = static_cast<SpriteModel *>(clone->getInterface());
+        Q_ASSERT(model);
+
+        if (model) {
+            // Calculate the intersection of the bounding rectangles
+            IRenderedTarget *candidate = model->renderedTarget();
+            Q_ASSERT(candidate);
+            scratchRect = candidate->getFastBounds();
+            QRectF rect(QPointF(scratchRect.left(), scratchRect.bottom()), QPointF(scratchRect.right(), scratchRect.top()));
+            QRectF intersected = myRect.intersected(rect);
+
+            // Add it to the union
+            united = united.united(intersected);
+
+            candidates.push_back(candidate);
+        }
+    }
+
+    if (united.isEmpty() || candidates.empty())
+        return false;
+
+    // Loop through the points of the union
+    for (int y = united.top(); y <= united.bottom(); y++) {
+        for (int x = united.left(); x <= united.right(); x++) {
+            if (this->containsScratchPoint(x, y)) {
+                for (IRenderedTarget *candidate : candidates) {
+                    if (candidate->containsScratchPoint(x, y))
+                        return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 void RenderedTarget::calculatePos()
 {
     if (!m_skin || !m_costume || !m_engine)

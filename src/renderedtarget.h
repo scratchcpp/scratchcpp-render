@@ -95,6 +95,8 @@ class RenderedTarget : public IRenderedTarget
         Q_INVOKABLE bool contains(const QPointF &point) const override;
         bool containsScratchPoint(double x, double y) const override;
 
+        bool touchingClones(const std::vector<libscratchcpp::Sprite *> &) const override;
+
     signals:
         void engineChanged();
         void stageModelChanged();
