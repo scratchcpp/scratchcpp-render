@@ -410,14 +410,14 @@ QRectF RenderedTarget::getBoundsForBubble() const
 
 Rect RenderedTarget::getFastBounds() const
 {
-    if (!m_costume || !m_skin || !m_texture.isValid())
+    if (!m_costume || !m_skin || !m_texture.isValid() || !m_cpuTexture.isValid())
         return Rect(m_x, m_y, m_x, m_y);
 
-    const double scale = this->scale();
-    const double width = this->width() / m_stageScale;
-    const double height = this->height() / m_stageScale;
-    const double originX = m_costume->rotationCenterX() * m_size / scale / m_costume->bitmapResolution() - width / 2;
-    const double originY = -m_costume->rotationCenterY() * m_size / scale / m_costume->bitmapResolution() + height / 2;
+    const double textureScale = m_skin->getTextureScale(m_cpuTexture);
+    const double width = m_cpuTexture.width() * m_size / textureScale;
+    const double height = m_cpuTexture.height() * m_size / textureScale;
+    const double originX = m_costume->rotationCenterX() * m_size / textureScale / m_costume->bitmapResolution() - width / 2;
+    const double originY = -m_costume->rotationCenterY() * m_size / textureScale / m_costume->bitmapResolution() + height / 2;
     const double rot = -rotation() * pi / 180;
 
     QPointF topLeft = transformPoint(-width / 2, height / 2, originX, originY, rot);
@@ -438,7 +438,7 @@ Rect RenderedTarget::getFastBounds() const
     const double minY = std::min(yList);
     const double maxY = std::max(yList);
 
-    return Rect(minX * scale + m_x, maxY * scale + m_y, maxX * scale + m_x, minY * scale + m_y);
+    return Rect(minX + m_x, maxY + m_y, maxX + m_x, minY + m_y);
 }
 
 QPointF RenderedTarget::mapFromScene(const QPointF &point) const
