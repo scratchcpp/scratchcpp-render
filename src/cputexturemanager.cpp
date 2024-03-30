@@ -77,7 +77,7 @@ bool CpuTextureManager::addTexture(const Texture &texture)
 
     // Read pixels
     GLubyte *pixels = new GLubyte[width * height * 4]; // 4 channels (RGBA)
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glF.glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     // Flip vertically
     int rowSize = width * 4;
