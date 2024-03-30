@@ -359,13 +359,13 @@ void RenderedTarget::setHeight(qreal height)
 Rect RenderedTarget::getBounds() const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/c3ede9c3d54769730c7b023021511e2aba167b1f/src/Rectangle.js#L33-L55
-    if (!m_costume || !m_skin || !m_texture.isValid())
+    if (!m_costume || !m_skin || !m_texture.isValid() || !m_cpuTexture.isValid())
         return Rect(m_x, m_y, m_x, m_y);
 
-    const double width = m_texture.width() * m_size / scale() / m_costume->bitmapResolution();
-    const double height = m_texture.height() * m_size / scale() / m_costume->bitmapResolution();
-    const double originX = m_stageScale * m_costume->rotationCenterX() * m_size / scale() / m_costume->bitmapResolution() - width / 2;
-    const double originY = m_stageScale * -m_costume->rotationCenterY() * m_size / scale() / m_costume->bitmapResolution() + height / 2;
+    const double width = m_cpuTexture.width() * m_size / m_costume->bitmapResolution();
+    const double height = m_cpuTexture.height() * m_size / m_costume->bitmapResolution();
+    const double originX = m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution() - width / 2;
+    const double originY = -m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution() + height / 2;
     const double rot = -rotation() * pi / 180;
     double left = std::numeric_limits<double>::infinity();
     double top = -std::numeric_limits<double>::infinity();
@@ -376,8 +376,8 @@ Rect RenderedTarget::getBounds() const
 
     for (const QPointF &point : points) {
         QPointF transformed = transformPoint(point.x() - width / 2, height / 2 - point.y(), originX, originY, rot);
-        const double x = transformed.x() * scale() / m_stageScale * (m_mirrorHorizontally ? -1 : 1);
-        const double y = transformed.y() * scale() / m_stageScale;
+        const double x = transformed.x() * (m_mirrorHorizontally ? -1 : 1);
+        const double y = transformed.y();
 
         if (x < left)
             left = x;
