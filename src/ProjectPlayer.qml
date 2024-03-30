@@ -172,6 +172,7 @@ ProjectScene {
                     color: "transparent"
                     border.color: "red"
                     border.width: 3
+                    visible: targetItem.visible
 
                     function updatePosition() {
                         let bounds = targetItem.getQmlBounds();
