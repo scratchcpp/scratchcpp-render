@@ -367,6 +367,8 @@ Rect RenderedTarget::getBounds() const
     const double originX = m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution() - width / 2;
     const double originY = -m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution() + height / 2;
     const double rot = -rotation() * pi / 180;
+    const double sinRot = std::sin(rot);
+    const double cosRot = std::cos(rot);
     double left = std::numeric_limits<double>::infinity();
     double top = -std::numeric_limits<double>::infinity();
     double right = -std::numeric_limits<double>::infinity();
@@ -375,7 +377,7 @@ Rect RenderedTarget::getBounds() const
     const std::vector<QPoint> &points = hullPoints();
 
     for (const QPointF &point : points) {
-        QPointF transformed = transformPoint(point.x() - width / 2, height / 2 - point.y(), originX, originY, rot);
+        QPointF transformed = transformPoint(point.x() - width / 2, height / 2 - point.y(), originX, originY, sinRot, cosRot);
         const double x = transformed.x() * (m_mirrorHorizontally ? -1 : 1);
         const double y = transformed.y();
 
@@ -425,11 +427,13 @@ Rect RenderedTarget::getFastBounds() const
     const double originX = m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution() - width / 2;
     const double originY = -m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution() + height / 2;
     const double rot = -rotation() * pi / 180;
+    const double sinRot = std::sin(rot);
+    const double cosRot = std::cos(rot);
 
-    QPointF topLeft = transformPoint(-width / 2, height / 2, originX, originY, rot);
-    QPointF topRight = transformPoint(width / 2, height / 2, originX, originY, rot);
-    QPointF bottomRight = transformPoint(width / 2, -height / 2, originX, originY, rot);
-    QPointF bottomLeft = transformPoint(-width / 2, -height / 2, originX, originY, rot);
+    QPointF topLeft = transformPoint(-width / 2, height / 2, originX, originY, sinRot, cosRot);
+    QPointF topRight = transformPoint(width / 2, height / 2, originX, originY, sinRot, cosRot);
+    QPointF bottomRight = transformPoint(width / 2, -height / 2, originX, originY, sinRot, cosRot);
+    QPointF bottomLeft = transformPoint(-width / 2, -height / 2, originX, originY, sinRot, cosRot);
 
     if (m_mirrorHorizontally) {
         topLeft.setX(-topLeft.x());
@@ -747,8 +751,11 @@ void RenderedTarget::updateHullPoints()
 
 QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const
 {
-    const double cosRot = std::cos(rot);
-    const double sinRot = std::sin(rot);
+    return transformPoint(scratchX, scratchY, originX, originY, std::sin(rot), std::cos(rot));
+}
+
+QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double sinRot, double cosRot) const
+{
     const double x = (scratchX - originX) * cosRot - (scratchY - originY) * sinRot;
     const double y = (scratchX - originX) * sinRot + (scratchY - originY) * cosRot;
     return QPointF(x, y);

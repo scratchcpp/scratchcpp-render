@@ -119,6 +119,7 @@ class RenderedTarget : public IRenderedTarget
         bool convexHullPointsNeeded() const;
         void updateHullPoints();
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const;
+        QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double sinRot, double cosRot) const;
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
         CpuTextureManager *textureManager();
 
