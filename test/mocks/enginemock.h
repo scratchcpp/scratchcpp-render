@@ -34,7 +34,8 @@ class EngineMock : public IEngine
         MOCK_METHOD(void, runEventLoop, (), (override));
         MOCK_METHOD(void, stopEventLoop, (), (override));
 
-        MOCK_METHOD(void, setRedrawHandler, (const std::function<void()> &), (override));
+        MOCK_METHOD(sigslot::signal<> &, aboutToRender, (), (override));
+        MOCK_METHOD(sigslot::signal<VirtualMachine *> &, threadAboutToStop, (), (override));
 
         MOCK_METHOD(bool, isRunning, (), (const, override));
 
@@ -86,8 +87,10 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(void, registerSection, (std::shared_ptr<IBlockSection>), (override));
         MOCK_METHOD(unsigned int, functionIndex, (BlockFunc), (override));
+        MOCK_METHOD(const std::vector<BlockFunc> &, blockFunctions, (), (const, override));
 
         MOCK_METHOD(void, addCompileFunction, (IBlockSection *, const std::string &, BlockComp), (override));
+        MOCK_METHOD(void, addHatPredicateCompileFunction, (IBlockSection *, const std::string &, HatPredicateCompileFunc), (override));
         MOCK_METHOD(void, addMonitorNameFunction, (IBlockSection *, const std::string &, MonitorNameFunc), (override));
         MOCK_METHOD(void, addMonitorChangeFunction, (IBlockSection *, const std::string &, MonitorChangeFunc), (override));
         MOCK_METHOD(void, addHatBlock, (IBlockSection *, const std::string &), (override));
@@ -107,6 +110,7 @@ class EngineMock : public IEngine
         MOCK_METHOD(void, addCloneInitScript, (std::shared_ptr<Block>), (override));
         MOCK_METHOD(void, addKeyPressScript, (std::shared_ptr<Block>, int), (override));
         MOCK_METHOD(void, addTargetClickScript, (std::shared_ptr<Block>), (override));
+        MOCK_METHOD(void, addWhenGreaterThanScript, (std::shared_ptr<Block>), (override));
 
         MOCK_METHOD(const std::vector<std::shared_ptr<Target>> &, targets, (), (const, override));
         MOCK_METHOD(void, setTargets, (const std::vector<std::shared_ptr<Target>> &), (override));
@@ -123,14 +127,11 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(const std::vector<std::shared_ptr<Monitor>> &, monitors, (), (const, override));
         MOCK_METHOD(void, setMonitors, (const std::vector<std::shared_ptr<Monitor>> &), (override));
-        MOCK_METHOD(void, setAddMonitorHandler, (const std::function<void(Monitor *)> &), (override));
-        MOCK_METHOD(void, setRemoveMonitorHandler, (const std::function<void(Monitor *, IMonitorHandler *)> &), (override));
+        MOCK_METHOD(sigslot::signal<Monitor *> &, monitorAdded, (), (override));
+        MOCK_METHOD((sigslot::signal<Monitor *, IMonitorHandler *> &), monitorRemoved, (), (override));
 
-        MOCK_METHOD(const std::function<void(const std::string &)> &, questionAsked, (), (const, override));
-        MOCK_METHOD(void, setQuestionAsked, (const std::function<void(const std::string &)> &), (override));
-
-        MOCK_METHOD(const std::function<void(const std::string &)> &, questionAnswered, (), (const, override));
-        MOCK_METHOD(void, setQuestionAnswered, (const std::function<void(const std::string &)> &), (override));
+        MOCK_METHOD(sigslot::signal<const std::string &> &, questionAsked, (), (override));
+        MOCK_METHOD(sigslot::signal<const std::string &> &, questionAnswered, (), (override));
 
         MOCK_METHOD(std::vector<std::string> &, extensions, (), (const, override));
         MOCK_METHOD(void, setExtensions, (const std::vector<std::string> &), (override));

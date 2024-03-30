@@ -318,6 +318,46 @@ TEST(SpriteModelTest, FastBoundingRect)
     ASSERT_EQ(bounds.bottom(), rect.bottom());
 }
 
+TEST(SpriteModelTest, TouchingClones)
+{
+    SpriteModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    Sprite clone1, clone2;
+    std::vector<Sprite *> clones = { &clone1, &clone2 };
+    std::vector<Sprite *> actualClones;
+
+    EXPECT_CALL(renderedTarget, touchingClones(_)).WillOnce(WithArgs<0>(Invoke([&actualClones](const std::vector<Sprite *> &candidates) {
+        actualClones = candidates;
+        return false;
+    })));
+    ASSERT_FALSE(model.touchingClones(clones));
+    ASSERT_EQ(actualClones, clones);
+
+    EXPECT_CALL(renderedTarget, touchingClones(_)).WillOnce(WithArgs<0>(Invoke([&actualClones](const std::vector<Sprite *> &candidates) {
+        actualClones = candidates;
+        return true;
+    })));
+    ASSERT_TRUE(model.touchingClones(clones));
+    ASSERT_EQ(actualClones, clones);
+}
+
+TEST(SpriteModelTest, TouchingPoint)
+{
+    SpriteModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    EXPECT_CALL(renderedTarget, containsScratchPoint(56.3, -179.4)).WillOnce(Return(false));
+    ASSERT_FALSE(model.touchingPoint(56.3, -179.4));
+
+    EXPECT_CALL(renderedTarget, containsScratchPoint(-20.08, 109.47)).WillOnce(Return(true));
+    ASSERT_TRUE(model.touchingPoint(-20.08, 109.47));
+}
+
 TEST(SpriteModelTest, RenderedTarget)
 {
     SpriteModel model;

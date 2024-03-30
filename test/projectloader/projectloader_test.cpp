@@ -96,7 +96,7 @@ TEST_F(ProjectLoaderTest, Load)
     ASSERT_EQ(sprites[1]->sprite(), engine->targetAt(2));
 
     const auto &monitors = loader.monitorList();
-    ASSERT_EQ(monitors.size(), 10);
+    ASSERT_EQ(monitors.size(), 11);
 
     ListMonitorModel *listMonitorModel = dynamic_cast<ListMonitorModel *>(monitors[0]);
     ASSERT_EQ(listMonitorModel->monitor(), engine->monitors().at(0).get());
@@ -179,10 +179,8 @@ TEST_F(ProjectLoaderTest, QuestionAsked)
     load(&loader, "load_test.sb3");
 
     auto engine = loader.engine();
-    auto f = engine->questionAsked();
-    ASSERT_TRUE(f);
     ASSERT_TRUE(spy.isEmpty());
-    f("test");
+    engine->questionAsked()("test");
     ASSERT_EQ(spy.count(), 1);
 
     auto args = spy.takeFirst();
@@ -197,8 +195,9 @@ TEST_F(ProjectLoaderTest, AnswerQuestion)
     loader.setEngine(&engine);
 
     AnswerQuestionMock mock;
-    std::function<void(const std::string &)> f = std::bind(&AnswerQuestionMock::answer, &mock, std::placeholders::_1);
-    EXPECT_CALL(engine, questionAnswered()).WillOnce(ReturnRef(f));
+    sigslot::signal<const std::string &> answered;
+    answered.connect(&AnswerQuestionMock::answer, &mock);
+    EXPECT_CALL(engine, questionAnswered()).WillOnce(ReturnRef(answered));
     EXPECT_CALL(mock, answer("hello"));
     loader.answerQuestion("hello");
 }

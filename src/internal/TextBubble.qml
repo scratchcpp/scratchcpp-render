@@ -85,6 +85,15 @@ TextBubbleShape {
         function onScaleChanged() { positionBubble() }
     }
 
+    Connections {
+        property Scale transform: Scale {}
+        target: transform
+
+        function onXScaleChanged() { positionBubble() }
+
+        Component.onCompleted: transform = root.target.transform[0]
+    }
+
     Text {
         id: bubbleText
         anchors.left: parent.left
