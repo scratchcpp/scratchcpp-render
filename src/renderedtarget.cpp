@@ -422,8 +422,8 @@ Rect RenderedTarget::getFastBounds() const
     const double textureScale = m_skin->getTextureScale(m_cpuTexture);
     const double width = m_cpuTexture.width() * m_size / textureScale;
     const double height = m_cpuTexture.height() * m_size / textureScale;
-    const double originX = m_costume->rotationCenterX() * m_size / textureScale / m_costume->bitmapResolution() - width / 2;
-    const double originY = -m_costume->rotationCenterY() * m_size / textureScale / m_costume->bitmapResolution() + height / 2;
+    const double originX = m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution() - width / 2;
+    const double originY = -m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution() + height / 2;
     const double rot = -rotation() * pi / 180;
 
     QPointF topLeft = transformPoint(-width / 2, height / 2, originX, originY, rot);
