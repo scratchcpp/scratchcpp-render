@@ -44,7 +44,7 @@ TextBubbleShape {
             return;
 
         const targetBounds = target.getBoundsForBubble();
-        const stageBounds = Qt.rect(-root.stageWidth / 2, root.stageHeight / 2, root.stageWidth, root.stageHeight);
+        const stageBounds = Qt.rect(-root.stageWidth / 2, root.stageHeight / 2, root.stageWidth, -root.stageHeight);
 
         if (onSpriteRight && nativeWidth + targetBounds.right > stageBounds.right &&
             (targetBounds.left - nativeWidth > stageBounds.left)) { // Only flip if it would fit
