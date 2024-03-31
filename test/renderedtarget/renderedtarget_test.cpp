@@ -663,64 +663,64 @@ TEST_F(RenderedTargetTest, GetBounds)
     target.beforeRedraw();
 
     Rect bounds = target.getBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 64.96);
-    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -121.16);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 67.79);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -123.99);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 66.13);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -124.52);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 66.72);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -125.11);
 
     QRectF bubbleBounds = target.getBoundsForBubble();
-    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 64.96);
-    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -121.16);
-    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 67.79);
-    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -123.99);
+    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 66.13);
+    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -124.52);
+    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 66.72);
+    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -125.11);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
 
     bounds = target.getBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 69.5);
-    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -111.26);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 71.5);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -113.26);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 71.87);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.47);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.29);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -110.89);
 
     bubbleBounds = target.getBoundsForBubble();
-    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 69.5);
-    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -111.26);
-    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 71.5);
-    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -113.26);
+    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 71.87);
+    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -110.47);
+    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 72.29);
+    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -110.89);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.setStageScale(20.75);
 
     bounds = target.getBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 69.5);
-    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -111.26);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 71.5);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -113.26);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 71.87);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.47);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.29);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -110.89);
 
     bubbleBounds = target.getBoundsForBubble();
-    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 69.5);
-    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -111.26);
-    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 71.5);
-    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -113.26);
+    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, 71.87);
+    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, -110.47);
+    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, 72.29);
+    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, -110.89);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateSize(9780.6);
 
     bounds = target.getBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -378.77);
-    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1323.22);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, -376.77);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, 1321.22);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -466.05);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1294.13);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, -405.87);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, 1233.94);
 
     bubbleBounds = target.getBoundsForBubble();
-    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, -378.77);
-    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, 1323.22);
-    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, -376.77);
-    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, 1321.22);
+    ASSERT_EQ(std::round(bubbleBounds.left() * 100) / 100, -466.05);
+    ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, 1294.13);
+    ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, -405.87);
+    ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, 1286.13);
 
     context.doneCurrent();
 }
@@ -759,9 +759,9 @@ TEST_F(RenderedTargetTest, GetFastBounds)
     target.beforeRedraw();
 
     Rect bounds = target.getFastBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 64.47);
-    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -120.57);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 69.26);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 65.84);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, -123.92);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 67.31);
     ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -125.4);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -769,30 +769,30 @@ TEST_F(RenderedTargetTest, GetFastBounds)
     target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
 
     bounds = target.getFastBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 69.78);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 71.67);
     ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.26);
     ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.5);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -114.34);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -111.51);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.setStageScale(20.75);
 
     bounds = target.getFastBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 69.78);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, 71.67);
     ASSERT_EQ(std::round(bounds.top() * 100) / 100, -110.26);
     ASSERT_EQ(std::round(bounds.right() * 100) / 100, 72.5);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -114.34);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -111.51);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateSize(9780.6);
 
     bounds = target.getFastBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -767);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -496.15);
     ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1324.22);
     ASSERT_EQ(std::round(bounds.right() * 100) / 100, -375.77);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, 737.38);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, 1143.65);
 
     context.doneCurrent();
 }

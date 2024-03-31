@@ -362,10 +362,12 @@ Rect RenderedTarget::getBounds() const
     if (!m_costume || !m_skin || !m_texture.isValid() || !m_cpuTexture.isValid())
         return Rect(m_x, m_y, m_x, m_y);
 
-    const double width = m_cpuTexture.width() * m_size / m_costume->bitmapResolution();
-    const double height = m_cpuTexture.height() * m_size / m_costume->bitmapResolution();
-    const double originX = m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution() - width / 2;
-    const double originY = -m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution() + height / 2;
+    const double textureScale = m_skin->getTextureScale(m_cpuTexture);
+    const double bitmapRes = m_costume->bitmapResolution();
+    const double width = m_cpuTexture.width() * m_size / textureScale;
+    const double height = m_cpuTexture.height() * m_size / textureScale;
+    const double originX = m_costume->rotationCenterX() * m_size / bitmapRes - width / 2;
+    const double originY = -m_costume->rotationCenterY() * m_size / bitmapRes + height / 2;
     const double rot = -rotation() * pi / 180;
     const double sinRot = std::sin(rot);
     const double cosRot = std::cos(rot);
@@ -377,9 +379,11 @@ Rect RenderedTarget::getBounds() const
     const std::vector<QPoint> &points = hullPoints();
 
     for (const QPointF &point : points) {
-        QPointF transformed = transformPoint(point.x() - width / 2, height / 2 - point.y(), originX, originY, sinRot, cosRot);
-        const double x = transformed.x() * (m_mirrorHorizontally ? -1 : 1);
-        const double y = transformed.y();
+        double x = point.x() * m_size / textureScale / bitmapRes - width / 2;
+        double y = height / 2 - point.y() * m_size / textureScale / bitmapRes;
+        const QPointF transformed = transformPoint(x, y, originX, originY, sinRot, cosRot);
+        x = transformed.x() * (m_mirrorHorizontally ? -1 : 1);
+        y = transformed.y();
 
         if (x < left)
             left = x;
@@ -422,10 +426,11 @@ Rect RenderedTarget::getFastBounds() const
         return Rect(m_x, m_y, m_x, m_y);
 
     const double textureScale = m_skin->getTextureScale(m_cpuTexture);
-    const double width = m_cpuTexture.width() * m_size / textureScale;
-    const double height = m_cpuTexture.height() * m_size / textureScale;
-    const double originX = m_costume->rotationCenterX() * m_size / m_costume->bitmapResolution() - width / 2;
-    const double originY = -m_costume->rotationCenterY() * m_size / m_costume->bitmapResolution() + height / 2;
+    const double bitmapRes = m_costume->bitmapResolution();
+    const double width = m_cpuTexture.width() * m_size / textureScale / bitmapRes;
+    const double height = m_cpuTexture.height() * m_size / textureScale / bitmapRes;
+    const double originX = m_costume->rotationCenterX() * m_size / bitmapRes - width / 2;
+    const double originY = -m_costume->rotationCenterY() * m_size / bitmapRes + height / 2;
     const double rot = -rotation() * pi / 180;
     const double sinRot = std::sin(rot);
     const double cosRot = std::cos(rot);
