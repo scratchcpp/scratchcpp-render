@@ -605,8 +605,11 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
 {
     // https://github.com/scratchfoundation/scratch-render/blob/941562438fe3dd6e7d98d9387607d535dcd68d24/src/RenderWebGL.js#L967-L1002
     // TODO: Use Rect methods and do not use QRects
-    Rect scratchRect = getFastBounds();
-    const QRectF myRect(QPointF(scratchRect.left(), scratchRect.bottom()), QPointF(scratchRect.right(), scratchRect.top()));
+    const QRectF myRect = touchingBounds();
+
+    if (myRect.isEmpty())
+        return false;
+
     QRectF united;
     std::vector<IRenderedTarget *> candidates;
 
@@ -624,8 +627,9 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
             // Calculate the intersection of the bounding rectangles
             IRenderedTarget *candidate = model->renderedTarget();
             Q_ASSERT(candidate);
-            scratchRect = candidate->getFastBounds();
-            QRectF rect(QPointF(scratchRect.left(), scratchRect.bottom()), QPointF(scratchRect.right(), scratchRect.top()));
+            Rect scratchRect = candidate->getFastBounds();
+            // TODO: Use Rect::snapToInt()
+            QRect rect(QPoint(scratchRect.left(), scratchRect.bottom()), QPoint(scratchRect.right(), scratchRect.top()));
             QRectF intersected = myRect.intersected(rect);
 
             // Add it to the union
@@ -789,6 +793,38 @@ CpuTextureManager *RenderedTarget::textureManager()
         m_textureManager = std::make_shared<CpuTextureManager>();
 
     return m_textureManager.get();
+}
+
+QRectF RenderedTarget::touchingBounds() const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L1330-L1350
+    if (!m_engine)
+        return QRectF();
+
+    Rect scratchBounds = getFastBounds();
+
+    // Limit queries to the stage size
+    const double stageWidth = m_engine->stageWidth();
+    const double stageHeight = m_engine->stageHeight();
+    clampRect(scratchBounds, -stageWidth / 2, stageWidth / 2, -stageHeight / 2, stageHeight / 2);
+
+    // TODO: Use Rect::snapToInt()
+    QRect bounds(QPoint(scratchBounds.left(), scratchBounds.bottom()), QPoint(scratchBounds.right(), scratchBounds.top()));
+    return bounds;
+}
+
+void RenderedTarget::clampRect(Rect &rect, double left, double right, double bottom, double top)
+{
+    // TODO: Use Rect::clamp()
+    rect.setLeft(std::max(rect.left(), left));
+    rect.setRight(std::min(rect.right(), right));
+    rect.setBottom(std::max(rect.bottom(), bottom));
+    rect.setTop(std::min(rect.top(), top));
+
+    rect.setLeft(std::min(rect.left(), right));
+    rect.setRight(std::max(rect.right(), left));
+    rect.setBottom(std::min(rect.bottom(), top));
+    rect.setTop(std::max(rect.top(), bottom));
 }
 
 bool RenderedTarget::mirrorHorizontally() const

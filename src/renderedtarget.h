@@ -122,6 +122,8 @@ class RenderedTarget : public IRenderedTarget
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double sinRot, double cosRot) const;
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
         CpuTextureManager *textureManager();
+        QRectF touchingBounds() const;
+        static void clampRect(libscratchcpp::Rect &rect, double left, double right, double bottom, double top);
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
