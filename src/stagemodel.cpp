@@ -97,6 +97,11 @@ bool StageModel::touchingPoint(double x, double y) const
     return m_renderedTarget->containsScratchPoint(x, y);
 }
 
+bool StageModel::touchingColor(const libscratchcpp::Value &color) const
+{
+    return false;
+}
+
 void StageModel::loadCostume()
 {
     if (m_renderedTarget && m_stage)

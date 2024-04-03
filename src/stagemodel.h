@@ -45,6 +45,7 @@ class StageModel
 
         bool touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const override;
         bool touchingPoint(double x, double y) const override;
+        bool touchingColor(const libscratchcpp::Value &color) const override;
 
         Q_INVOKABLE void loadCostume();
 
