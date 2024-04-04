@@ -123,6 +123,9 @@ class RenderedTarget : public IRenderedTarget
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
         CpuTextureManager *textureManager();
         QRectF touchingBounds() const;
+        static QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst);
+        static QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst);
+        static QRectF candidateIntersection(const QRectF &targetRect, IRenderedTarget *target);
         static void clampRect(libscratchcpp::Rect &rect, double left, double right, double bottom, double top);
 
         libscratchcpp::IEngine *m_engine = nullptr;

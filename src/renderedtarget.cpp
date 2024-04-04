@@ -610,34 +610,10 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
     if (myRect.isEmpty())
         return false;
 
-    QRectF united;
     std::vector<IRenderedTarget *> candidates;
 
     // Calculate the union of the bounding rectangle intersections
-    for (auto clone : clones) {
-        Q_ASSERT(clone);
-
-        if (!clone)
-            continue;
-
-        SpriteModel *model = static_cast<SpriteModel *>(clone->getInterface());
-        Q_ASSERT(model);
-
-        if (model) {
-            // Calculate the intersection of the bounding rectangles
-            IRenderedTarget *candidate = model->renderedTarget();
-            Q_ASSERT(candidate);
-            Rect scratchRect = candidate->getFastBounds();
-            // TODO: Use Rect::snapToInt()
-            QRect rect(QPoint(scratchRect.left(), scratchRect.bottom()), QPoint(scratchRect.right(), scratchRect.top()));
-            QRectF intersected = myRect.intersected(rect);
-
-            // Add it to the union
-            united = united.united(intersected);
-
-            candidates.push_back(candidate);
-        }
-    }
+    QRectF united = candidatesBounds(myRect, clones, candidates);
 
     if (united.isEmpty() || candidates.empty())
         return false;
@@ -811,6 +787,86 @@ QRectF RenderedTarget::touchingBounds() const
     // TODO: Use Rect::snapToInt()
     QRect bounds(QPoint(scratchBounds.left(), scratchBounds.bottom()), QPoint(scratchBounds.right(), scratchBounds.top()));
     return bounds;
+}
+
+QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vector<Target *> &candidates, std::vector<IRenderedTarget *> &dst)
+{
+    QRectF united;
+    dst.clear();
+
+    for (auto candidate : candidates) {
+        Q_ASSERT(candidate);
+
+        if (!candidate)
+            continue;
+
+        IRenderedTarget *target = nullptr;
+
+        if (candidate->isStage()) {
+            Stage *stage = static_cast<Stage *>(candidate);
+            StageModel *model = static_cast<StageModel *>(stage->getInterface());
+            Q_ASSERT(model);
+
+            if (model)
+                target = model->renderedTarget();
+        } else {
+            Sprite *sprite = static_cast<Sprite *>(candidate);
+            SpriteModel *model = static_cast<SpriteModel *>(sprite->getInterface());
+            Q_ASSERT(model);
+
+            if (model)
+                target = model->renderedTarget();
+        }
+
+        united = united.united(candidateIntersection(targetRect, target));
+
+        if (target)
+            dst.push_back(target);
+    }
+
+    return united;
+}
+
+QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst)
+{
+    QRectF united;
+    dst.clear();
+
+    for (auto candidate : candidates) {
+        Q_ASSERT(candidate);
+
+        if (!candidate)
+            continue;
+
+        IRenderedTarget *target = nullptr;
+        SpriteModel *model = static_cast<SpriteModel *>(candidate->getInterface());
+        Q_ASSERT(model);
+
+        if (model)
+            target = model->renderedTarget();
+
+        united = united.united(candidateIntersection(targetRect, target));
+
+        if (target)
+            dst.push_back(target);
+    }
+
+    return united;
+}
+
+QRectF RenderedTarget::candidateIntersection(const QRectF &targetRect, IRenderedTarget *target)
+{
+    Q_ASSERT(target);
+
+    if (target) {
+        // Calculate the intersection of the bounding rectangles
+        Rect scratchRect = target->getFastBounds();
+        // TODO: Use Rect::snapToInt()
+        QRect rect(QPoint(scratchRect.left(), scratchRect.bottom()), QPoint(scratchRect.right(), scratchRect.top()));
+        return targetRect.intersected(rect);
+    }
+
+    return QRectF();
 }
 
 void RenderedTarget::clampRect(Rect &rect, double left, double right, double bottom, double top)
