@@ -8,7 +8,7 @@ import ScratchCPP.Render
 import "internal"
 
 ProjectScene {
-    property string fileName
+	readonly property string fileName: loader.fileName
     property int stageWidth: 480
     property int stageHeight: 360
     property alias fps: loader.fps
@@ -27,6 +27,10 @@ ProjectScene {
     engine: loader.engine
     stageScale: (stageWidth == 0 || stageHeight == 0) ? 1 : Math.min(width / stageWidth, height / stageHeight)
     onFileNameChanged: priv.loading = true;
+
+	function load(fileName) {
+		loader.fileName = fileName;
+	}
 
     QtObject {
         id: priv
