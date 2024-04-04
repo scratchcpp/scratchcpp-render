@@ -59,6 +59,9 @@ void ProjectLoader::setFileName(const QString &newFileName)
     if (m_loadThread.isRunning())
         m_loadThread.waitForFinished();
 
+    if (newFileName.isEmpty())
+        return;
+
     m_fileName = newFileName;
 
     // Stop the project
