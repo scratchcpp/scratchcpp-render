@@ -328,8 +328,8 @@ TEST_F(RenderedTargetTest, HullPoints)
     target.loadCostumes();
     target.updateCostume(costume.get());
     target.setStageScale(2);
-    target.setX(25);
-    target.setY(30);
+    target.updateX(-227.5);
+    target.updateY(165);
 
     // Test hull points
     target.setWidth(3);
@@ -361,8 +361,6 @@ TEST_F(RenderedTargetTest, HullPoints)
     // Test contains() with horizontal mirroring
     target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
     target.updateDirection(-45);
-    target.setX(25);
-    target.setY(30);
     ASSERT_FALSE(target.contains({ 0, 0 }));
     ASSERT_TRUE(target.contains({ -1, 1 }));
     ASSERT_FALSE(target.contains({ -2, 2 }));
@@ -373,8 +371,6 @@ TEST_F(RenderedTargetTest, HullPoints)
 
     // Test containsScratchPoint()
     target.updateDirection(0);
-    target.setX(25);
-    target.setY(30);
     ASSERT_FALSE(target.containsScratchPoint(-227.5, 165)); // [0, 0]
     ASSERT_FALSE(target.containsScratchPoint(-226.5, 165)); // [1, 0]
     ASSERT_FALSE(target.containsScratchPoint(-225.5, 165)); // [2, 0]

@@ -571,34 +571,15 @@ bool RenderedTarget::contains(const QPointF &point) const
     translatedPoint = mapFromStageWithOriginPoint(translatedPoint);
     translatedPoint /= scaleRatio;
 
-    if (!boundingRect().contains(translatedPoint))
-        return false;
-
-    const std::vector<QPoint> &points = hullPoints();
-    QPoint intPoint = translatedPoint.toPoint();
-    auto it = std::lower_bound(points.begin(), points.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) { return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x()); });
-
-    if (it == points.end()) {
-        // The point is beyond the last point in the convex hull
-        return false;
-    }
-
-    // Check if the point is equal to the one found
-    return *it == intPoint;
+    return containsLocalPoint(translatedPoint);
 }
 
 bool RenderedTarget::containsScratchPoint(double x, double y) const
 {
-    if (!m_engine || !parentItem())
+    if (!m_engine)
         return false;
 
-    // contains() expects item coordinates, so translate the Scratch coordinates first
-    double stageWidth = m_engine->stageWidth();
-    double stageHeight = m_engine->stageHeight();
-    x = m_stageScale * (x + stageWidth / 2);
-    y = m_stageScale * (stageHeight / 2 - y);
-
-    return contains(mapFromItem(parentItem(), QPointF(x, y)));
+    return containsLocalPoint(mapFromScratchToLocal(QPointF(x, y)));
 }
 
 bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
@@ -734,6 +715,24 @@ void RenderedTarget::updateHullPoints()
     // TODO: Apply graphic effects (#117)
 }
 
+bool RenderedTarget::containsLocalPoint(const QPointF &point) const
+{
+    if (!boundingRect().contains(point))
+        return false;
+
+    const std::vector<QPoint> &points = hullPoints();
+    QPoint intPoint = point.toPoint();
+    auto it = std::lower_bound(points.begin(), points.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) { return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x()); });
+
+    if (it == points.end()) {
+        // The point is beyond the last point in the convex hull
+        return false;
+    }
+
+    // Check if the point is equal to the one found
+    return *it == intPoint;
+}
+
 QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const
 {
     return transformPoint(scratchX, scratchY, originX, originY, std::sin(rot), std::cos(rot));
@@ -760,6 +759,22 @@ QPointF RenderedTarget::mapFromStageWithOriginPoint(const QPointF &scenePoint) c
     t.translate(-x(), -y());
 
     QPointF localPoint = t.map(scenePoint);
+    return localPoint;
+}
+
+QPointF RenderedTarget::mapFromScratchToLocal(const QPointF &point) const
+{
+    QTransform t;
+    const double textureScale = m_skin->getTextureScale(m_cpuTexture);
+    const double scale = m_size / textureScale;
+    const double mirror = m_mirrorHorizontally ? -1 : 1;
+    const double bitmapRes = m_costume->bitmapResolution();
+    t.translate(m_costume->rotationCenterX() * textureScale, m_costume->rotationCenterY() * textureScale);
+    t.rotate(-rotation());
+    t.scale(bitmapRes * mirror / scale, -bitmapRes / scale);
+    t.translate(-m_x, -m_y);
+
+    QPointF localPoint = t.map(point);
     return localPoint;
 }
 

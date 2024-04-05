@@ -118,9 +118,11 @@ class RenderedTarget : public IRenderedTarget
         void handleSceneMouseMove(qreal x, qreal y);
         bool convexHullPointsNeeded() const;
         void updateHullPoints();
+        bool containsLocalPoint(const QPointF &point) const;
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const;
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double sinRot, double cosRot) const;
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
+        QPointF mapFromScratchToLocal(const QPointF &point) const;
         CpuTextureManager *textureManager();
         QRectF touchingBounds() const;
         static QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst);
