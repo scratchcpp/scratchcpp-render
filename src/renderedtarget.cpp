@@ -778,7 +778,7 @@ QPointF RenderedTarget::mapFromScratchToLocal(const QPointF &point) const
     return localPoint;
 }
 
-CpuTextureManager *RenderedTarget::textureManager()
+CpuTextureManager *RenderedTarget::textureManager() const
 {
     if (!m_textureManager)
         m_textureManager = std::make_shared<CpuTextureManager>();

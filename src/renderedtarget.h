@@ -123,7 +123,7 @@ class RenderedTarget : public IRenderedTarget
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double sinRot, double cosRot) const;
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
         QPointF mapFromScratchToLocal(const QPointF &point) const;
-        CpuTextureManager *textureManager();
+        CpuTextureManager *textureManager() const;
         QRectF touchingBounds() const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst) const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const;
@@ -141,8 +141,8 @@ class RenderedTarget : public IRenderedTarget
         Skin *m_skin = nullptr;
         Texture m_texture;
         Texture m_oldTexture;
-        Texture m_cpuTexture;                                // without stage scale
-        std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
+        Texture m_cpuTexture;                                        // without stage scale
+        mutable std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
         std::unique_ptr<QOpenGLFunctions> m_glF;
         std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
         double m_size = 1;
