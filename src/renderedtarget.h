@@ -125,8 +125,8 @@ class RenderedTarget : public IRenderedTarget
         QPointF mapFromScratchToLocal(const QPointF &point) const;
         CpuTextureManager *textureManager();
         QRectF touchingBounds() const;
-        static QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst);
-        static QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst);
+        QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst) const;
+        QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const;
         static QRectF candidateIntersection(const QRectF &targetRect, IRenderedTarget *target);
         static void clampRect(libscratchcpp::Rect &rect, double left, double right, double bottom, double top);
 

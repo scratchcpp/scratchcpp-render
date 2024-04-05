@@ -804,7 +804,7 @@ QRectF RenderedTarget::touchingBounds() const
     return bounds;
 }
 
-QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vector<Target *> &candidates, std::vector<IRenderedTarget *> &dst)
+QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vector<Target *> &candidates, std::vector<IRenderedTarget *> &dst) const
 {
     QRectF united;
     dst.clear();
@@ -833,16 +833,18 @@ QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vec
                 target = model->renderedTarget();
         }
 
-        united = united.united(candidateIntersection(targetRect, target));
+        Q_ASSERT(target);
 
-        if (target)
+        if (target && target != this) {
+            united = united.united(candidateIntersection(targetRect, target));
             dst.push_back(target);
+        }
     }
 
     return united;
 }
 
-QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst)
+QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const
 {
     QRectF united;
     dst.clear();
@@ -860,10 +862,12 @@ QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vec
         if (model)
             target = model->renderedTarget();
 
-        united = united.united(candidateIntersection(targetRect, target));
+        Q_ASSERT(target);
 
-        if (target)
+        if (target && target != this) {
+            united = united.united(candidateIntersection(targetRect, target));
             dst.push_back(target);
+        }
     }
 
     return united;
