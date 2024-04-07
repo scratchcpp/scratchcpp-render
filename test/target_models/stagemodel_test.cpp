@@ -1,5 +1,6 @@
 #include <QtTest/QSignalSpy>
 #include <scratchcpp/costume.h>
+#include <scratchcpp/value.h>
 #include <stagemodel.h>
 #include <graphicseffect.h>
 #include <renderedtargetmock.h>
@@ -149,6 +150,21 @@ TEST(StageModelTest, TouchingPoint)
 
     EXPECT_CALL(renderedTarget, containsScratchPoint(-20.08, 109.47)).WillOnce(Return(true));
     ASSERT_TRUE(model.touchingPoint(-20.08, 109.47));
+}
+
+TEST(StageModelTest, TouchingColor)
+{
+    StageModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    Value color = 123;
+    EXPECT_CALL(renderedTarget, touchingColor(color)).WillOnce(Return(false));
+    ASSERT_FALSE(model.touchingColor(color));
+
+    EXPECT_CALL(renderedTarget, touchingColor(color)).WillOnce(Return(true));
+    ASSERT_TRUE(model.touchingColor(color));
 }
 
 TEST(StageModelTest, RenderedTarget)

@@ -162,7 +162,7 @@ bool SpriteModel::touchingPoint(double x, double y) const
 
 bool SpriteModel::touchingColor(const libscratchcpp::Value &color) const
 {
-    return false;
+    return m_renderedTarget->touchingColor(color);
 }
 
 libscratchcpp::Sprite *SpriteModel::sprite() const
