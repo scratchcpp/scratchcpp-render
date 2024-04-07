@@ -582,6 +582,30 @@ bool RenderedTarget::containsScratchPoint(double x, double y) const
     return containsLocalPoint(mapFromScratchToLocal(QPointF(x, y)));
 }
 
+QRgb RenderedTarget::colorAtScratchPoint(double x, double y) const
+{
+    if (!m_engine || !m_cpuTexture.isValid())
+        return qRgba(0, 0, 0, 0);
+
+    // Translate the coordinates
+    QPointF point = mapFromScratchToLocal(QPointF(x, y));
+    x = point.x();
+    y = point.y();
+
+    const double width = m_cpuTexture.width();
+    const double height = m_cpuTexture.height();
+
+    // If the point is outside the texture, return fully transparent color
+    if ((x < 0 || x >= width) || (y < 0 || y >= height))
+        return qRgba(0, 0, 0, 0);
+
+    GLubyte *data = textureManager()->getTextureData(m_cpuTexture);
+    const int index = (y * width + x) * 4; // RGBA channels
+    Q_ASSERT(index >= 0 && index < width * height * 4);
+    // TODO: Apply graphic effects (#117)
+    return qRgba(data[index], data[index + 1], data[index + 2], data[index + 3]);
+}
+
 bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/941562438fe3dd6e7d98d9387607d535dcd68d24/src/RenderWebGL.js#L967-L1002

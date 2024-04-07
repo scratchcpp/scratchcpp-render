@@ -71,6 +71,7 @@ class RenderedTargetMock : public IRenderedTarget
 
         MOCK_METHOD(bool, contains, (const QPointF &), (const, override));
         MOCK_METHOD(bool, containsScratchPoint, (double, double), (const, override));
+        MOCK_METHOD(QRgb, colorAtScratchPoint, (double, double), (const, override));
 
         MOCK_METHOD(bool, touchingClones, (const std::vector<libscratchcpp::Sprite *> &), (const, override));
 
