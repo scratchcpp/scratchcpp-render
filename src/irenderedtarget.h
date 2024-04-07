@@ -89,6 +89,7 @@ class IRenderedTarget : public QNanoQuickItem
         virtual QRgb colorAtScratchPoint(double x, double y) const = 0;
 
         virtual bool touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const = 0;
+        virtual bool touchingColor(const libscratchcpp::Value &color) const = 0;
 };
 
 } // namespace scratchcpprender

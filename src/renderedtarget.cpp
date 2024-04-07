@@ -3,6 +3,7 @@
 #include <scratchcpp/iengine.h>
 #include <scratchcpp/costume.h>
 #include <scratchcpp/rect.h>
+#include <scratchcpp/value.h>
 #include <QtSvg/QSvgRenderer>
 #include <qnanopainter.h>
 
@@ -584,6 +585,7 @@ bool RenderedTarget::containsScratchPoint(double x, double y) const
 
 QRgb RenderedTarget::colorAtScratchPoint(double x, double y) const
 {
+    // NOTE: Only this target is processed! Use sampleColor3b() to get the final color.
     if (!m_engine || !m_cpuTexture.isValid())
         return qRgba(0, 0, 0, 0);
 
@@ -631,6 +633,48 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
                     if (candidate->containsScratchPoint(x, y))
                         return true;
                 }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool RenderedTarget::touchingColor(const Value &color) const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L775-L841
+    QRgb rgb = convertColor(color);
+
+    std::vector<Target *> targets;
+    getVisibleTargets(targets);
+
+    QRectF myRect = touchingBounds();
+    std::vector<IRenderedTarget *> candidates;
+    QRectF bounds = candidatesBounds(myRect, targets, candidates);
+
+    if (colorMatches(rgb, qRgb(255, 255, 255))) {
+        // The color we're checking for is the background color which spans the entire stage
+        bounds = myRect;
+
+        if (bounds.isEmpty())
+            return false;
+    } else if (candidates.empty()) {
+        // If not checking for the background color, we can return early if there are no candidate drawables
+        return false;
+    }
+
+    QPointF point;
+
+    // Loop through the points of the union
+    for (int y = bounds.top(); y <= bounds.bottom(); y++) {
+        for (int x = bounds.left(); x <= bounds.right(); x++) {
+            if (this->containsScratchPoint(x, y)) {
+                point.setX(x);
+                point.setY(y);
+                QRgb pixelColor = sampleColor3b(point, candidates);
+
+                if (colorMatches(rgb, pixelColor))
+                    return true;
             }
         }
     }
@@ -810,6 +854,38 @@ CpuTextureManager *RenderedTarget::textureManager() const
     return m_textureManager.get();
 }
 
+void RenderedTarget::getVisibleTargets(std::vector<Target *> &dst) const
+{
+    dst.clear();
+
+    if (!m_engine)
+        return;
+
+    const auto &targets = m_engine->targets();
+
+    for (auto target : targets) {
+        Q_ASSERT(target);
+
+        if (target->isStage())
+            dst.push_back(target.get());
+        else {
+            Sprite *sprite = static_cast<Sprite *>(target.get());
+
+            if (sprite->visible())
+                dst.push_back(target.get());
+
+            const auto &clones = sprite->clones();
+
+            for (auto clone : clones) {
+                if (clone->visible())
+                    dst.push_back(clone.get());
+            }
+        }
+    }
+
+    std::sort(dst.begin(), dst.end(), [](Target *t1, Target *t2) { return t1->layerOrder() > t2->layerOrder(); });
+}
+
 QRectF RenderedTarget::touchingBounds() const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L1330-L1350
@@ -924,6 +1000,62 @@ void RenderedTarget::clampRect(Rect &rect, double left, double right, double bot
     rect.setRight(std::max(rect.right(), left));
     rect.setBottom(std::min(rect.bottom(), top));
     rect.setTop(std::max(rect.top(), bottom));
+}
+
+QRgb RenderedTarget::convertColor(const libscratchcpp::Value &color)
+{
+    // TODO: Remove this after libscratchcpp starts converting colors (it still needs to be converted to RGB here)
+    std::string stringValue;
+
+    if (color.isString())
+        stringValue = color.toString();
+
+    if (!stringValue.empty() && stringValue[0] == '#') {
+        bool valid = false;
+        QColor color;
+
+        if (stringValue.size() <= 7) // #RRGGBB
+        {
+            color = QColor::fromString(stringValue);
+            valid = color.isValid();
+        }
+
+        if (!valid)
+            color = Qt::black;
+
+        return color.rgb();
+
+    } else
+        return QColor::fromRgba(static_cast<QRgb>(color.toLong())).rgb();
+}
+
+bool RenderedTarget::colorMatches(QRgb a, QRgb b)
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L77-L81
+    return (qRed(a) & 0b11111000) == (qRed(b) & 0b11111000) && (qGreen(a) & 0b11111000) == (qGreen(b) & 0b11111000) && (qBlue(a) & 0b11110000) == (qBlue(b) & 0b11110000);
+}
+
+QRgb RenderedTarget::sampleColor3b(const QPointF &point, const std::vector<IRenderedTarget *> &targets)
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L1966-L1990
+    double blendAlpha = 1;
+    QRgb blendColor;
+    int r = 0, g = 0, b = 0;
+
+    for (int i = 0; blendAlpha != 0 && i < targets.size(); i++) {
+        Q_ASSERT(targets[i]);
+        blendColor = targets[i]->colorAtScratchPoint(point.x(), point.y());
+
+        r += qRed(blendColor) * blendAlpha;
+        g += qGreen(blendColor) * blendAlpha;
+        b += qBlue(blendColor) * blendAlpha;
+        blendAlpha *= (1.0 - (qAlpha(blendColor) / 255.0));
+    }
+
+    r += blendAlpha * 255;
+    g += blendAlpha * 255;
+    b += blendAlpha * 255;
+    return qRgb(r, g, b);
 }
 
 bool RenderedTarget::mirrorHorizontally() const

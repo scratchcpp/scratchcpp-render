@@ -74,6 +74,7 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(QRgb, colorAtScratchPoint, (double, double), (const, override));
 
         MOCK_METHOD(bool, touchingClones, (const std::vector<libscratchcpp::Sprite *> &), (const, override));
+        MOCK_METHOD(bool, touchingColor, (const libscratchcpp::Value &), (const, override));
 
         MOCK_METHOD(QNanoQuickItemPainter *, createItemPainter, (), (const, override));
         MOCK_METHOD(void, hoverEnterEvent, (QHoverEvent *), (override));
