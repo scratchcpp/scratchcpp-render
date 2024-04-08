@@ -591,8 +591,8 @@ QRgb RenderedTarget::colorAtScratchPoint(double x, double y) const
 
     // Translate the coordinates
     QPointF point = mapFromScratchToLocal(QPointF(x, y));
-    x = point.x();
-    y = point.y();
+    x = std::floor(point.x());
+    y = std::floor(point.y());
 
     const double width = m_cpuTexture.width();
     const double height = m_cpuTexture.height();

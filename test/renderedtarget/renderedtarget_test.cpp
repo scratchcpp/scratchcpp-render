@@ -402,19 +402,19 @@ TEST_F(RenderedTargetTest, CpuRendering)
 
     ASSERT_EQ(target.colorAtScratchPoint(-227.5, 164), 0);             // [0, 1]
     ASSERT_EQ(target.colorAtScratchPoint(-226.5, 164), 4278190335);    // [1, 1]
-    ASSERT_EQ(target.colorAtScratchPoint(-226.1, 163.75), 4278255615); // [1.4, 1.25]
+    ASSERT_EQ(target.colorAtScratchPoint(-226.1, 163.75), 4278190335); // [1.4, 1.25]
     ASSERT_EQ(target.colorAtScratchPoint(-225.5, 164), 4294902015);    // [2, 1]
     ASSERT_EQ(target.colorAtScratchPoint(-224.5, 164), 4294934656);    // [3, 1]
 
     ASSERT_EQ(target.colorAtScratchPoint(-226.5, 163), 4278190208); // [1, 2]
     ASSERT_EQ(target.colorAtScratchPoint(-225.5, 163), 0);          // [2, 2]
     ASSERT_EQ(target.colorAtScratchPoint(-224.5, 163), 2505545047); // [3, 2]
-    ASSERT_EQ(target.colorAtScratchPoint(-224, 162.9), 9764864);    // [3.5, 2.1]
+    ASSERT_EQ(target.colorAtScratchPoint(-224, 162.9), 2505545047); // [3.5, 2.1]
 
-    ASSERT_EQ(target.colorAtScratchPoint(-226.5, 162), 4286578816); // [1, 3]
-    ASSERT_EQ(target.colorAtScratchPoint(-225.5, 162), 4286611711); // [2, 3]
-    ASSERT_EQ(target.colorAtScratchPoint(-224.5, 162), 4286611456); // [3, 3]
-    ASSERT_EQ(target.colorAtScratchPoint(-224.2, 161.5), 0);        // [3.3, 3.5]
+    ASSERT_EQ(target.colorAtScratchPoint(-226.5, 162), 4286578816);   // [1, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-225.5, 162), 4286611711);   // [2, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-224.5, 162), 4286611456);   // [3, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-224.2, 161.5), 4286611456); // [3.3, 3.5]
 
     // Cleanup
     context.doneCurrent();
