@@ -136,7 +136,7 @@ class RenderedTarget : public IRenderedTarget
         static void clampRect(libscratchcpp::Rect &rect, double left, double right, double bottom, double top);
         static QRgb convertColor(const libscratchcpp::Value &color);
         static bool colorMatches(QRgb a, QRgb b);
-        QRgb sampleColor3b(const QPointF &point, const std::vector<IRenderedTarget *> &targets) const;
+        QRgb sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const;
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;

@@ -665,15 +665,11 @@ bool RenderedTarget::touchingColor(const Value &color) const
         return false;
     }
 
-    QPointF point;
-
     // Loop through the points of the union
     for (int y = bounds.top(); y <= bounds.bottom(); y++) {
         for (int x = bounds.left(); x <= bounds.right(); x++) {
             if (this->containsScratchPoint(x, y)) {
-                point.setX(x);
-                point.setY(y);
-                QRgb pixelColor = sampleColor3b(point, candidates);
+                QRgb pixelColor = sampleColor3b(x, y, candidates);
 
                 if (colorMatches(rgb, pixelColor))
                     return true;
@@ -1046,7 +1042,7 @@ bool RenderedTarget::colorMatches(QRgb a, QRgb b)
     return (qRed(a) & 0b11111000) == (qRed(b) & 0b11111000) && (qGreen(a) & 0b11111000) == (qGreen(b) & 0b11111000) && (qBlue(a) & 0b11110000) == (qBlue(b) & 0b11110000);
 }
 
-QRgb RenderedTarget::sampleColor3b(const QPointF &point, const std::vector<IRenderedTarget *> &targets) const
+QRgb RenderedTarget::sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L1966-L1990
     double blendAlpha = 1;
@@ -1059,7 +1055,7 @@ QRgb RenderedTarget::sampleColor3b(const QPointF &point, const std::vector<IRend
 
         if ((i == targets.size() || targets[i]->stageModel()) && !penLayerChecked) {
             if (m_penLayer)
-                blendColor = m_penLayer->colorAtScratchPoint(point.x(), point.y());
+                blendColor = m_penLayer->colorAtScratchPoint(x, y);
             else
                 blendColor = qRgba(0, 0, 0, 0);
 
@@ -1070,7 +1066,7 @@ QRgb RenderedTarget::sampleColor3b(const QPointF &point, const std::vector<IRend
         } else if (i == targets.size())
             break;
         else
-            blendColor = targets[i]->colorAtScratchPoint(point.x(), point.y());
+            blendColor = targets[i]->colorAtScratchPoint(x, y);
 
         r += qRed(blendColor) * blendAlpha;
         g += qGreen(blendColor) * blendAlpha;
