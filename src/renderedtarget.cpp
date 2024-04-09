@@ -15,6 +15,7 @@
 #include "bitmapskin.h"
 #include "svgskin.h"
 #include "cputexturemanager.h"
+#include "penlayer.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -216,6 +217,7 @@ void RenderedTarget::setEngine(IEngine *newEngine)
     m_texture = Texture();
     m_oldTexture = Texture();
     m_cpuTexture = Texture();
+    m_penLayer = PenLayer::getProjectPenLayer(m_engine);
     m_convexHullDirty = true;
     clearGraphicEffects();
     m_hullPoints.clear();
@@ -941,6 +943,10 @@ QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vec
         }
     }
 
+    // Check pen layer
+    if (m_penLayer)
+        united = united.united(rectIntersection(targetRect, m_penLayer->getBounds()));
+
     return united;
 }
 
@@ -980,12 +986,17 @@ QRectF RenderedTarget::candidateIntersection(const QRectF &targetRect, IRendered
     if (target) {
         // Calculate the intersection of the bounding rectangles
         Rect scratchRect = target->getFastBounds();
-        // TODO: Use Rect::snapToInt()
-        QRect rect(QPoint(scratchRect.left(), scratchRect.bottom()), QPoint(scratchRect.right(), scratchRect.top()));
-        return targetRect.intersected(rect);
+        return rectIntersection(targetRect, scratchRect);
     }
 
     return QRectF();
+}
+
+QRectF RenderedTarget::rectIntersection(const QRectF &targetRect, const Rect &candidateRect)
+{
+    // TODO: Use Rect::snapToInt()
+    QRect rect(QPoint(candidateRect.left(), candidateRect.bottom()), QPoint(candidateRect.right(), candidateRect.top()));
+    return targetRect.intersected(rect);
 }
 
 void RenderedTarget::clampRect(Rect &rect, double left, double right, double bottom, double top)
@@ -1035,16 +1046,31 @@ bool RenderedTarget::colorMatches(QRgb a, QRgb b)
     return (qRed(a) & 0b11111000) == (qRed(b) & 0b11111000) && (qGreen(a) & 0b11111000) == (qGreen(b) & 0b11111000) && (qBlue(a) & 0b11110000) == (qBlue(b) & 0b11110000);
 }
 
-QRgb RenderedTarget::sampleColor3b(const QPointF &point, const std::vector<IRenderedTarget *> &targets)
+QRgb RenderedTarget::sampleColor3b(const QPointF &point, const std::vector<IRenderedTarget *> &targets) const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L1966-L1990
     double blendAlpha = 1;
     QRgb blendColor;
     int r = 0, g = 0, b = 0;
+    bool penLayerChecked = false;
 
-    for (int i = 0; blendAlpha != 0 && i < targets.size(); i++) {
-        Q_ASSERT(targets[i]);
-        blendColor = targets[i]->colorAtScratchPoint(point.x(), point.y());
+    for (int i = 0; blendAlpha != 0 && i <= targets.size(); i++) { // NOTE: <= instead of < to process the pen layer
+        Q_ASSERT(i == targets.size() || targets[i]);
+
+        if ((i == targets.size() || targets[i]->stageModel()) && !penLayerChecked) {
+            if (m_penLayer)
+                blendColor = m_penLayer->colorAtScratchPoint(point.x(), point.y());
+            else
+                blendColor = qRgba(0, 0, 0, 0);
+
+            penLayerChecked = true;
+
+            if (i < targets.size())
+                i--; // check stage on next iteration
+        } else if (i == targets.size())
+            break;
+        else
+            blendColor = targets[i]->colorAtScratchPoint(point.x(), point.y());
 
         r += qRed(blendColor) * blendAlpha;
         g += qGreen(blendColor) * blendAlpha;

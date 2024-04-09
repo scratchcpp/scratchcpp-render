@@ -6,6 +6,7 @@
 #include <stagemodel.h>
 #include <spritemodel.h>
 #include <scenemousearea.h>
+#include <penlayer.h>
 #include <scratchcpp/stage.h>
 #include <scratchcpp/sprite.h>
 #include <scratchcpp/costume.h>
@@ -13,6 +14,7 @@
 #include <scratchcpp/value.h>
 #include <enginemock.h>
 #include <renderedtargetmock.h>
+#include <penlayermock.h>
 
 #include "../common.h"
 
@@ -1023,6 +1025,9 @@ TEST_F(RenderedTargetTest, TouchingColor)
     parent.setWidth(480);
     parent.setHeight(360);
 
+    PenLayerMock penLayer;
+    PenLayer::addPenLayer(&engine, &penLayer);
+
     RenderedTarget target(&parent);
     target.setEngine(&engine);
     target.setSpriteModel(&model);
@@ -1049,7 +1054,12 @@ TEST_F(RenderedTargetTest, TouchingColor)
     target.updateCostume(costume.get());
     target.beforeRedraw();
 
+    Rect penBounds(5, 1, 6, -5);
     EXPECT_CALL(engine, targets()).WillRepeatedly(ReturnRef(targets));
+    EXPECT_CALL(stageTarget, stageModel()).WillRepeatedly(Return(&stageModel));
+    EXPECT_CALL(target1, stageModel()).WillRepeatedly(Return(nullptr));
+    EXPECT_CALL(target2, stageModel()).WillRepeatedly(Return(nullptr));
+    EXPECT_CALL(penLayer, getBounds()).WillRepeatedly(ReturnRef(penBounds));
 
     static const Value color1 = 4286611711; // "purple"
     static const Value color2 = 596083443;  // close to color1 and transparent
@@ -1071,6 +1081,7 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(target1, colorAtScratchPoint(2, -1)).WillOnce(Return(color3Int));
     EXPECT_CALL(target2, colorAtScratchPoint(3, -1)).WillOnce(Return(color4.toInt()));
     EXPECT_CALL(target1, colorAtScratchPoint(3, -1)).WillOnce(Return(color4.toInt()));
+    EXPECT_CALL(penLayer, colorAtScratchPoint(3, -1)).WillOnce(Return(color4.toInt()));
     EXPECT_CALL(stageTarget, colorAtScratchPoint(3, -1)).WillOnce(Return(color4.toInt()));
     ASSERT_FALSE(target.touchingColor(color1));
 
@@ -1134,6 +1145,7 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6, 2, -8)));
     EXPECT_CALL(target2, colorAtScratchPoint).Times(0);
     EXPECT_CALL(target1, colorAtScratchPoint).Times(0);
+    EXPECT_CALL(penLayer, colorAtScratchPoint).Times(0);
     EXPECT_CALL(stageTarget, colorAtScratchPoint).Times(0);
     ASSERT_FALSE(target.touchingColor(color3));
 
@@ -1145,6 +1157,7 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5 - 300, -6.5 + 200, 1.8 - 300, -8 + 200)));
     EXPECT_CALL(target2, colorAtScratchPoint).Times(0);
     EXPECT_CALL(target1, colorAtScratchPoint).Times(0);
+    EXPECT_CALL(penLayer, colorAtScratchPoint).Times(0);
     EXPECT_CALL(stageTarget, colorAtScratchPoint).Times(0);
     ASSERT_FALSE(target.touchingColor(color1));
 
@@ -1156,6 +1169,7 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5 + 300, -6.5 + 200, 1.8 + 300, -8 + 200)));
     EXPECT_CALL(target2, colorAtScratchPoint).Times(0);
     EXPECT_CALL(target1, colorAtScratchPoint).Times(0);
+    EXPECT_CALL(penLayer, colorAtScratchPoint).Times(0);
     EXPECT_CALL(stageTarget, colorAtScratchPoint).Times(0);
     ASSERT_FALSE(target.touchingColor(color1));
 
@@ -1167,6 +1181,7 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5 + 300, -6.5 - 200, 1.8 + 300, -8 - 200)));
     EXPECT_CALL(target2, colorAtScratchPoint).Times(0);
     EXPECT_CALL(target1, colorAtScratchPoint).Times(0);
+    EXPECT_CALL(penLayer, colorAtScratchPoint).Times(0);
     EXPECT_CALL(stageTarget, colorAtScratchPoint).Times(0);
     ASSERT_FALSE(target.touchingColor(color1));
 
@@ -1178,6 +1193,7 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5 - 300, -6.5 - 200, 1.8 - 300, -8 - 200)));
     EXPECT_CALL(target2, colorAtScratchPoint).Times(0);
     EXPECT_CALL(target1, colorAtScratchPoint).Times(0);
+    EXPECT_CALL(penLayer, colorAtScratchPoint).Times(0);
     EXPECT_CALL(stageTarget, colorAtScratchPoint).Times(0);
     ASSERT_FALSE(target.touchingColor(color1));
 

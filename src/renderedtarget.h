@@ -20,6 +20,7 @@ namespace scratchcpprender
 
 class Skin;
 class CpuTextureManager;
+class IPenLayer;
 
 class RenderedTarget : public IRenderedTarget
 {
@@ -131,16 +132,18 @@ class RenderedTarget : public IRenderedTarget
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst) const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const;
         static QRectF candidateIntersection(const QRectF &targetRect, IRenderedTarget *target);
+        static QRectF rectIntersection(const QRectF &targetRect, const libscratchcpp::Rect &candidateRect);
         static void clampRect(libscratchcpp::Rect &rect, double left, double right, double bottom, double top);
         static QRgb convertColor(const libscratchcpp::Value &color);
         static bool colorMatches(QRgb a, QRgb b);
-        static QRgb sampleColor3b(const QPointF &point, const std::vector<IRenderedTarget *> &targets);
+        QRgb sampleColor3b(const QPointF &point, const std::vector<IRenderedTarget *> &targets) const;
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
         StageModel *m_stageModel = nullptr;
         SpriteModel *m_spriteModel = nullptr;
         SceneMouseArea *m_mouseArea = nullptr;
+        IPenLayer *m_penLayer = nullptr;
         bool m_costumesLoaded = false;
         std::unordered_map<libscratchcpp::Costume *, Skin *> m_skins;
         bool m_skinsInherited = false;
