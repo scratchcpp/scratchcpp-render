@@ -51,6 +51,21 @@ const std::vector<QPoint> &CpuTextureManager::getTextureConvexHullPoints(const T
         return it->second;
 }
 
+void CpuTextureManager::removeTexture(const Texture &texture)
+{
+    if (!texture.isValid())
+        return;
+
+    const GLuint handle = texture.handle();
+    auto it = m_textureData.find(handle);
+
+    if (it != m_textureData.cend()) {
+        delete it->second;
+        m_textureData.erase(it);
+        m_convexHullPoints.erase(handle);
+    }
+}
+
 bool CpuTextureManager::addTexture(const Texture &texture)
 {
     if (!texture.isValid())

@@ -20,6 +20,8 @@ class CpuTextureManager
         GLubyte *getTextureData(const Texture &texture);
         const std::vector<QPoint> &getTextureConvexHullPoints(const Texture &texture);
 
+        void removeTexture(const Texture &texture);
+
     private:
         bool addTexture(const Texture &texture);
 
