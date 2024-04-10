@@ -3,6 +3,7 @@
 #include <scratchcpp/iengine.h>
 #include <scratchcpp/costume.h>
 #include <scratchcpp/rect.h>
+#include <scratchcpp/value.h>
 #include <QtSvg/QSvgRenderer>
 #include <qnanopainter.h>
 
@@ -14,6 +15,7 @@
 #include "bitmapskin.h"
 #include "svgskin.h"
 #include "cputexturemanager.h"
+#include "penlayer.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -215,6 +217,7 @@ void RenderedTarget::setEngine(IEngine *newEngine)
     m_texture = Texture();
     m_oldTexture = Texture();
     m_cpuTexture = Texture();
+    m_penLayer = PenLayer::getProjectPenLayer(m_engine);
     m_convexHullDirty = true;
     clearGraphicEffects();
     m_hullPoints.clear();
@@ -571,34 +574,40 @@ bool RenderedTarget::contains(const QPointF &point) const
     translatedPoint = mapFromStageWithOriginPoint(translatedPoint);
     translatedPoint /= scaleRatio;
 
-    if (!boundingRect().contains(translatedPoint))
-        return false;
-
-    const std::vector<QPoint> &points = hullPoints();
-    QPoint intPoint = translatedPoint.toPoint();
-    auto it = std::lower_bound(points.begin(), points.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) { return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x()); });
-
-    if (it == points.end()) {
-        // The point is beyond the last point in the convex hull
-        return false;
-    }
-
-    // Check if the point is equal to the one found
-    return *it == intPoint;
+    return containsLocalPoint(translatedPoint);
 }
 
 bool RenderedTarget::containsScratchPoint(double x, double y) const
 {
-    if (!m_engine || !parentItem())
+    if (!m_engine)
         return false;
 
-    // contains() expects item coordinates, so translate the Scratch coordinates first
-    double stageWidth = m_engine->stageWidth();
-    double stageHeight = m_engine->stageHeight();
-    x = m_stageScale * (x + stageWidth / 2);
-    y = m_stageScale * (stageHeight / 2 - y);
+    return containsLocalPoint(mapFromScratchToLocal(QPointF(x, y)));
+}
 
-    return contains(mapFromItem(parentItem(), QPointF(x, y)));
+QRgb RenderedTarget::colorAtScratchPoint(double x, double y) const
+{
+    // NOTE: Only this target is processed! Use sampleColor3b() to get the final color.
+    if (!m_engine || !m_cpuTexture.isValid())
+        return qRgba(0, 0, 0, 0);
+
+    // Translate the coordinates
+    QPointF point = mapFromScratchToLocal(QPointF(x, y));
+    x = std::floor(point.x());
+    y = std::floor(point.y());
+
+    const double width = m_cpuTexture.width();
+    const double height = m_cpuTexture.height();
+
+    // If the point is outside the texture, return fully transparent color
+    if ((x < 0 || x >= width) || (y < 0 || y >= height))
+        return qRgba(0, 0, 0, 0);
+
+    GLubyte *data = textureManager()->getTextureData(m_cpuTexture);
+    const int index = (y * width + x) * 4; // RGBA channels
+    Q_ASSERT(index >= 0 && index < width * height * 4);
+    // TODO: Apply graphic effects (#117)
+    return qRgba(data[index], data[index + 1], data[index + 2], data[index + 3]);
 }
 
 bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
@@ -610,34 +619,10 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
     if (myRect.isEmpty())
         return false;
 
-    QRectF united;
     std::vector<IRenderedTarget *> candidates;
 
     // Calculate the union of the bounding rectangle intersections
-    for (auto clone : clones) {
-        Q_ASSERT(clone);
-
-        if (!clone)
-            continue;
-
-        SpriteModel *model = static_cast<SpriteModel *>(clone->getInterface());
-        Q_ASSERT(model);
-
-        if (model) {
-            // Calculate the intersection of the bounding rectangles
-            IRenderedTarget *candidate = model->renderedTarget();
-            Q_ASSERT(candidate);
-            Rect scratchRect = candidate->getFastBounds();
-            // TODO: Use Rect::snapToInt()
-            QRect rect(QPoint(scratchRect.left(), scratchRect.bottom()), QPoint(scratchRect.right(), scratchRect.top()));
-            QRectF intersected = myRect.intersected(rect);
-
-            // Add it to the union
-            united = united.united(intersected);
-
-            candidates.push_back(candidate);
-        }
-    }
+    QRectF united = candidatesBounds(myRect, clones, candidates);
 
     if (united.isEmpty() || candidates.empty())
         return false;
@@ -650,6 +635,44 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
                     if (candidate->containsScratchPoint(x, y))
                         return true;
                 }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool RenderedTarget::touchingColor(const Value &color) const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L775-L841
+    QRgb rgb = convertColor(color);
+
+    std::vector<Target *> targets;
+    getVisibleTargets(targets);
+
+    QRectF myRect = touchingBounds();
+    std::vector<IRenderedTarget *> candidates;
+    QRectF bounds = candidatesBounds(myRect, targets, candidates);
+
+    if (colorMatches(rgb, qRgb(255, 255, 255))) {
+        // The color we're checking for is the background color which spans the entire stage
+        bounds = myRect;
+
+        if (bounds.isEmpty())
+            return false;
+    } else if (candidates.empty()) {
+        // If not checking for the background color, we can return early if there are no candidate drawables
+        return false;
+    }
+
+    // Loop through the points of the union
+    for (int y = bounds.top(); y <= bounds.bottom(); y++) {
+        for (int x = bounds.left(); x <= bounds.right(); x++) {
+            if (this->containsScratchPoint(x, y)) {
+                QRgb pixelColor = sampleColor3b(x, y, candidates);
+
+                if (colorMatches(rgb, pixelColor))
+                    return true;
             }
         }
     }
@@ -758,6 +781,24 @@ void RenderedTarget::updateHullPoints()
     // TODO: Apply graphic effects (#117)
 }
 
+bool RenderedTarget::containsLocalPoint(const QPointF &point) const
+{
+    if (!boundingRect().contains(point))
+        return false;
+
+    const std::vector<QPoint> &points = hullPoints();
+    QPoint intPoint = point.toPoint();
+    auto it = std::lower_bound(points.begin(), points.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) { return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x()); });
+
+    if (it == points.end()) {
+        // The point is beyond the last point in the convex hull
+        return false;
+    }
+
+    // Check if the point is equal to the one found
+    return *it == intPoint;
+}
+
 QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const
 {
     return transformPoint(scratchX, scratchY, originX, originY, std::sin(rot), std::cos(rot));
@@ -787,12 +828,60 @@ QPointF RenderedTarget::mapFromStageWithOriginPoint(const QPointF &scenePoint) c
     return localPoint;
 }
 
-CpuTextureManager *RenderedTarget::textureManager()
+QPointF RenderedTarget::mapFromScratchToLocal(const QPointF &point) const
+{
+    QTransform t;
+    const double textureScale = m_skin->getTextureScale(m_cpuTexture);
+    const double scale = m_size / textureScale;
+    const double mirror = m_mirrorHorizontally ? -1 : 1;
+    const double bitmapRes = m_costume->bitmapResolution();
+    t.translate(m_costume->rotationCenterX() * textureScale, m_costume->rotationCenterY() * textureScale);
+    t.rotate(-rotation());
+    t.scale(bitmapRes * mirror / scale, -bitmapRes / scale);
+    t.translate(-m_x, -m_y);
+
+    QPointF localPoint = t.map(point);
+    return localPoint;
+}
+
+CpuTextureManager *RenderedTarget::textureManager() const
 {
     if (!m_textureManager)
         m_textureManager = std::make_shared<CpuTextureManager>();
 
     return m_textureManager.get();
+}
+
+void RenderedTarget::getVisibleTargets(std::vector<Target *> &dst) const
+{
+    dst.clear();
+
+    if (!m_engine)
+        return;
+
+    const auto &targets = m_engine->targets();
+
+    for (auto target : targets) {
+        Q_ASSERT(target);
+
+        if (target->isStage())
+            dst.push_back(target.get());
+        else {
+            Sprite *sprite = static_cast<Sprite *>(target.get());
+
+            if (sprite->visible())
+                dst.push_back(target.get());
+
+            const auto &clones = sprite->clones();
+
+            for (auto clone : clones) {
+                if (clone->visible())
+                    dst.push_back(clone.get());
+            }
+        }
+    }
+
+    std::sort(dst.begin(), dst.end(), [](Target *t1, Target *t2) { return t1->layerOrder() > t2->layerOrder(); });
 }
 
 QRectF RenderedTarget::touchingBounds() const
@@ -813,6 +902,99 @@ QRectF RenderedTarget::touchingBounds() const
     return bounds;
 }
 
+QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vector<Target *> &candidates, std::vector<IRenderedTarget *> &dst) const
+{
+    QRectF united;
+    dst.clear();
+
+    for (auto candidate : candidates) {
+        Q_ASSERT(candidate);
+
+        if (!candidate)
+            continue;
+
+        IRenderedTarget *target = nullptr;
+
+        if (candidate->isStage()) {
+            Stage *stage = static_cast<Stage *>(candidate);
+            StageModel *model = static_cast<StageModel *>(stage->getInterface());
+            Q_ASSERT(model);
+
+            if (model)
+                target = model->renderedTarget();
+        } else {
+            Sprite *sprite = static_cast<Sprite *>(candidate);
+            SpriteModel *model = static_cast<SpriteModel *>(sprite->getInterface());
+            Q_ASSERT(model);
+
+            if (model)
+                target = model->renderedTarget();
+        }
+
+        Q_ASSERT(target);
+
+        if (target && target != this) {
+            united = united.united(candidateIntersection(targetRect, target));
+            dst.push_back(target);
+        }
+    }
+
+    // Check pen layer
+    if (m_penLayer)
+        united = united.united(rectIntersection(targetRect, m_penLayer->getBounds()));
+
+    return united;
+}
+
+QRectF RenderedTarget::candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const
+{
+    QRectF united;
+    dst.clear();
+
+    for (auto candidate : candidates) {
+        Q_ASSERT(candidate);
+
+        if (!candidate)
+            continue;
+
+        IRenderedTarget *target = nullptr;
+        SpriteModel *model = static_cast<SpriteModel *>(candidate->getInterface());
+        Q_ASSERT(model);
+
+        if (model)
+            target = model->renderedTarget();
+
+        Q_ASSERT(target);
+
+        if (target && target != this) {
+            united = united.united(candidateIntersection(targetRect, target));
+            dst.push_back(target);
+        }
+    }
+
+    return united;
+}
+
+QRectF RenderedTarget::candidateIntersection(const QRectF &targetRect, IRenderedTarget *target)
+{
+    Q_ASSERT(target);
+
+    if (target) {
+        // Calculate the intersection of the bounding rectangles
+        Rect scratchRect = target->getFastBounds();
+        return rectIntersection(targetRect, scratchRect);
+    }
+
+    return QRectF();
+}
+
+QRectF RenderedTarget::rectIntersection(const QRectF &targetRect, const Rect &candidateRect)
+{
+    // TODO: Use Rect::snapToInt()
+    QRect rect(QPoint(candidateRect.left(), candidateRect.bottom()), QPoint(candidateRect.right(), candidateRect.top()));
+    return targetRect.intersected(rect);
+}
+
 void RenderedTarget::clampRect(Rect &rect, double left, double right, double bottom, double top)
 {
     // TODO: Use Rect::clamp()
@@ -825,6 +1007,77 @@ void RenderedTarget::clampRect(Rect &rect, double left, double right, double bot
     rect.setRight(std::max(rect.right(), left));
     rect.setBottom(std::min(rect.bottom(), top));
     rect.setTop(std::max(rect.top(), bottom));
+}
+
+QRgb RenderedTarget::convertColor(const libscratchcpp::Value &color)
+{
+    // TODO: Remove this after libscratchcpp starts converting colors (it still needs to be converted to RGB here)
+    std::string stringValue;
+
+    if (color.isString())
+        stringValue = color.toString();
+
+    if (!stringValue.empty() && stringValue[0] == '#') {
+        bool valid = false;
+        QColor color;
+
+        if (stringValue.size() <= 7) // #RRGGBB
+        {
+            color = QColor::fromString(stringValue);
+            valid = color.isValid();
+        }
+
+        if (!valid)
+            color = Qt::black;
+
+        return color.rgb();
+
+    } else
+        return QColor::fromRgba(static_cast<QRgb>(color.toLong())).rgb();
+}
+
+bool RenderedTarget::colorMatches(QRgb a, QRgb b)
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L77-L81
+    return (qRed(a) & 0b11111000) == (qRed(b) & 0b11111000) && (qGreen(a) & 0b11111000) == (qGreen(b) & 0b11111000) && (qBlue(a) & 0b11110000) == (qBlue(b) & 0b11110000);
+}
+
+QRgb RenderedTarget::sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L1966-L1990
+    double blendAlpha = 1;
+    QRgb blendColor;
+    int r = 0, g = 0, b = 0;
+    bool penLayerChecked = false;
+
+    for (int i = 0; blendAlpha != 0 && i <= targets.size(); i++) { // NOTE: <= instead of < to process the pen layer
+        Q_ASSERT(i == targets.size() || targets[i]);
+
+        if ((i == targets.size() || targets[i]->stageModel()) && !penLayerChecked) {
+            if (m_penLayer)
+                blendColor = m_penLayer->colorAtScratchPoint(x, y);
+            else
+                blendColor = qRgba(0, 0, 0, 0);
+
+            penLayerChecked = true;
+
+            if (i < targets.size())
+                i--; // check stage on next iteration
+        } else if (i == targets.size())
+            break;
+        else
+            blendColor = targets[i]->colorAtScratchPoint(x, y);
+
+        r += qRed(blendColor) * blendAlpha;
+        g += qGreen(blendColor) * blendAlpha;
+        b += qBlue(blendColor) * blendAlpha;
+        blendAlpha *= (1.0 - (qAlpha(blendColor) / 255.0));
+    }
+
+    r += blendAlpha * 255;
+    g += blendAlpha * 255;
+    b += blendAlpha * 255;
+    return qRgb(r, g, b);
 }
 
 bool RenderedTarget::mirrorHorizontally() const

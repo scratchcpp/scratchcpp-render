@@ -76,6 +76,8 @@ void scratchcpprender::PenLayer::clear()
     m_glF->glEnable(GL_SCISSOR_TEST);
     m_fbo->release();
 
+    m_textureDirty = true;
+    m_boundsDirty = true;
     update();
 }
 
@@ -121,12 +123,92 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
     painter.end();
     m_fbo->release();
 
+    m_textureDirty = true;
+    m_boundsDirty = true;
     update();
 }
 
 QOpenGLFramebufferObject *PenLayer::framebufferObject() const
 {
     return m_fbo.get();
+}
+
+QRgb PenLayer::colorAtScratchPoint(double x, double y) const
+{
+    if (m_textureDirty)
+        const_cast<PenLayer *>(this)->updateTexture();
+
+    if (!m_texture.isValid())
+        return qRgba(0, 0, 0, 0);
+
+    const double width = m_texture.width();
+    const double height = m_texture.height();
+
+    // Translate the coordinates
+    // TODO: Apply scale
+    x = std::floor(x + width / 2.0);
+    y = std::floor(-y + height / 2.0);
+
+    // If the point is outside the texture, return fully transparent color
+    if ((x < 0 || x >= width) || (y < 0 || y >= height))
+        return qRgba(0, 0, 0, 0);
+
+    GLubyte *data = m_textureManager.getTextureData(m_texture);
+    const int index = (y * width + x) * 4; // RGBA channels
+    Q_ASSERT(index >= 0 && index < width * height * 4);
+    return qRgba(data[index], data[index + 1], data[index + 2], data[index + 3]);
+}
+
+const libscratchcpp::Rect &PenLayer::getBounds() const
+{
+    if (m_textureDirty)
+        const_cast<PenLayer *>(this)->updateTexture();
+
+    if (m_boundsDirty) {
+        if (!m_texture.isValid()) {
+            m_bounds = libscratchcpp::Rect();
+            return m_bounds;
+        }
+
+        m_boundsDirty = false;
+        double left = std::numeric_limits<double>::infinity();
+        double top = -std::numeric_limits<double>::infinity();
+        double right = -std::numeric_limits<double>::infinity();
+        double bottom = std::numeric_limits<double>::infinity();
+        const double width = m_texture.width();
+        const double height = m_texture.height();
+        const std::vector<QPoint> &points = m_textureManager.getTextureConvexHullPoints(m_texture);
+
+        if (points.empty()) {
+            m_bounds = libscratchcpp::Rect();
+            return m_bounds;
+        }
+
+        for (const QPointF &point : points) {
+            // TODO: Apply scale
+            double x = point.x() - width / 2;
+            double y = -point.y() + height / 2;
+
+            if (x < left)
+                left = x;
+
+            if (x > right)
+                right = x;
+
+            if (y > top)
+                top = y;
+
+            if (y < bottom)
+                bottom = y;
+        }
+
+        m_bounds.setLeft(left);
+        m_bounds.setTop(top);
+        m_bounds.setRight(right + 1);
+        m_bounds.setBottom(bottom - 1);
+    }
+
+    return m_bounds;
 }
 
 IPenLayer *PenLayer::getProjectPenLayer(libscratchcpp::IEngine *engine)
@@ -147,4 +229,22 @@ void PenLayer::addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer)
 QNanoQuickItemPainter *PenLayer::createItemPainter() const
 {
     return new PenLayerPainter;
+}
+
+void PenLayer::updateTexture()
+{
+    if (!m_fbo)
+        return;
+
+    m_textureDirty = false;
+    m_textureManager.removeTexture(m_texture);
+
+    if (!m_resolvedFbo || m_resolvedFbo->size() != m_fbo->size()) {
+        QOpenGLFramebufferObjectFormat format;
+        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        m_resolvedFbo = std::make_unique<QOpenGLFramebufferObject>(m_fbo->size(), format);
+    }
+
+    QOpenGLFramebufferObject::blitFramebuffer(m_resolvedFbo.get(), m_fbo.get());
+    m_texture = Texture(m_resolvedFbo->texture(), m_resolvedFbo->size());
 }

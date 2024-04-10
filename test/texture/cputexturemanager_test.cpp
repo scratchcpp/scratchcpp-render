@@ -36,15 +36,24 @@ class ImagePainter
             QOpenGLFramebufferObjectFormat format;
             format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
-            // Begin painting
             m_fbo = std::make_unique<QOpenGLFramebufferObject>(4, 6, format);
+            paint(painter, fileName);
+        }
+
+        void paint(QNanoPainter *painter, const QString &fileName)
+        {
+            // Begin painting
             m_fbo->bind();
             painter->beginFrame(m_fbo->width(), m_fbo->height());
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
 
             // Paint
             QNanoImage image = QNanoImage::fromCache(painter, fileName);
             painter->drawImage(image, 0, 0);
             painter->endFrame();
+
+            m_fbo->release();
         }
 
         ~ImagePainter() { m_fbo->release(); }
@@ -101,6 +110,21 @@ TEST_F(CpuTextureManagerTest, TextureDataAndHullPoints)
         const auto &hullPoints2 = manager.getTextureConvexHullPoints(texture2);
         ASSERT_EQ(hullPoints2, refHullPoints2);
     }
+
+    // Test removeTexture()
+    imgPainter1.paint(&painter, "image.jpg");
+    Texture texture(imgPainter1.fbo()->texture(), imgPainter1.fbo()->size());
+    GLubyte *data = manager.getTextureData(texture);
+    ASSERT_EQ(memcmp(data, refData1, 96), 0);
+    const auto &hullPoints1 = manager.getTextureConvexHullPoints(texture);
+    ASSERT_EQ(hullPoints1, refHullPoints1);
+
+    imgPainter1.fbo()->toImage().save("/home/adazem009/test.png");
+    manager.removeTexture(texture);
+    data = manager.getTextureData(texture);
+    ASSERT_EQ(memcmp(data, refData2, 96), 0);
+    const auto &hullPoints2 = manager.getTextureConvexHullPoints(texture);
+    ASSERT_EQ(hullPoints2, refHullPoints2);
 
     // Cleanup
     context.doneCurrent();

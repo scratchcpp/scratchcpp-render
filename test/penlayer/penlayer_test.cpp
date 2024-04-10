@@ -257,3 +257,76 @@ TEST_F(PenLayerTest, DrawLine)
     buffer.open(QFile::ReadOnly);
     ASSERT_EQ(ref.readAll(), buffer.readAll());
 }
+
+TEST_F(PenLayerTest, TextureData)
+{
+    PenLayer penLayer;
+    penLayer.setAntialiasingEnabled(false);
+    EngineMock engine;
+    EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(6));
+    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(4));
+    penLayer.setEngine(&engine);
+
+    PenAttributes attr;
+    attr.color = QColor(255, 0, 0);
+    attr.diameter = 1;
+    penLayer.drawLine(attr, -3, 2, 3, -2);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), qRgb(255, 0, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 2), qRgba(0, 0, 0, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-1, 1), qRgb(255, 0, 0));
+
+    Rect bounds = penLayer.getBounds();
+    ASSERT_EQ(bounds.left(), -3);
+    ASSERT_EQ(bounds.top(), 2);
+    ASSERT_EQ(bounds.right(), 3);
+    ASSERT_EQ(bounds.bottom(), -2);
+
+    attr.color = QColor(0, 128, 0, 128);
+    attr.diameter = 2;
+    penLayer.drawLine(attr, -3, -2, 3, 2);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), qRgb(255, 0, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 2), qRgba(0, 64, 0, 128));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-1, 1), qRgb(127, 64, 0));
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(bounds.left(), -3);
+    ASSERT_EQ(bounds.top(), 2);
+    ASSERT_EQ(bounds.right(), 3);
+    ASSERT_EQ(bounds.bottom(), -2);
+
+    penLayer.clear();
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), 0);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 2), 0);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-1, 1), 0);
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(bounds.left(), 0);
+    ASSERT_EQ(bounds.top(), 0);
+    ASSERT_EQ(bounds.right(), 0);
+    ASSERT_EQ(bounds.bottom(), 0);
+
+    attr.color = QColor(0, 255, 0, 255);
+    attr.diameter = 1;
+    penLayer.drawLine(attr, 0, -1, 1, 1);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgb(0, 255, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 0), qRgb(0, 255, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 1), qRgba(0, 0, 0, 0));
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(bounds.left(), 0);
+    ASSERT_EQ(bounds.top(), 1);
+    ASSERT_EQ(bounds.right(), 1);
+    ASSERT_EQ(bounds.bottom(), -1);
+
+    attr.diameter = 2;
+    penLayer.drawPoint(attr, -2, 0);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgb(0, 255, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 0), qRgb(0, 255, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 1), qRgb(0, 255, 0));
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(bounds.left(), -3);
+    ASSERT_EQ(bounds.top(), 1);
+    ASSERT_EQ(bounds.right(), 1);
+    ASSERT_EQ(bounds.bottom(), -1);
+}

@@ -99,7 +99,7 @@ bool StageModel::touchingPoint(double x, double y) const
 
 bool StageModel::touchingColor(const libscratchcpp::Value &color) const
 {
-    return false;
+    return m_renderedTarget->touchingColor(color);
 }
 
 void StageModel::loadCostume()

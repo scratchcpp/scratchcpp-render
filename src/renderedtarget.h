@@ -20,6 +20,7 @@ namespace scratchcpprender
 
 class Skin;
 class CpuTextureManager;
+class IPenLayer;
 
 class RenderedTarget : public IRenderedTarget
 {
@@ -94,8 +95,10 @@ class RenderedTarget : public IRenderedTarget
 
         Q_INVOKABLE bool contains(const QPointF &point) const override;
         bool containsScratchPoint(double x, double y) const override;
+        QRgb colorAtScratchPoint(double x, double y) const override;
 
         bool touchingClones(const std::vector<libscratchcpp::Sprite *> &) const override;
+        bool touchingColor(const libscratchcpp::Value &color) const override;
 
     signals:
         void engineChanged();
@@ -118,26 +121,37 @@ class RenderedTarget : public IRenderedTarget
         void handleSceneMouseMove(qreal x, qreal y);
         bool convexHullPointsNeeded() const;
         void updateHullPoints();
+        bool containsLocalPoint(const QPointF &point) const;
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const;
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double sinRot, double cosRot) const;
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
-        CpuTextureManager *textureManager();
+        QPointF mapFromScratchToLocal(const QPointF &point) const;
+        CpuTextureManager *textureManager() const;
+        void getVisibleTargets(std::vector<libscratchcpp::Target *> &dst) const;
         QRectF touchingBounds() const;
+        QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst) const;
+        QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const;
+        static QRectF candidateIntersection(const QRectF &targetRect, IRenderedTarget *target);
+        static QRectF rectIntersection(const QRectF &targetRect, const libscratchcpp::Rect &candidateRect);
         static void clampRect(libscratchcpp::Rect &rect, double left, double right, double bottom, double top);
+        static QRgb convertColor(const libscratchcpp::Value &color);
+        static bool colorMatches(QRgb a, QRgb b);
+        QRgb sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const;
 
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
         StageModel *m_stageModel = nullptr;
         SpriteModel *m_spriteModel = nullptr;
         SceneMouseArea *m_mouseArea = nullptr;
+        IPenLayer *m_penLayer = nullptr;
         bool m_costumesLoaded = false;
         std::unordered_map<libscratchcpp::Costume *, Skin *> m_skins;
         bool m_skinsInherited = false;
         Skin *m_skin = nullptr;
         Texture m_texture;
         Texture m_oldTexture;
-        Texture m_cpuTexture;                                // without stage scale
-        std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
+        Texture m_cpuTexture;                                        // without stage scale
+        mutable std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
         std::unique_ptr<QOpenGLFunctions> m_glF;
         std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
         double m_size = 1;

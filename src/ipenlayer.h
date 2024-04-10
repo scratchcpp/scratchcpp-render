@@ -3,6 +3,7 @@
 #pragma once
 
 #include <qnanoquickitem.h>
+#include <scratchcpp/rect.h>
 
 namespace libscratchcpp
 {
@@ -37,6 +38,9 @@ class IPenLayer : public QNanoQuickItem
         virtual void drawLine(const PenAttributes &penAttributes, double x0, double y0, double x1, double y1) = 0;
 
         virtual QOpenGLFramebufferObject *framebufferObject() const = 0;
+        virtual QRgb colorAtScratchPoint(double x, double y) const = 0;
+
+        virtual const libscratchcpp::Rect &getBounds() const = 0;
 };
 
 } // namespace scratchcpprender
