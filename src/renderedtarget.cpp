@@ -180,6 +180,15 @@ void RenderedTarget::beforeRedraw()
         m_oldTexture = m_texture;
         update();
     }
+
+    // Update drag position
+    if (m_spriteModel) {
+        Sprite *sprite = m_spriteModel->sprite();
+        Q_ASSERT(sprite);
+
+        if (sprite->dragging())
+            sprite->dragToPosition(m_dragX, m_dragY);
+    }
 }
 
 void RenderedTarget::deinitClone()
@@ -758,12 +767,9 @@ void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
     Q_ASSERT(m_mouseArea);
 
     if (m_mouseArea->draggedSprite() == this) {
-        Q_ASSERT(m_spriteModel && m_spriteModel->sprite());
         Q_ASSERT(m_engine);
-        Sprite *sprite = m_spriteModel->sprite();
-        const double dragX = x / m_stageScale - m_engine->stageWidth() / 2.0 - m_dragDeltaX;
-        const double dragY = -y / m_stageScale + m_engine->stageHeight() / 2.0 - m_dragDeltaY;
-        sprite->dragToPosition(dragX, dragY);
+        m_dragX = x / m_stageScale - m_engine->stageWidth() / 2.0 - m_dragDeltaX;
+        m_dragY = -y / m_stageScale + m_engine->stageHeight() / 2.0 - m_dragDeltaY;
     }
 }
 

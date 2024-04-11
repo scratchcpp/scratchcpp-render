@@ -440,6 +440,7 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     target.setMouseArea(&mouseArea);
 
     emit mouseArea.mouseMoved(1064, 651);
+    target.beforeRedraw();
     ASSERT_EQ(sprite.x(), 64.08);
     ASSERT_EQ(sprite.y(), -6.86);
     ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
@@ -462,6 +463,7 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     ASSERT_FALSE(sprite.dragging());
 
     emit mouseArea.mouseMoved(1064, 651);
+    target.beforeRedraw();
     ASSERT_EQ(sprite.x(), 64.08);
     ASSERT_EQ(sprite.y(), -6.86);
     ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
@@ -482,6 +484,7 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     ASSERT_FALSE(sprite.dragging());
 
     emit mouseArea.mouseMoved(1064, 651);
+    target.beforeRedraw();
     ASSERT_EQ(sprite.x(), 64.08);
     ASSERT_EQ(sprite.y(), -6.86);
     ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
@@ -501,6 +504,7 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     ASSERT_FALSE(sprite.dragging());
 
     emit mouseArea.mouseMoved(1064, 651);
+    target.beforeRedraw();
     ASSERT_EQ(sprite.x(), 64.08);
     ASSERT_EQ(sprite.y(), -6.86);
     ASSERT_EQ(mouseArea.draggedSprite(), nullptr);
@@ -525,6 +529,7 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     emit mouseArea.mouseMoved(1067.8, 649.06);
+    target.beforeRedraw();
     ASSERT_EQ(std::round(sprite.x() * 100) / 100, 61.22);
     ASSERT_EQ(std::round(sprite.y() * 100) / 100, -14.41);
     ASSERT_EQ(mouseArea.draggedSprite(), &target);
@@ -533,6 +538,7 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     emit mouseArea.mouseMoved(1092.47, 605.46);
+    target.beforeRedraw();
     ASSERT_EQ(std::round(sprite.x() * 100) / 100, 68.26);
     ASSERT_EQ(std::round(sprite.y() * 100) / 100, -1.95);
     ASSERT_EQ(mouseArea.draggedSprite(), &target);
@@ -548,7 +554,7 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     anotherSprite.setY(-6.86);
     anotherSprite.setDraggable(true);
     anotherModel.init(&anotherSprite);
-    anotherTarget.setSpriteModel(&model);
+    anotherTarget.setSpriteModel(&anotherModel);
     anotherTarget.setStageScale(3.5);
     anotherTarget.setMouseArea(&mouseArea);
 
@@ -562,7 +568,7 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     ASSERT_EQ(mouseArea.draggedSprite(), &target);
     ASSERT_TRUE(sprite.dragging());
     ASSERT_FALSE(anotherSprite.dragging());
-    EXPECT_CALL(engine, clickTarget(&sprite));
+    EXPECT_CALL(engine, clickTarget(&anotherSprite));
     QCoreApplication::sendEvent(&anotherTarget, &releaseEvent);
 
     // Stop dragging

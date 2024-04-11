@@ -168,6 +168,8 @@ class RenderedTarget : public IRenderedTarget
         bool m_convexHullDirty = true;
         std::vector<QPoint> m_hullPoints;
         bool m_clicked = false; // left mouse button only!
+        double m_dragX = 0;
+        double m_dragY = 0;
         double m_dragDeltaX = 0;
         double m_dragDeltaY = 0;
 };
