@@ -180,6 +180,15 @@ void RenderedTarget::beforeRedraw()
         m_oldTexture = m_texture;
         update();
     }
+
+    // Update drag position
+    if (m_spriteModel) {
+        Sprite *sprite = m_spriteModel->sprite();
+        Q_ASSERT(sprite);
+
+        if (sprite->dragging())
+            sprite->dragToPosition(m_dragX, m_dragY);
+    }
 }
 
 void RenderedTarget::deinitClone()
@@ -486,9 +495,11 @@ void RenderedTarget::mouseReleaseEvent(QMouseEvent *event)
     Q_ASSERT(m_mouseArea);
 
     // Stop dragging
-    if (m_mouseArea->draggedSprite() == this)
+    if (m_mouseArea->draggedSprite() == this) {
+        Sprite *sprite = m_spriteModel->sprite();
+        sprite->stopDragging();
         m_mouseArea->setDraggedSprite(nullptr);
-    else if (m_engine && m_spriteModel && m_spriteModel->sprite()->draggable()) {
+    } else if (m_engine && m_spriteModel && m_spriteModel->sprite()->draggable()) {
         // Notify libscratchcpp about the click
         m_engine->clickTarget(scratchTarget());
     }
@@ -503,6 +514,7 @@ void RenderedTarget::mouseMoveEvent(QMouseEvent *event)
     if (m_clicked && !m_mouseArea->draggedSprite() && m_spriteModel && m_spriteModel->sprite()->draggable()) {
         Q_ASSERT(m_engine);
         Sprite *sprite = m_spriteModel->sprite();
+        sprite->startDragging();
         m_dragDeltaX = m_engine->mouseX() - sprite->x();
         m_dragDeltaY = m_engine->mouseY() - sprite->y();
         m_mouseArea->setDraggedSprite(this);
@@ -755,11 +767,9 @@ void RenderedTarget::handleSceneMouseMove(qreal x, qreal y)
     Q_ASSERT(m_mouseArea);
 
     if (m_mouseArea->draggedSprite() == this) {
-        Q_ASSERT(m_spriteModel && m_spriteModel->sprite());
         Q_ASSERT(m_engine);
-        Sprite *sprite = m_spriteModel->sprite();
-        sprite->setX(x / m_stageScale - m_engine->stageWidth() / 2.0 - m_dragDeltaX);
-        sprite->setY(-y / m_stageScale + m_engine->stageHeight() / 2.0 - m_dragDeltaY);
+        m_dragX = x / m_stageScale - m_engine->stageWidth() / 2.0 - m_dragDeltaX;
+        m_dragY = -y / m_stageScale + m_engine->stageHeight() / 2.0 - m_dragDeltaY;
     }
 }
 
