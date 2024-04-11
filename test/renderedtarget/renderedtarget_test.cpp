@@ -154,15 +154,15 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateX(12.5);
-    ASSERT_EQ(target.x(), 275.5);
+    ASSERT_EQ(target.x(), 276);
     ASSERT_EQ(target.y(), 108);
 
     // Y
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     target.updateY(-76.09);
-    ASSERT_EQ(target.x(), 275.5);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
+    ASSERT_EQ(target.x(), 276);
+    ASSERT_EQ(target.y(), 184);
 
     // Size
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -171,8 +171,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.beforeRedraw();
     ASSERT_EQ(target.width(), 4);
     ASSERT_EQ(target.height(), 6);
-    ASSERT_EQ(target.x(), 275.5);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
+    ASSERT_EQ(target.x(), 276);
+    ASSERT_EQ(target.y(), 184);
     ASSERT_EQ(target.transformOriginPoint().x(), -23);
     ASSERT_EQ(target.transformOriginPoint().y(), 72);
 
@@ -187,8 +187,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
     ASSERT_EQ(target.mirrorHorizontally(), false);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(target.x(), 275.5);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
+    ASSERT_EQ(target.x(), 276);
+    ASSERT_EQ(target.y(), 184);
     ASSERT_TRUE(mirrorHorizontallySpy.empty());
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -196,8 +196,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.updateDirection(-15);
     ASSERT_EQ(target.mirrorHorizontally(), true);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(target.x(), 229.5);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
+    ASSERT_EQ(target.x(), 230);
+    ASSERT_EQ(target.y(), 184);
     ASSERT_EQ(mirrorHorizontallySpy.count(), 1);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -205,8 +205,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.updateDirection(134.89);
     ASSERT_EQ(target.mirrorHorizontally(), false);
     ASSERT_EQ(target.rotation(), 0);
-    ASSERT_EQ(target.x(), 275.5);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 184.09);
+    ASSERT_EQ(target.x(), 276);
+    ASSERT_EQ(target.y(), 184);
     ASSERT_EQ(mirrorHorizontallySpy.count(), 2);
 
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -223,8 +223,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.beforeRedraw();
     ASSERT_EQ(target.width(), 4);
     ASSERT_EQ(target.height(), 6);
-    ASSERT_EQ(target.x(), 401.75);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 312.14);
+    ASSERT_EQ(target.x(), 402.5);
+    ASSERT_EQ(target.y(), 312);
     ASSERT_EQ(target.z(), 3);
     ASSERT_EQ(target.rotation(), 0);
     ASSERT_EQ(target.transformOriginPoint().x(), -23);
@@ -241,8 +241,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.beforeRedraw();
     ASSERT_EQ(target.width(), 4);
     ASSERT_EQ(target.height(), 6);
-    ASSERT_EQ(target.x(), 378.75);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 384.14);
+    ASSERT_EQ(target.x(), 379.5);
+    ASSERT_EQ(target.y(), 384);
     ASSERT_EQ(target.transformOriginPoint().x(), 0);
     ASSERT_EQ(target.transformOriginPoint().y(), 0);
     ASSERT_EQ(target.transformOrigin(), QQuickItem::TopLeft);
@@ -263,8 +263,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
 
     ASSERT_EQ(target.width(), 26);
     ASSERT_EQ(target.height(), 26);
-    ASSERT_EQ(target.x(), 328.75);
-    ASSERT_EQ(std::round(target.y() * 100) / 100, 400.14);
+    ASSERT_EQ(target.x(), 329.5);
+    ASSERT_EQ(target.y(), 400);
     ASSERT_EQ(target.z(), 3);
     ASSERT_EQ(target.rotation(), 0);
     ASSERT_EQ(target.transformOriginPoint().x(), 50);
@@ -375,48 +375,48 @@ TEST_F(RenderedTargetTest, CpuRendering)
 
     // Test containsScratchPoint()
     target.updateDirection(0);
-    ASSERT_FALSE(target.containsScratchPoint(-227.5, 165)); // [0, 0]
-    ASSERT_FALSE(target.containsScratchPoint(-226.5, 165)); // [1, 0]
-    ASSERT_FALSE(target.containsScratchPoint(-225.5, 165)); // [2, 0]
-    ASSERT_FALSE(target.containsScratchPoint(-224.5, 165)); // [3, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-228, 165)); // [0, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-227, 165)); // [1, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-226, 165)); // [2, 0]
+    ASSERT_FALSE(target.containsScratchPoint(-225, 165)); // [3, 0]
 
-    ASSERT_FALSE(target.containsScratchPoint(-227.5, 164));   // [0, 1]
-    ASSERT_TRUE(target.containsScratchPoint(-226.5, 164));    // [1, 1]
-    ASSERT_TRUE(target.containsScratchPoint(-226.1, 163.75)); // [1.4, 1.25]
-    ASSERT_TRUE(target.containsScratchPoint(-225.5, 164));    // [2, 1]
-    ASSERT_TRUE(target.containsScratchPoint(-224.5, 164));    // [3, 1]
+    ASSERT_FALSE(target.containsScratchPoint(-228, 164));     // [0, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-227, 164));      // [1, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-226.6, 163.75)); // [1.4, 1.25]
+    ASSERT_TRUE(target.containsScratchPoint(-226, 164));      // [2, 1]
+    ASSERT_TRUE(target.containsScratchPoint(-225, 164));      // [3, 1]
 
-    ASSERT_TRUE(target.containsScratchPoint(-226.5, 163));  // [1, 2]
-    ASSERT_FALSE(target.containsScratchPoint(-225.5, 163)); // [2, 2]
-    ASSERT_TRUE(target.containsScratchPoint(-224.5, 163));  // [3, 2]
-    ASSERT_FALSE(target.containsScratchPoint(-224, 162.9)); // [3.5, 2.1]
+    ASSERT_TRUE(target.containsScratchPoint(-227, 163));      // [1, 2]
+    ASSERT_FALSE(target.containsScratchPoint(-226, 163));     // [2, 2]
+    ASSERT_TRUE(target.containsScratchPoint(-225, 163));      // [3, 2]
+    ASSERT_FALSE(target.containsScratchPoint(-224.5, 162.9)); // [3.5, 2.1]
 
-    ASSERT_TRUE(target.containsScratchPoint(-226.5, 162));    // [1, 3]
-    ASSERT_TRUE(target.containsScratchPoint(-225.5, 162));    // [2, 3]
-    ASSERT_TRUE(target.containsScratchPoint(-224.5, 162));    // [3, 3]
-    ASSERT_FALSE(target.containsScratchPoint(-224.2, 161.5)); // [3.3, 3.5]
+    ASSERT_TRUE(target.containsScratchPoint(-227, 162));      // [1, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-226, 162));      // [2, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-225, 162));      // [3, 3]
+    ASSERT_FALSE(target.containsScratchPoint(-224.7, 161.5)); // [3.3, 3.5]
 
     // Test colorAtScratchPoint()
-    ASSERT_EQ(target.colorAtScratchPoint(-227.5, 165), 0); // [0, 0]
-    ASSERT_EQ(target.colorAtScratchPoint(-226.5, 165), 0); // [1, 0]
-    ASSERT_EQ(target.colorAtScratchPoint(-225.5, 165), 0); // [2, 0]
-    ASSERT_EQ(target.colorAtScratchPoint(-224.5, 165), 0); // [3, 0]
+    ASSERT_EQ(target.colorAtScratchPoint(-228, 165), 0); // [0, 0]
+    ASSERT_EQ(target.colorAtScratchPoint(-227, 165), 0); // [1, 0]
+    ASSERT_EQ(target.colorAtScratchPoint(-226, 165), 0); // [2, 0]
+    ASSERT_EQ(target.colorAtScratchPoint(-225, 165), 0); // [3, 0]
 
-    ASSERT_EQ(target.colorAtScratchPoint(-227.5, 164), 0);             // [0, 1]
-    ASSERT_EQ(target.colorAtScratchPoint(-226.5, 164), 4278190335);    // [1, 1]
-    ASSERT_EQ(target.colorAtScratchPoint(-226.1, 163.75), 4278190335); // [1.4, 1.25]
-    ASSERT_EQ(target.colorAtScratchPoint(-225.5, 164), 4294902015);    // [2, 1]
-    ASSERT_EQ(target.colorAtScratchPoint(-224.5, 164), 4294934656);    // [3, 1]
+    ASSERT_EQ(target.colorAtScratchPoint(-228, 164), 0);               // [0, 1]
+    ASSERT_EQ(target.colorAtScratchPoint(-227, 164), 4278190335);      // [1, 1]
+    ASSERT_EQ(target.colorAtScratchPoint(-226.6, 163.75), 4278190335); // [1.4, 1.25]
+    ASSERT_EQ(target.colorAtScratchPoint(-226, 164), 4294902015);      // [2, 1]
+    ASSERT_EQ(target.colorAtScratchPoint(-225, 164), 4294934656);      // [3, 1]
 
-    ASSERT_EQ(target.colorAtScratchPoint(-226.5, 163), 4278190208); // [1, 2]
-    ASSERT_EQ(target.colorAtScratchPoint(-225.5, 163), 0);          // [2, 2]
-    ASSERT_EQ(target.colorAtScratchPoint(-224.5, 163), 2505545047); // [3, 2]
-    ASSERT_EQ(target.colorAtScratchPoint(-224, 162.9), 2505545047); // [3.5, 2.1]
+    ASSERT_EQ(target.colorAtScratchPoint(-227, 163), 4278190208);     // [1, 2]
+    ASSERT_EQ(target.colorAtScratchPoint(-226, 163), 0);              // [2, 2]
+    ASSERT_EQ(target.colorAtScratchPoint(-225, 163), 2505545047);     // [3, 2]
+    ASSERT_EQ(target.colorAtScratchPoint(-224.5, 162.9), 2505545047); // [3.5, 2.1]
 
-    ASSERT_EQ(target.colorAtScratchPoint(-226.5, 162), 4286578816);   // [1, 3]
-    ASSERT_EQ(target.colorAtScratchPoint(-225.5, 162), 4286611711);   // [2, 3]
-    ASSERT_EQ(target.colorAtScratchPoint(-224.5, 162), 4286611456);   // [3, 3]
-    ASSERT_EQ(target.colorAtScratchPoint(-224.2, 161.5), 4286611456); // [3.3, 3.5]
+    ASSERT_EQ(target.colorAtScratchPoint(-227, 162), 4286578816);     // [1, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-226, 162), 4286611711);     // [2, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-225, 162), 4286611456);     // [3, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-224.7, 161.5), 4286611456); // [3.3, 3.5]
 
     // Cleanup
     context.doneCurrent();

@@ -52,7 +52,7 @@ void RenderedTarget::updateX(double x)
     if (x == m_x)
         return;
 
-    m_x = x;
+    m_x = std::round(x);
     calculatePos();
 }
 
@@ -61,7 +61,7 @@ void RenderedTarget::updateY(double y)
     if (y == m_y)
         return;
 
-    m_y = y;
+    m_y = std::round(y);
     calculatePos();
 }
 
