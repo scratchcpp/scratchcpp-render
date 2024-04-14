@@ -13,6 +13,7 @@ PenLayer::PenLayer(QNanoQuickItem *parent) :
 {
     m_fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
     m_fboFormat.setSamples(m_antialiasingEnabled ? 4 : 0);
+    setSmooth(false);
 }
 
 PenLayer::~PenLayer()

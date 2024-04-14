@@ -44,6 +44,7 @@ TEST_F(PenLayerTest, Constructors)
     PenLayer penLayer2(&penLayer1);
     ASSERT_EQ(penLayer2.parent(), &penLayer1);
     ASSERT_EQ(penLayer2.parentItem(), &penLayer1);
+    ASSERT_FALSE(penLayer1.smooth());
 }
 
 TEST_F(PenLayerTest, Engine)

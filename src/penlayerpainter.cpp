@@ -27,10 +27,8 @@ void PenLayerPainter::paint(QNanoPainter *painter)
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
-    // Blit the FBO to a temporary FBO first (multisampled FBOs can only be blitted to FBOs with the same size)
-    QOpenGLFramebufferObject tmpFbo(m_fbo->size(), format);
-    QOpenGLFramebufferObject::blitFramebuffer(&tmpFbo, m_fbo);
-    QOpenGLFramebufferObject::blitFramebuffer(targetFbo, &tmpFbo);
+    // Blit the FBO to the item FBO
+    QOpenGLFramebufferObject::blitFramebuffer(targetFbo, m_fbo);
 }
 
 void PenLayerPainter::synchronize(QNanoQuickItem *item)

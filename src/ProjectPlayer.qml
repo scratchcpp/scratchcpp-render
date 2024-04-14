@@ -136,7 +136,12 @@ ProjectScene {
         PenLayer {
             id: projectPenLayer
             engine: loader.engine
-            anchors.fill: parent
+            anchors.top: parent.top
+            anchors.left: parent.left
+            width: stageWidth
+            height: stageHeight
+            scale: stageScale
+            transformOrigin: Item.TopLeft
             visible: !priv.loading
         }
 
