@@ -26,7 +26,10 @@ class EngineMock : public IEngine
         MOCK_METHOD(void, stopTarget, (Target *, VirtualMachine *), (override));
         MOCK_METHOD(void, initClone, (std::shared_ptr<Sprite>), (override));
         MOCK_METHOD(void, deinitClone, (std::shared_ptr<Sprite>), (override));
+
         MOCK_METHOD(void, stopSounds, (), (override));
+        MOCK_METHOD(double, globalVolume, (), (const, override));
+        MOCK_METHOD(void, setGlobalVolume, (double), (override));
 
         MOCK_METHOD(void, updateMonitors, (), (override));
         MOCK_METHOD(void, step, (), (override));
@@ -36,6 +39,7 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(sigslot::signal<> &, aboutToRender, (), (override));
         MOCK_METHOD(sigslot::signal<VirtualMachine *> &, threadAboutToStop, (), (override));
+        MOCK_METHOD(sigslot::signal<> &, stopped, (), (override));
 
         MOCK_METHOD(bool, isRunning, (), (const, override));
 
@@ -104,6 +108,7 @@ class EngineMock : public IEngine
         MOCK_METHOD(int, findBroadcast, (const std::string &), (const, override));
         MOCK_METHOD(int, findBroadcastById, (const std::string &), (const, override));
 
+        MOCK_METHOD(void, addWhenTouchingObjectScript, (std::shared_ptr<Block>), (override));
         MOCK_METHOD(void, addGreenFlagScript, (std::shared_ptr<Block>), (override));
         MOCK_METHOD(void, addBroadcastScript, (std::shared_ptr<Block>, int, Broadcast *), (override));
         MOCK_METHOD(void, addBackdropChangeScript, (std::shared_ptr<Block>, int), (override));
@@ -131,6 +136,7 @@ class EngineMock : public IEngine
         MOCK_METHOD((sigslot::signal<Monitor *, IMonitorHandler *> &), monitorRemoved, (), (override));
 
         MOCK_METHOD(sigslot::signal<const std::string &> &, questionAsked, (), (override));
+        MOCK_METHOD(sigslot::signal<> &, questionAborted, (), (override));
         MOCK_METHOD(sigslot::signal<const std::string &> &, questionAnswered, (), (override));
 
         MOCK_METHOD(std::vector<std::string> &, extensions, (), (const, override));

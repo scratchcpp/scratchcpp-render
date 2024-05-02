@@ -140,6 +140,16 @@ void SpriteModel::onBubbleTextChanged(const std::string &text)
     }
 }
 
+int SpriteModel::costumeWidth() const
+{
+    return m_renderedTarget->costumeWidth();
+}
+
+int SpriteModel::costumeHeight() const
+{
+    return m_renderedTarget->costumeHeight();
+}
+
 libscratchcpp::Rect SpriteModel::boundingRect() const
 {
     return m_renderedTarget->getBounds();

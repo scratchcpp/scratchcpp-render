@@ -77,6 +77,16 @@ void StageModel::onBubbleTextChanged(const std::string &text)
     }
 }
 
+int StageModel::costumeWidth() const
+{
+    return m_renderedTarget->costumeWidth();
+}
+
+int StageModel::costumeHeight() const
+{
+    return m_renderedTarget->costumeHeight();
+}
+
 libscratchcpp::Rect StageModel::boundingRect() const
 {
     return libscratchcpp::Rect();
