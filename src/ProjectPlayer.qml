@@ -91,6 +91,8 @@ ProjectScene {
             questionLoader.item.clear();
             questionLoader.item.question = question;
         }
+
+        onQuestionAborted: questionLoader.active = false
     }
 
     function start() {
