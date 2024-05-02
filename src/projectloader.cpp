@@ -256,6 +256,7 @@ void ProjectLoader::load()
     m_engine->monitorRemoved().connect(&ProjectLoader::removeMonitor, this);
 
     m_engine->questionAsked().connect([this](const std::string &question) { emit questionAsked(QString::fromStdString(question)); });
+    m_engine->questionAborted().connect([this]() { emit questionAborted(); });
 
     // Load targets
     const auto &targets = m_engine->targets();

@@ -188,6 +188,19 @@ TEST_F(ProjectLoaderTest, QuestionAsked)
     ASSERT_EQ(args.first().toString(), "test");
 }
 
+TEST_F(ProjectLoaderTest, QuestionAborted)
+{
+    ProjectLoader loader;
+    QSignalSpy spy(&loader, &ProjectLoader::questionAborted);
+
+    load(&loader, "load_test.sb3");
+
+    auto engine = loader.engine();
+    ASSERT_TRUE(spy.isEmpty());
+    engine->questionAborted()();
+    ASSERT_EQ(spy.count(), 1);
+}
+
 TEST_F(ProjectLoaderTest, AnswerQuestion)
 {
     ProjectLoader loader;
