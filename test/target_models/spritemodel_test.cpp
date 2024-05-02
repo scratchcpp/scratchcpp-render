@@ -287,6 +287,28 @@ TEST(SpriteModelTest, OnBubbleTextChanged)
     ASSERT_EQ(spy.count(), 2);
 }
 
+TEST(SpriteModelTest, CostumeWidth)
+{
+    SpriteModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    EXPECT_CALL(renderedTarget, costumeWidth()).WillOnce(Return(15));
+    ASSERT_EQ(model.costumeWidth(), 15);
+}
+
+TEST(SpriteModelTest, CostumeHeight)
+{
+    SpriteModel model;
+
+    RenderedTargetMock renderedTarget;
+    model.setRenderedTarget(&renderedTarget);
+
+    EXPECT_CALL(renderedTarget, costumeHeight()).WillOnce(Return(10));
+    ASSERT_EQ(model.costumeHeight(), 10);
+}
+
 TEST(SpriteModelTest, BoundingRect)
 {
     SpriteModel model;

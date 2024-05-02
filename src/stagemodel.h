@@ -40,6 +40,9 @@ class StageModel
         void onBubbleTypeChanged(libscratchcpp::Target::BubbleType type) override;
         void onBubbleTextChanged(const std::string &text) override;
 
+        int costumeWidth() const override;
+        int costumeHeight() const override;
+
         libscratchcpp::Rect boundingRect() const override;
         libscratchcpp::Rect fastBoundingRect() const override;
 
