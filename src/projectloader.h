@@ -110,6 +110,7 @@ class ProjectLoader : public QObject
         void monitorAdded(MonitorModel *model);
         void monitorRemoved(MonitorModel *model);
         void questionAsked(QString question);
+        void questionAborted();
 
     protected:
         void timerEvent(QTimerEvent *event) override;
