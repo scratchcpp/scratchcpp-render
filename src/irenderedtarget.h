@@ -78,6 +78,8 @@ class IRenderedTarget : public QNanoQuickItem
         virtual bool mirrorHorizontally() const = 0;
 
         virtual Texture texture() const = 0;
+        virtual int costumeWidth() const = 0;
+        virtual int costumeHeight() const = 0;
 
         virtual const std::unordered_map<ShaderManager::Effect, double> &graphicEffects() const = 0;
         virtual void setGraphicEffect(ShaderManager::Effect effect, double value) = 0;

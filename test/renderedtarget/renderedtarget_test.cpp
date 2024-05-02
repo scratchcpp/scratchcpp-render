@@ -87,6 +87,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.beforeRedraw();
     ASSERT_EQ(target.width(), 4);
     ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.costumeWidth(), 1);
+    ASSERT_EQ(target.costumeHeight(), 2);
     ASSERT_EQ(target.x(), 263);
     ASSERT_EQ(target.y(), 108);
     ASSERT_EQ(target.z(), 0);
@@ -125,6 +127,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
 
     ASSERT_EQ(target.width(), 4);
     ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.costumeWidth(), 1);
+    ASSERT_EQ(target.costumeHeight(), 2);
     ASSERT_EQ(target.x(), 263);
     ASSERT_EQ(target.y(), 108);
     ASSERT_EQ(target.z(), 3);
@@ -171,6 +175,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.beforeRedraw();
     ASSERT_EQ(target.width(), 4);
     ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.costumeWidth(), 1);
+    ASSERT_EQ(target.costumeHeight(), 2);
     ASSERT_EQ(target.x(), 276);
     ASSERT_EQ(target.y(), 184);
     ASSERT_EQ(target.transformOriginPoint().x(), -23);
@@ -241,6 +247,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.beforeRedraw();
     ASSERT_EQ(target.width(), 4);
     ASSERT_EQ(target.height(), 6);
+    ASSERT_EQ(target.costumeWidth(), 1);
+    ASSERT_EQ(target.costumeHeight(), 2);
     ASSERT_EQ(target.x(), 379.5);
     ASSERT_EQ(target.y(), 384);
     ASSERT_EQ(target.transformOriginPoint().x(), 0);
@@ -263,6 +271,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
 
     ASSERT_EQ(target.width(), 26);
     ASSERT_EQ(target.height(), 26);
+    ASSERT_EQ(target.costumeWidth(), 13);
+    ASSERT_EQ(target.costumeHeight(), 13);
     ASSERT_EQ(target.x(), 329.5);
     ASSERT_EQ(target.y(), 400);
     ASSERT_EQ(target.z(), 3);
@@ -277,6 +287,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_TRUE(texture.isValid());
     ASSERT_EQ(texture.width(), 26);
     ASSERT_EQ(texture.height(), 26);
+    ASSERT_EQ(target.costumeWidth(), 13);
+    ASSERT_EQ(target.costumeHeight(), 13);
 
     // Stage scale (SVG) - should update width and height
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
@@ -284,6 +296,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.setStageScale(3.5);
     ASSERT_EQ(target.width(), 52);
     ASSERT_EQ(target.height(), 52);
+    ASSERT_EQ(target.costumeWidth(), 13);
+    ASSERT_EQ(target.costumeHeight(), 13);
 
     context.doneCurrent();
 }

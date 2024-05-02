@@ -529,6 +529,22 @@ Texture RenderedTarget::texture() const
     return m_texture;
 }
 
+int RenderedTarget::costumeWidth() const
+{
+    if (!m_skin || !m_costume)
+        return 0;
+
+    return m_skin->getTexture(1).width() / m_costume->bitmapResolution();
+}
+
+int RenderedTarget::costumeHeight() const
+{
+    if (!m_skin || !m_costume)
+        return 0;
+
+    return m_skin->getTexture(1).height() / m_costume->bitmapResolution();
+}
+
 const std::unordered_map<ShaderManager::Effect, double> &RenderedTarget::graphicEffects() const
 {
     return m_graphicEffects;
@@ -591,7 +607,7 @@ bool RenderedTarget::contains(const QPointF &point) const
 
 bool RenderedTarget::containsScratchPoint(double x, double y) const
 {
-    if (!m_engine)
+    if (!m_engine || !m_skin || !m_costume)
         return false;
 
     return containsLocalPoint(mapFromScratchToLocal(QPointF(x, y)));

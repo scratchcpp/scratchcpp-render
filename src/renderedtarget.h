@@ -86,6 +86,8 @@ class RenderedTarget : public IRenderedTarget
         bool mirrorHorizontally() const override;
 
         Texture texture() const override;
+        int costumeWidth() const override;
+        int costumeHeight() const override;
 
         const std::unordered_map<ShaderManager::Effect, double> &graphicEffects() const override;
         void setGraphicEffect(ShaderManager::Effect effect, double value) override;

@@ -62,6 +62,8 @@ class RenderedTargetMock : public IRenderedTarget
         MOCK_METHOD(bool, mirrorHorizontally, (), (const, override));
 
         MOCK_METHOD(Texture, texture, (), (const, override));
+        MOCK_METHOD(int, costumeWidth, (), (const, override));
+        MOCK_METHOD(int, costumeHeight, (), (const, override));
 
         MOCK_METHOD((const std::unordered_map<ShaderManager::Effect, double> &), graphicEffects, (), (const, override));
         MOCK_METHOD(void, setGraphicEffect, (ShaderManager::Effect effect, double value), (override));
