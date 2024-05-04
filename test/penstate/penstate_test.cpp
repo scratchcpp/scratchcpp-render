@@ -28,5 +28,5 @@ TEST(PenStateTest, UpdateColor)
     state.transparency = 36.09;
     state.shade = 85;
     state.updateColor();
-    ASSERT_EQ(state.penAttributes.color, QColor::fromHsv(283, 114, 31, 162));
+    ASSERT_EQ(state.penAttributes.color, QNanoColor::fromQColor(QColor::fromHsv(283, 114, 31, 162)));
 }

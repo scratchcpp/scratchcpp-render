@@ -109,9 +109,8 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
 
     // Set pen attributes
     m_painter->setLineWidth(penAttributes.diameter);
-    QNanoColor col(penAttributes.color.red(), penAttributes.color.green(), penAttributes.color.blue(), penAttributes.color.alpha());
-    m_painter->setStrokeStyle(col);
-    m_painter->setFillStyle(col);
+    m_painter->setStrokeStyle(penAttributes.color);
+    m_painter->setFillStyle(penAttributes.color);
     m_painter->setLineJoin(QNanoPainter::JOIN_ROUND);
     m_painter->setLineCap(QNanoPainter::CAP_ROUND);
     m_painter->setAntialias(m_antialiasingEnabled ? 1.0f : 0.0f);

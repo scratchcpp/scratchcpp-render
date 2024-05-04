@@ -178,7 +178,7 @@ TEST_F(PenLayerTest, DrawPoint)
     penLayer.setEngine(&engine);
 
     PenAttributes attr;
-    attr.color = QColor(255, 0, 0);
+    attr.color = QNanoColor(255, 0, 0);
     attr.diameter = 3;
 
     EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
@@ -187,7 +187,7 @@ TEST_F(PenLayerTest, DrawPoint)
     penLayer.drawPoint(attr, -56, 93);
     penLayer.drawPoint(attr, 130, 77);
 
-    attr.color = QColor(0, 128, 0, 128);
+    attr.color = QNanoColor(0, 128, 0, 128);
     attr.diameter = 10;
 
     EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
@@ -196,7 +196,7 @@ TEST_F(PenLayerTest, DrawPoint)
     penLayer.drawPoint(attr, -228, 145);
     penLayer.drawPoint(attr, -100, 139);
 
-    attr.color = QColor(255, 50, 200, 185);
+    attr.color = QNanoColor(255, 50, 200, 185);
     attr.diameter = 25.6;
 
     EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
@@ -225,7 +225,7 @@ TEST_F(PenLayerTest, DrawLine)
     penLayer.setEngine(&engine);
 
     PenAttributes attr;
-    attr.color = QColor(255, 0, 0);
+    attr.color = QNanoColor(255, 0, 0);
     attr.diameter = 3;
 
     EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
@@ -233,7 +233,7 @@ TEST_F(PenLayerTest, DrawLine)
     penLayer.drawLine(attr, 63, 164, -56, 93);
     penLayer.drawLine(attr, 130, 77, 125, -22);
 
-    attr.color = QColor(0, 128, 0, 128);
+    attr.color = QNanoColor(0, 128, 0, 128);
     attr.diameter = 10;
 
     EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
@@ -241,7 +241,7 @@ TEST_F(PenLayerTest, DrawLine)
     penLayer.drawLine(attr, 152, -158, -228, 145);
     penLayer.drawLine(attr, -100, 139, 20, 72);
 
-    attr.color = QColor(255, 50, 200, 185);
+    attr.color = QNanoColor(255, 50, 200, 185);
     attr.diameter = 25.6;
 
     EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
@@ -269,7 +269,7 @@ TEST_F(PenLayerTest, TextureData)
     penLayer.setEngine(&engine);
 
     PenAttributes attr;
-    attr.color = QColor(255, 0, 0);
+    attr.color = QNanoColor(255, 0, 0);
     attr.diameter = 1;
     penLayer.drawLine(attr, -3, 2, 3, -2);
     ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), qRgb(255, 0, 0));
@@ -282,7 +282,7 @@ TEST_F(PenLayerTest, TextureData)
     ASSERT_EQ(bounds.right(), 3);
     ASSERT_EQ(bounds.bottom(), -2);
 
-    attr.color = QColor(0, 128, 0, 128);
+    attr.color = QNanoColor(0, 128, 0, 128);
     attr.diameter = 2;
     penLayer.drawLine(attr, -3, -2, 3, 2);
     ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), qRgb(255, 0, 0));
@@ -306,7 +306,7 @@ TEST_F(PenLayerTest, TextureData)
     ASSERT_EQ(bounds.right(), 0);
     ASSERT_EQ(bounds.bottom(), 0);
 
-    attr.color = QColor(0, 255, 0, 255);
+    attr.color = QNanoColor(0, 255, 0, 255);
     attr.diameter = 1;
     penLayer.drawLine(attr, 0, -1, 1, 1);
     ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgba(0, 0, 0, 0));

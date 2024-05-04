@@ -289,43 +289,43 @@ TEST_F(PenBlocksTest, SetPenColorToColorImpl)
 
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(210, 42, 204));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(210, 42, 204)));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(228, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(228, 255, 255)));
 
     vm.reset();
     vm.setBytecode(bytecode3);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(359, 0, 0));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(359, 0, 0)));
 
     vm.reset();
     vm.setBytecode(bytecode4);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(359, 0, 0));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(359, 0, 0)));
 
     vm.reset();
     vm.setBytecode(bytecode5);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(359, 0, 0));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(359, 0, 0)));
 
     vm.reset();
     vm.setBytecode(bytecode6);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(162, 74, 72, 73));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(162, 74, 72, 73)));
 
     vm.reset();
     vm.setBytecode(bytecode7);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(239, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(239, 255, 255)));
 }
 
 TEST_F(PenBlocksTest, ChangePenColorParamBy)
@@ -435,18 +435,18 @@ TEST_F(PenBlocksTest, ChangePenColorParamByImpl)
     // color
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(71, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(71, 255, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(263, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(263, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 255, 255, 150)));
 
     // saturation
     model.penState().saturation = 32.4;
@@ -454,18 +454,18 @@ TEST_F(PenBlocksTest, ChangePenColorParamByImpl)
     vm.setBytecode(bytecode3);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 218, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 218, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode4);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 255, 150)));
 
     // brightness
     model.penState().brightness = 12.5;
@@ -473,18 +473,18 @@ TEST_F(PenBlocksTest, ChangePenColorParamByImpl)
     vm.setBytecode(bytecode5);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 167, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 167, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode6);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 150)));
 
     // transparency
     model.penState().transparency = 6.28;
@@ -492,25 +492,25 @@ TEST_F(PenBlocksTest, ChangePenColorParamByImpl)
     vm.setBytecode(bytecode7);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 103));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 103)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 0));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 0)));
 
     vm.reset();
     vm.setBytecode(bytecode8);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 255)));
 
     // invalid parameter
     vm.reset();
     vm.setBytecode(bytecode9);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 255)));
 
     // color (optimized)
     model.penState() = PenState();
@@ -519,18 +519,18 @@ TEST_F(PenBlocksTest, ChangePenColorParamByImpl)
     vm.setBytecode(bytecode10);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(71, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(71, 255, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(263, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(263, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode11);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 255, 255, 150)));
 
     // saturation (optimized)
     model.penState().saturation = 32.4;
@@ -538,18 +538,18 @@ TEST_F(PenBlocksTest, ChangePenColorParamByImpl)
     vm.setBytecode(bytecode12);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 218, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 218, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode13);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 255, 150)));
 
     // brightness (optimized)
     model.penState().brightness = 12.5;
@@ -557,18 +557,18 @@ TEST_F(PenBlocksTest, ChangePenColorParamByImpl)
     vm.setBytecode(bytecode14);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 167, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 167, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode15);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 150)));
 
     // transparency (optimized)
     model.penState().transparency = 6.28;
@@ -576,18 +576,18 @@ TEST_F(PenBlocksTest, ChangePenColorParamByImpl)
     vm.setBytecode(bytecode16);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 103));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 103)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 0));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 0)));
 
     vm.reset();
     vm.setBytecode(bytecode17);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(188, 0, 0, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(188, 0, 0, 255)));
 }
 
 TEST_F(PenBlocksTest, SetPenColorParamTo)
@@ -705,19 +705,19 @@ TEST_F(PenBlocksTest, SetPenColorParamToImpl)
     // color
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(191, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(191, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(234, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(234, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode3);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 150)));
 
     // saturation
     model.penState().saturation = 32.4;
@@ -725,19 +725,19 @@ TEST_F(PenBlocksTest, SetPenColorParamToImpl)
     vm.setBytecode(bytecode4);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 135, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 135, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode5);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 0, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 0, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode6);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 150)));
 
     // brightness
     model.penState().brightness = 12.5;
@@ -745,19 +745,19 @@ TEST_F(PenBlocksTest, SetPenColorParamToImpl)
     vm.setBytecode(bytecode7);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 135, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 135, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode8);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 0, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 0, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode9);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 150)));
 
     // transparency
     model.penState().transparency = 12.5;
@@ -765,26 +765,26 @@ TEST_F(PenBlocksTest, SetPenColorParamToImpl)
     vm.setBytecode(bytecode10);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 119));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 119)));
 
     vm.reset();
     vm.setBytecode(bytecode11);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 255)));
 
     vm.reset();
     vm.setBytecode(bytecode12);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 0));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 0)));
 
     // invalid parameter
     vm.reset();
     vm.setBytecode(bytecode13);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 0));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 0)));
 
     // color (optimized)
     model.penState() = PenState();
@@ -794,19 +794,19 @@ TEST_F(PenBlocksTest, SetPenColorParamToImpl)
     vm.setBytecode(bytecode14);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(191, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(191, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode15);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(234, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(234, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode16);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 150)));
 
     // saturation (optimized)
     model.penState().saturation = 32.4;
@@ -814,19 +814,19 @@ TEST_F(PenBlocksTest, SetPenColorParamToImpl)
     vm.setBytecode(bytecode17);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 135, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 135, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode18);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 0, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 0, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode19);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 150)));
 
     // brightness (optimized)
     model.penState().brightness = 12.5;
@@ -834,19 +834,19 @@ TEST_F(PenBlocksTest, SetPenColorParamToImpl)
     vm.setBytecode(bytecode20);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 135, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 135, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode21);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 0, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 0, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode22);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 150)));
 
     // transparency (optimized)
     model.penState().transparency = 12.5;
@@ -854,19 +854,19 @@ TEST_F(PenBlocksTest, SetPenColorParamToImpl)
     vm.setBytecode(bytecode23);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 119));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 119)));
 
     vm.reset();
     vm.setBytecode(bytecode24);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 255)));
 
     vm.reset();
     vm.setBytecode(bytecode25);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(313, 255, 255, 0));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(313, 255, 255, 0)));
 }
 
 TEST_F(PenBlocksTest, ChangePenSizeBy)
@@ -1057,28 +1057,28 @@ TEST_F(PenBlocksTest, ChangePenShadeByImpl)
 
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 255, 110, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(240, 255, 110, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 119, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(240, 119, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 247, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(240, 247, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 162, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(240, 162, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 255, 55, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(240, 255, 55, 150)));
 }
 
 TEST_F(PenBlocksTest, SetPenShadeToNumber)
@@ -1132,19 +1132,19 @@ TEST_F(PenBlocksTest, SetPenShadeToNumberImpl)
 
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 148, 253, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(240, 148, 253, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 102, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(240, 102, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode3);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(240, 89, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(240, 89, 255, 150)));
 }
 
 TEST_F(PenBlocksTest, ChangePenHueBy)
@@ -1197,28 +1197,28 @@ TEST_F(PenBlocksTest, ChangePenHueByImpl)
 
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(106, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(106, 255, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(332, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(332, 255, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(199, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(199, 255, 255, 150)));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(353, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(353, 255, 255, 150)));
 
     vm.reset();
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(148, 255, 255, 150));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(148, 255, 255, 150)));
 }
 
 TEST_F(PenBlocksTest, SetPenHueToNumber)
@@ -1272,17 +1272,17 @@ TEST_F(PenBlocksTest, SetPenHueToNumberImpl)
 
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(226, 255, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(226, 255, 255, 255)));
 
     vm.reset();
     vm.setBytecode(bytecode2);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(154, 255, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(154, 255, 255, 255)));
 
     vm.reset();
     vm.setBytecode(bytecode3);
     vm.run();
     ASSERT_EQ(vm.registerCount(), 0);
-    ASSERT_EQ(model.penAttributes().color, QColor::fromHsv(160, 255, 255, 255));
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(160, 255, 255, 255)));
 }
