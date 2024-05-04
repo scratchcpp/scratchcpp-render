@@ -24,9 +24,6 @@ void PenLayerPainter::paint(QNanoPainter *painter)
     // Custom FBO - only used for testing
     QOpenGLFramebufferObject *targetFbo = m_targetFbo ? m_targetFbo : framebufferObject();
 
-    QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-
     // Blit the FBO to the item FBO
     QOpenGLFramebufferObject::blitFramebuffer(targetFbo, m_fbo);
 }
