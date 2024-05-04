@@ -81,7 +81,7 @@ TEST_F(PenLayerTest, FramebufferObject)
     ASSERT_EQ(fbo->width(), 480);
     ASSERT_EQ(fbo->height(), 360);
     ASSERT_EQ(fbo->format().attachment(), QOpenGLFramebufferObject::CombinedDepthStencil);
-    ASSERT_EQ(fbo->format().samples(), 4);
+    ASSERT_EQ(fbo->format().samples(), 0);
 
     penLayer.setAntialiasingEnabled(false);
     ASSERT_FALSE(penLayer.antialiasingEnabled());
@@ -309,25 +309,25 @@ TEST_F(PenLayerTest, TextureData)
     attr.color = QColor(0, 255, 0, 255);
     attr.diameter = 1;
     penLayer.drawLine(attr, 0, -1, 1, 1);
-    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgb(0, 255, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgba(0, 0, 0, 0));
     ASSERT_EQ(penLayer.colorAtScratchPoint(0, 0), qRgb(0, 255, 0));
     ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 1), qRgba(0, 0, 0, 0));
 
     bounds = penLayer.getBounds();
     ASSERT_EQ(bounds.left(), 0);
-    ASSERT_EQ(bounds.top(), 1);
-    ASSERT_EQ(bounds.right(), 1);
-    ASSERT_EQ(bounds.bottom(), -1);
+    ASSERT_EQ(bounds.top(), 0);
+    ASSERT_EQ(bounds.right(), 2);
+    ASSERT_EQ(bounds.bottom(), -2);
 
     attr.diameter = 2;
     penLayer.drawPoint(attr, -2, 0);
-    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgb(0, 255, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgba(0, 0, 0, 0));
     ASSERT_EQ(penLayer.colorAtScratchPoint(0, 0), qRgb(0, 255, 0));
     ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 1), qRgb(0, 255, 0));
 
     bounds = penLayer.getBounds();
     ASSERT_EQ(bounds.left(), -3);
     ASSERT_EQ(bounds.top(), 1);
-    ASSERT_EQ(bounds.right(), 1);
-    ASSERT_EQ(bounds.bottom(), -1);
+    ASSERT_EQ(bounds.right(), 2);
+    ASSERT_EQ(bounds.bottom(), -2);
 }

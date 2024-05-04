@@ -3,9 +3,8 @@
 #pragma once
 
 #include <QOpenGLFramebufferObject>
-#include <QOpenGLPaintDevice>
 #include <QOpenGLFunctions>
-#include <QPainter>
+#include <qnanopainter.h>
 #include <scratchcpp/iengine.h>
 
 #include "ipenlayer.h"
@@ -56,9 +55,7 @@ class PenLayer : public IPenLayer
         bool m_antialiasingEnabled = true;
         libscratchcpp::IEngine *m_engine = nullptr;
         std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
-        std::unique_ptr<QOpenGLFramebufferObject> m_resolvedFbo;
-        std::unique_ptr<QOpenGLPaintDevice> m_paintDevice;
-        QOpenGLFramebufferObjectFormat m_fboFormat;
+        std::unique_ptr<QNanoPainter> m_painter;
         std::unique_ptr<QOpenGLFunctions> m_glF;
         Texture m_texture;
         bool m_textureDirty = true;
