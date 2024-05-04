@@ -11,8 +11,6 @@ std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> PenLayer::m_projectPen
 PenLayer::PenLayer(QNanoQuickItem *parent) :
     IPenLayer(parent)
 {
-    m_fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-    m_fboFormat.setSamples(m_antialiasingEnabled ? 4 : 0);
     setSmooth(false);
 }
 
@@ -30,7 +28,6 @@ bool PenLayer::antialiasingEnabled() const
 void PenLayer::setAntialiasingEnabled(bool enabled)
 {
     m_antialiasingEnabled = enabled;
-    m_fboFormat.setSamples(enabled ? 4 : 0);
 }
 
 libscratchcpp::IEngine *PenLayer::engine() const
@@ -50,10 +47,15 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 
     if (m_engine && QOpenGLContext::currentContext()) {
         m_projectPenLayers[m_engine] = this;
-        m_fbo = std::make_unique<QOpenGLFramebufferObject>(m_engine->stageWidth(), m_engine->stageHeight(), m_fboFormat);
+        QOpenGLFramebufferObjectFormat fboFormat;
+        fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        m_fbo = std::make_unique<QOpenGLFramebufferObject>(m_engine->stageWidth(), m_engine->stageHeight(), fboFormat);
         Q_ASSERT(m_fbo->isValid());
+        m_texture = Texture(m_fbo->texture(), m_fbo->size());
 
-        m_paintDevice = std::make_unique<QOpenGLPaintDevice>(m_fbo->size());
+        if (!m_painter)
+            m_painter = std::make_unique<QNanoPainter>();
+
         clear();
     }
 
@@ -89,15 +91,13 @@ void scratchcpprender::PenLayer::drawPoint(const PenAttributes &penAttributes, d
 
 void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, double x0, double y0, double x1, double y1)
 {
-    if (!m_fbo || !m_paintDevice || !m_engine)
+    if (!m_fbo || !m_painter || !m_engine)
         return;
 
     // Begin painting
     m_fbo->bind();
-    QPainter painter(m_paintDevice.get());
-    painter.beginNativePainting();
-    painter.setRenderHint(QPainter::Antialiasing, m_antialiasingEnabled);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, false);
+
+    m_painter->beginFrame(m_fbo->width(), m_fbo->height());
 
     // Translate to Scratch coordinate system
     double stageWidthHalf = m_engine->stageWidth() / 2;
@@ -108,20 +108,29 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
     y1 = stageHeightHalf - y1;
 
     // Set pen attributes
-    QPen pen(penAttributes.color);
-    pen.setWidthF(penAttributes.diameter);
-    pen.setCapStyle(Qt::RoundCap);
-    painter.setPen(pen);
+    m_painter->setLineWidth(penAttributes.diameter);
+    m_painter->setStrokeStyle(penAttributes.color);
+    m_painter->setFillStyle(penAttributes.color);
+    m_painter->setLineJoin(QNanoPainter::JOIN_ROUND);
+    m_painter->setLineCap(QNanoPainter::CAP_ROUND);
+    m_painter->setAntialias(m_antialiasingEnabled ? 1.0f : 0.0f);
+    m_painter->beginPath();
+
+    // Width 1 and 3 lines need to be offset by 0.5
+    const double offset = (std::fmod(std::max(4 - penAttributes.diameter, 0.0), 2)) / 2;
 
     // If the start and end coordinates are the same, draw a point, otherwise draw a line
-    if (x0 == x1 && y0 == y1)
-        painter.drawPoint(x0, y0);
-    else
-        painter.drawLine(x0, y0, x1, y1);
+    if (x0 == x1 && y0 == y1) {
+        m_painter->circle(x0 + offset, y0 + offset, penAttributes.diameter / 2);
+        m_painter->fill();
+    } else {
+        m_painter->moveTo(x0 + offset, y0 + offset);
+        m_painter->lineTo(x1 + offset, y1 + offset);
+        m_painter->stroke();
+    }
 
     // End painting
-    painter.endNativePainting();
-    painter.end();
+    m_painter->endFrame();
     m_fbo->release();
 
     m_textureDirty = true;
@@ -239,13 +248,4 @@ void PenLayer::updateTexture()
 
     m_textureDirty = false;
     m_textureManager.removeTexture(m_texture);
-
-    if (!m_resolvedFbo || m_resolvedFbo->size() != m_fbo->size()) {
-        QOpenGLFramebufferObjectFormat format;
-        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        m_resolvedFbo = std::make_unique<QOpenGLFramebufferObject>(m_fbo->size(), format);
-    }
-
-    QOpenGLFramebufferObject::blitFramebuffer(m_resolvedFbo.get(), m_fbo.get());
-    m_texture = Texture(m_resolvedFbo->texture(), m_resolvedFbo->size());
 }

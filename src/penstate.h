@@ -31,7 +31,7 @@ struct PenState
             const int v = brightness * 255 / 100;
             const int a = 255 - transparency * 255 / 100;
 
-            penAttributes.color = QColor::fromHsv(h, s, v, a);
+            penAttributes.color = QNanoColor::fromQColor(QColor::fromHsv(h, s, v, a));
         }
 };
 
