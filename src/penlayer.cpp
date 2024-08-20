@@ -56,6 +56,11 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
         if (!m_painter)
             m_painter = std::make_unique<QNanoPainter>();
 
+        if (!m_glF) {
+            m_glF = std::make_unique<QOpenGLFunctions>();
+            m_glF->initializeOpenGLFunctions();
+        }
+
         clear();
     }
 
@@ -66,11 +71,6 @@ void scratchcpprender::PenLayer::clear()
 {
     if (!m_fbo)
         return;
-
-    if (!m_glF) {
-        m_glF = std::make_unique<QOpenGLFunctions>();
-        m_glF->initializeOpenGLFunctions();
-    }
 
     m_fbo->bind();
     m_glF->glDisable(GL_SCISSOR_TEST);
