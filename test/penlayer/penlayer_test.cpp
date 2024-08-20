@@ -4,6 +4,9 @@
 #include <QFile>
 #include <penlayer.h>
 #include <penattributes.h>
+#include <projectloader.h>
+#include <spritemodel.h>
+#include <renderedtarget.h>
 #include <qnanopainter.h>
 #include <enginemock.h>
 
@@ -257,6 +260,52 @@ TEST_F(PenLayerTest, DrawLine)
     ref.open(QFile::ReadOnly);
     buffer.open(QFile::ReadOnly);
     ASSERT_EQ(ref.readAll(), buffer.readAll());
+}
+
+TEST_F(PenLayerTest, Stamp)
+{
+    PenLayer penLayer;
+    EngineMock engine;
+    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
+    penLayer.setEngine(&engine);
+
+    ProjectLoader loader;
+    loader.setFileName("stamp_env.sb3");
+    loader.start(); // wait until it loads
+
+    std::vector<std::unique_ptr<RenderedTarget>> targets;
+    StageModel *stage = loader.stage();
+    targets.push_back(std::make_unique<RenderedTarget>());
+    targets.back()->setStageModel(stage);
+    targets.back()->setEngine(loader.engine());
+    targets.back()->loadCostumes();
+    targets.back()->updateCostume(stage->stage()->currentCostume().get());
+    targets.back()->setGraphicEffect(ShaderManager::Effect::Color, 25);
+    stage->setRenderedTarget(targets.back().get());
+    const auto &sprites = loader.spriteList();
+
+    int i = 0;
+
+    for (SpriteModel *sprite : sprites) {
+        targets.push_back(std::make_unique<RenderedTarget>());
+        targets.back()->setSpriteModel(sprite);
+        targets.back()->setEngine(loader.engine());
+        targets.back()->loadCostumes();
+        targets.back()->updateCostume(sprite->sprite()->currentCostume().get());
+        targets.back()->setGraphicEffect(ShaderManager::Effect::Color, i * 25);
+        targets.back()->setGraphicEffect(ShaderManager::Effect::Ghost, i * 5);
+        sprite->setRenderedTarget(targets.back().get());
+        i++;
+    }
+
+    for (const auto &target : targets)
+        penLayer.stamp(target.get());
+
+    QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+    QImage image = fbo->toImage().scaled(240, 180);
+    QImage ref("stamp.png");
+    ASSERT_LE(fuzzyCompareImages(image, ref), 0.1668);
 }
 
 TEST_F(PenLayerTest, TextureData)

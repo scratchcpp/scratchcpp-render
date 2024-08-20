@@ -21,6 +21,7 @@ class PenLayerMock : public IPenLayer
         MOCK_METHOD(void, clear, (), (override));
         MOCK_METHOD(void, drawPoint, (const PenAttributes &, double, double), (override));
         MOCK_METHOD(void, drawLine, (const PenAttributes &, double, double, double, double), (override));
+        MOCK_METHOD(void, stamp, (IRenderedTarget *), (override));
 
         MOCK_METHOD(QOpenGLFramebufferObject *, framebufferObject, (), (const, override));
         MOCK_METHOD(QRgb, colorAtScratchPoint, (double, double), (const, override));
