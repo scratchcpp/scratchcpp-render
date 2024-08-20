@@ -106,6 +106,11 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_EQ(texture.width(), 4);
     ASSERT_EQ(texture.height(), 6);
 
+    texture = target.cpuTexture();
+    ASSERT_TRUE(texture.isValid());
+    ASSERT_EQ(texture.width(), 4);
+    ASSERT_EQ(texture.height(), 6);
+
     // Sprite
     Sprite sprite;
     sprite.setVisible(true);
@@ -141,6 +146,11 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_FALSE(target.smooth());
 
     texture = target.texture();
+    ASSERT_TRUE(texture.isValid());
+    ASSERT_EQ(texture.width(), 4);
+    ASSERT_EQ(texture.height(), 6);
+
+    texture = target.cpuTexture();
     ASSERT_TRUE(texture.isValid());
     ASSERT_EQ(texture.width(), 4);
     ASSERT_EQ(texture.height(), 6);
@@ -290,6 +300,11 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_EQ(target.costumeWidth(), 13);
     ASSERT_EQ(target.costumeHeight(), 13);
 
+    texture = target.cpuTexture();
+    ASSERT_TRUE(texture.isValid());
+    ASSERT_EQ(texture.width(), 13);
+    ASSERT_EQ(texture.height(), 13);
+
     // Stage scale (SVG) - should update width and height
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
@@ -298,6 +313,16 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_EQ(target.height(), 52);
     ASSERT_EQ(target.costumeWidth(), 13);
     ASSERT_EQ(target.costumeHeight(), 13);
+
+    texture = target.texture();
+    ASSERT_TRUE(texture.isValid());
+    ASSERT_EQ(texture.width(), 52);
+    ASSERT_EQ(texture.height(), 52);
+
+    texture = target.cpuTexture();
+    ASSERT_TRUE(texture.isValid());
+    ASSERT_EQ(texture.width(), 13);
+    ASSERT_EQ(texture.height(), 13);
 
     context.doneCurrent();
 }

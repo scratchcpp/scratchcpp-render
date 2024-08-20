@@ -529,6 +529,11 @@ Texture RenderedTarget::texture() const
     return m_texture;
 }
 
+const Texture &RenderedTarget::cpuTexture() const
+{
+    return m_cpuTexture;
+}
+
 int RenderedTarget::costumeWidth() const
 {
     if (!m_skin || !m_costume)
