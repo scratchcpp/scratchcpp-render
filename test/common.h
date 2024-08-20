@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QGuiApplication>
+#include <QImage>
 #include <gtest/gtest.h>
 #include <filesystem>
 #include <fstream>
@@ -16,6 +17,23 @@ std::string readFileStr(const std::string &fileName)
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
+}
+
+double fuzzyCompareImages(const QImage &a, const QImage &b)
+{
+    if (a.size() != b.size())
+        return 1;
+
+    int x, y, c = 0;
+
+    for (y = 0; y < a.height(); y++) {
+        for (x = 0; x < a.width(); x++) {
+            if (a.pixel(x, y) != b.pixel(x, y))
+                c++;
+        }
+    }
+
+    return c / static_cast<double>((a.width() * a.height()));
 }
 
 int main(int argc, char **argv)
