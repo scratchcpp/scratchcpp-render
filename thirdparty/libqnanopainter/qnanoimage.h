@@ -55,9 +55,6 @@ public:
     // Constructs an image from QImage with the filename and flags
     QNanoImage(const QImage &image, const QString &filename, ImageFlags flags = {});
 
-    // Constructs an image from the data in the QIODevice, unique key and flags
-    QNanoImage(QIODevice *device, const QString &uniqueKey, ImageFlags flags = {});
-
     // Set the filename of the image
     void setFilename(const QString &filename);
 
@@ -72,7 +69,6 @@ public:
 
     static QNanoImage fromFrameBuffer(const QOpenGLFramebufferObject *fbo, ImageFlags flags = QNanoImage::FLIPY);
     static QNanoImage fromCache(QNanoPainter *painter, const QString &filename, ImageFlags flags = {});
-    static QNanoImage fromCache(QNanoPainter *painter, QIODevice *device, const QString &uniqueKey, ImageFlags flags = {});
 
 private:
     friend class QNanoPainter;
@@ -89,7 +85,6 @@ private:
     QNanoPainter *m_parentPainter = nullptr;
     QSharedPointer<QNanoDataElement> m_imageData;
     std::unique_ptr<QImage> m_image;
-    QIODevice *m_device = nullptr;
     QString m_filename;
     GLuint m_textureId = 0;
     QNanoImage::ImageFlags m_flags = {};

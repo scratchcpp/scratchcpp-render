@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(qnanopainter VERSION 0.1.0)
 
-set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
-
 option(QNANO_DEBUG_COLLECT "Enable this to get the drawing debug information" OFF)
 option(QNANO_DEBUG_RENDER "Enable this to render the drawing debug information" OFF)
 option(QNANO_QT_GL_INCLUDE "Enable this to let Qt include OpenGL headers" ON)
@@ -12,6 +10,7 @@ option(QNANO_ENABLE_TOUCH_SIGNALS "This will enable signalling touch events
 option(QNANO_ENABLE_PAINT_SIGNALS "This will enable signalling paint events
                                    Can be useful when using view/widget classes directly" OFF)
 option(QNANO_USE_RENDERNODE "Enable this to use QRenderNode (available since Qt 5.8.0) instead of QQuickFramebufferObject" OFF)
+option(QNANO_ENABLE_PAINTER_SHARING "Enable this to share QNanoPainter instance between QNanoQuickItemPainters" ON)
 option(QNANO_USE_RHI "Enable this to use QRhi (available since Qt 6.7) instead of QQuickFramebufferObject" OFF)
 
 option(QNANO_BUILD_GLES_BACKENDS "When building for embedded devices you can define manually which backends are supported" OFF)
@@ -168,7 +167,9 @@ endif()
 target_link_libraries(qnanopainter ${QNANOPAINTER_QT_LIBS} )
 
 # add to INCLUDE PATH 
-target_include_directories(qnanopainter PUBLIC .)  
+target_include_directories(qnanopainter
+    PUBLIC .
+    PUBLIC nanovg)
 
 # cmake variable ==> c++ #define
 if(QNANO_QT_GL_INCLUDE)

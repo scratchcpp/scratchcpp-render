@@ -99,15 +99,6 @@ QNanoImage::QNanoImage(const QImage &image, const QString &filename, ImageFlags 
     updateUniqueKey();
 }
 
-QNanoImage::QNanoImage(QIODevice *device, const QString &uniqueKey, ImageFlags flags)
-    : m_device(device)
-    , m_uniqueKey(uniqueKey)
-    , m_flags(flags)
-{
-    Q_ASSERT(device);
-    updateUniqueKey();
-}
-
 /*!
     \fn void QNanoImage::setFilename(const QString &filename)
 
@@ -220,21 +211,6 @@ QNanoImage QNanoImage::fromCache(QNanoPainter *painter, const QString &filename,
     return image;
 }
 
-QNanoImage QNanoImage::fromCache(QNanoPainter *painter, QIODevice *device, const QString &uniqueKey, ImageFlags flags)
-{
-    Q_ASSERT(painter);
-    Q_ASSERT(device);
-    QNanoImage image;
-    image.m_imageData.reset(new QNanoDataElement());
-    image.m_device = device;
-    image.m_uniqueKey = uniqueKey;
-    image.m_flags = flags;
-    image.updateUniqueKey();
-    image.m_parentPainter = painter;
-    image.getID(painter->nvgCtx());
-    return image;
-}
-
 // ***** Private *****
 
 /*!
@@ -280,17 +256,10 @@ int QNanoImage::getID(NVGcontext* nvg)
         }
     } else {
         // Image is not yet in cache, so load and add it
-        QIODevice *device;
-        QFile file;
-        if (m_device)
-            device = m_device;
-        else {
-            file.setFileName(m_filename);
-            device = &file;
-        }
-        if (device->open(QIODevice::ReadOnly)) {
+        QFile file(m_filename);
+        if (file.open(QFile::ReadOnly)) {
             m_imageData.reset(new QNanoDataElement());
-            QByteArray array = device->readAll();
+            QByteArray array = file.readAll();
             int length = array.size();
             unsigned char* data = reinterpret_cast<unsigned char*>(&array.data()[0]);
             m_imageData->id = nvgCreateImageMem(nvg, m_flags, data, length);
@@ -310,7 +279,7 @@ void QNanoImage::updateUniqueKey()
 {
     if (m_textureId > 0)
         m_uniqueKey = QString("%1_").arg(QString::number(m_textureId));
-    else if(!m_device)
+    else
         m_uniqueKey = m_filename;
 
     m_uniqueKey.append(QString::number(m_flags));
