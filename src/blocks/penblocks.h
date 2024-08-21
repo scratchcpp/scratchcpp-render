@@ -29,6 +29,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         void registerBlocks(libscratchcpp::IEngine *engine) override;
 
         static void compileClear(libscratchcpp::Compiler *compiler);
+        static void compileStamp(libscratchcpp::Compiler *compiler);
         static void compilePenDown(libscratchcpp::Compiler *compiler);
         static void compilePenUp(libscratchcpp::Compiler *compiler);
         static void compileSetPenColorToColor(libscratchcpp::Compiler *compiler);
@@ -42,6 +43,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         static void compileSetPenHueToNumber(libscratchcpp::Compiler *compiler);
 
         static unsigned int clear(libscratchcpp::VirtualMachine *vm);
+        static unsigned int stamp(libscratchcpp::VirtualMachine *vm);
         static unsigned int penDown(libscratchcpp::VirtualMachine *vm);
         static unsigned int penUp(libscratchcpp::VirtualMachine *vm);
         static unsigned int setPenColorToColor(libscratchcpp::VirtualMachine *vm);

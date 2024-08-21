@@ -2,12 +2,14 @@
 
 #include <scratchcpp/compiler.h>
 #include <scratchcpp/sprite.h>
+#include <scratchcpp/stage.h>
 #include <scratchcpp/input.h>
 
 #include "penblocks.h"
 #include "penlayer.h"
 #include "penstate.h"
 #include "spritemodel.h"
+#include "stagemodel.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -31,6 +33,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
 {
     // Blocks
     engine->addCompileFunction(this, "pen_clear", &compileClear);
+    engine->addCompileFunction(this, "pen_stamp", &compileStamp);
     engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
     engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
     engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
@@ -55,6 +58,11 @@ void PenBlocks::registerBlocks(IEngine *engine)
 void PenBlocks::compileClear(Compiler *compiler)
 {
     compiler->addFunctionCall(&clear);
+}
+
+void PenBlocks::compileStamp(Compiler *compiler)
+{
+    compiler->addFunctionCall(&stamp);
 }
 
 void PenBlocks::compilePenDown(Compiler *compiler)
@@ -173,6 +181,29 @@ unsigned int PenBlocks::clear(VirtualMachine *vm)
 
     if (penLayer) {
         penLayer->clear();
+        vm->engine()->requestRedraw();
+    }
+
+    return 0;
+}
+
+unsigned int PenBlocks::stamp(libscratchcpp::VirtualMachine *vm)
+{
+    IPenLayer *penLayer = PenLayer::getProjectPenLayer(vm->engine());
+
+    if (penLayer) {
+        Target *target = vm->target();
+        IRenderedTarget *renderedTarget = nullptr;
+
+        if (target->isStage()) {
+            IStageHandler *iface = static_cast<Stage *>(target)->getInterface();
+            renderedTarget = static_cast<StageModel *>(iface)->renderedTarget();
+        } else {
+            ISpriteHandler *iface = static_cast<Sprite *>(target)->getInterface();
+            renderedTarget = static_cast<SpriteModel *>(iface)->renderedTarget();
+        }
+
+        penLayer->stamp(renderedTarget);
         vm->engine()->requestRedraw();
     }
 

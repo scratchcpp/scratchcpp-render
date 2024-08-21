@@ -4,9 +4,11 @@
 #include <scratchcpp/field.h>
 #include <penlayer.h>
 #include <spritemodel.h>
+#include <stagemodel.h>
 #include <blocks/penblocks.h>
 #include <enginemock.h>
 #include <penlayermock.h>
+#include <renderedtargetmock.h>
 
 #include "../common.h"
 
@@ -92,6 +94,7 @@ TEST_F(PenBlocksTest, RegisterBlocks)
 {
     // Blocks
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_clear", &PenBlocks::compileClear));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_stamp", &PenBlocks::compileStamp));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penDown", &PenBlocks::compilePenDown));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penUp", &PenBlocks::compilePenUp));
     EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenColorToColor", &PenBlocks::compileSetPenColorToColor));
@@ -131,6 +134,66 @@ TEST_F(PenBlocksTest, Clear)
     ASSERT_TRUE(compiler.constValues().empty());
     ASSERT_TRUE(compiler.variables().empty());
     ASSERT_TRUE(compiler.lists().empty());
+}
+
+TEST_F(PenBlocksTest, Stamp)
+{
+    Compiler compiler(&m_engineMock);
+
+    auto block = std::make_shared<Block>("a", "pen_stamp");
+
+    EXPECT_CALL(m_engineMock, functionIndex(&PenBlocks::stamp)).WillOnce(Return(2));
+    compiler.init();
+    compiler.setBlock(block);
+    PenBlocks::compileStamp(&compiler);
+    compiler.end();
+
+    ASSERT_EQ(compiler.bytecode(), std::vector<unsigned int>({ vm::OP_START, vm::OP_EXEC, 2, vm::OP_HALT }));
+    ASSERT_TRUE(compiler.constValues().empty());
+    ASSERT_TRUE(compiler.variables().empty());
+    ASSERT_TRUE(compiler.lists().empty());
+}
+
+TEST_F(PenBlocksTest, StampImpl)
+{
+    static unsigned int bytecode[] = { vm::OP_START, vm::OP_EXEC, 0, vm::OP_HALT };
+    static BlockFunc functions[] = { &PenBlocks::stamp };
+
+    PenLayerMock penLayer;
+    PenLayer::addPenLayer(&m_engineMock, &penLayer);
+    RenderedTargetMock renderedTarget;
+
+    // Test sprite
+    libscratchcpp::Sprite sprite;
+    SpriteModel spriteModel;
+    sprite.setInterface(&spriteModel);
+    spriteModel.setRenderedTarget(&renderedTarget);
+
+    VirtualMachine vm1(&sprite, &m_engineMock, nullptr);
+    vm1.setBytecode(bytecode);
+    vm1.setFunctions(functions);
+
+    EXPECT_CALL(penLayer, stamp(&renderedTarget));
+    EXPECT_CALL(m_engineMock, requestRedraw());
+    vm1.run();
+
+    ASSERT_EQ(vm1.registerCount(), 0);
+
+    // Test stage
+    libscratchcpp::Stage stage;
+    StageModel stageModel;
+    stage.setInterface(&stageModel);
+    stageModel.setRenderedTarget(&renderedTarget);
+
+    VirtualMachine vm2(&stage, &m_engineMock, nullptr);
+    vm2.setBytecode(bytecode);
+    vm2.setFunctions(functions);
+
+    EXPECT_CALL(penLayer, stamp(&renderedTarget));
+    EXPECT_CALL(m_engineMock, requestRedraw());
+    vm2.run();
+
+    ASSERT_EQ(vm2.registerCount(), 0);
 }
 
 TEST_F(PenBlocksTest, ClearImpl)
