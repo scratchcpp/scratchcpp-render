@@ -16,6 +16,7 @@ namespace scratchcpprender
 {
 
 struct PenAttributes;
+class IRenderedTarget;
 
 class IPenLayer : public QNanoQuickItem
 {
@@ -36,6 +37,7 @@ class IPenLayer : public QNanoQuickItem
         virtual void clear() = 0;
         virtual void drawPoint(const PenAttributes &penAttributes, double x, double y) = 0;
         virtual void drawLine(const PenAttributes &penAttributes, double x0, double y0, double x1, double y1) = 0;
+        virtual void stamp(IRenderedTarget *target) = 0;
 
         virtual QOpenGLFramebufferObject *framebufferObject() const = 0;
         virtual QRgb colorAtScratchPoint(double x, double y) const = 0;

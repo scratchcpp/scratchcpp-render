@@ -86,6 +86,7 @@ class RenderedTarget : public IRenderedTarget
         bool mirrorHorizontally() const override;
 
         Texture texture() const override;
+        const Texture &cpuTexture() const override;
         int costumeWidth() const override;
         int costumeHeight() const override;
 

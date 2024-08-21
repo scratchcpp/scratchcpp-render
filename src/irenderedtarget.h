@@ -78,6 +78,7 @@ class IRenderedTarget : public QNanoQuickItem
         virtual bool mirrorHorizontally() const = 0;
 
         virtual Texture texture() const = 0;
+        virtual const Texture &cpuTexture() const = 0;
         virtual int costumeWidth() const = 0;
         virtual int costumeHeight() const = 0;
 

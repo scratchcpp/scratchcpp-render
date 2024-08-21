@@ -3,7 +3,7 @@
 #pragma once
 
 #include <QOpenGLFramebufferObject>
-#include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include <qnanopainter.h>
 #include <scratchcpp/iengine.h>
 
@@ -33,6 +33,7 @@ class PenLayer : public IPenLayer
         void clear() override;
         void drawPoint(const PenAttributes &penAttributes, double x, double y) override;
         void drawLine(const PenAttributes &penAttributes, double x0, double y0, double x1, double y1) override;
+        void stamp(IRenderedTarget *target) override;
 
         QOpenGLFramebufferObject *framebufferObject() const override;
         QRgb colorAtScratchPoint(double x, double y) const override;
@@ -56,12 +57,15 @@ class PenLayer : public IPenLayer
         libscratchcpp::IEngine *m_engine = nullptr;
         std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
         std::unique_ptr<QNanoPainter> m_painter;
-        std::unique_ptr<QOpenGLFunctions> m_glF;
+        std::unique_ptr<QOpenGLExtraFunctions> m_glF;
         Texture m_texture;
         bool m_textureDirty = true;
         mutable CpuTextureManager m_textureManager;
         mutable bool m_boundsDirty = true;
         mutable libscratchcpp::Rect m_bounds;
+        QOpenGLTextureBlitter m_blitter;
+        GLuint m_vbo = 0;
+        GLuint m_vao = 0;
 };
 
 } // namespace scratchcpprender
