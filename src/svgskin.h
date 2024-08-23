@@ -20,7 +20,7 @@ namespace scratchcpprender
 class SVGSkin : public Skin
 {
     public:
-        SVGSkin(libscratchcpp::Costume *costume, bool antialiasing = true);
+        SVGSkin(libscratchcpp::Costume *costume);
         ~SVGSkin();
 
         Texture getTexture(double scale) const override;
@@ -37,7 +37,6 @@ class SVGSkin : public Skin
         std::unordered_map<GLuint, Texture> m_textureObjects;
         QSvgRenderer m_svgRen;
         int m_maxIndex = 0;
-        bool m_antialiasing = false;
 };
 
 } // namespace scratchcpprender

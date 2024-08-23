@@ -28,7 +28,7 @@ BitmapSkin::BitmapSkin(libscratchcpp::Costume *costume) :
     m_image.load(&buffer, format);
 
     // Paint the image into a texture
-    m_texture = createAndPaintTexture(m_image.width(), m_image.height(), false);
+    m_texture = createAndPaintTexture(m_image.width(), m_image.height());
     m_textureSize.setWidth(m_image.width());
     m_textureSize.setHeight(m_image.height());
 

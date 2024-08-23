@@ -9,9 +9,8 @@ using namespace scratchcpprender;
 static const int MAX_TEXTURE_DIMENSION = 2048;
 static const int INDEX_OFFSET = 8;
 
-SVGSkin::SVGSkin(libscratchcpp::Costume *costume, bool antialiasing) :
-    Skin(),
-    m_antialiasing(antialiasing)
+SVGSkin::SVGSkin(libscratchcpp::Costume *costume) :
+    Skin()
 {
     if (!costume)
         return;
@@ -86,7 +85,7 @@ Texture SVGSkin::createScaledTexture(int index)
         return Texture();
     }
 
-    const Texture texture = createAndPaintTexture(viewBox.width() * scale, viewBox.height() * scale, m_antialiasing);
+    const Texture texture = createAndPaintTexture(viewBox.width() * scale, viewBox.height() * scale);
 
     if (texture.isValid()) {
         m_textures[index] = texture.handle();

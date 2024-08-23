@@ -33,6 +33,8 @@ class BitmapSkinTest : public testing::Test
         void TearDown() override
         {
             ASSERT_EQ(m_context.surface(), &m_surface);
+            m_jpegSkin.reset();
+            m_pngSkin.reset();
             m_context.doneCurrent();
         }
 
