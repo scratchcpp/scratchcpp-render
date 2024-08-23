@@ -104,7 +104,6 @@ void ProjectLoader::setFileName(const QString &newFileName)
     m_engine = nullptr;
     emit engineChanged();
 
-    m_project.setScratchVersion(ScratchVersion::Scratch3);
     m_project.setFileName(m_fileName.toStdString());
     m_loadStatus = false;
 
