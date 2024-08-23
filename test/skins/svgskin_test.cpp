@@ -22,12 +22,13 @@ class SVGSkinTest : public testing::Test
             Costume costume("", "", "");
             std::string costumeData = readFileStr("image.svg");
             costume.setData(costumeData.size(), costumeData.data());
-            m_skin = std::make_unique<SVGSkin>(&costume, false);
+            m_skin = std::make_unique<SVGSkin>(&costume);
         }
 
         void TearDown() override
         {
             ASSERT_EQ(m_context.surface(), &m_surface);
+            m_skin.reset();
             m_context.doneCurrent();
         }
 
@@ -58,10 +59,6 @@ TEST_F(SVGSkinTest, Textures)
             ASSERT_EQ(texture.height(), dimension);
             ASSERT_EQ(m_skin->getTextureScale(texture), scale);
         }
-
-        // Skip images 12, 13 and 15 because they're different on xvfb
-        if (i == 12 || i == 13 || i >= 15)
-            continue;
 
         QBuffer buffer;
         texture.toImage().save(&buffer, "png");

@@ -22,8 +22,12 @@ class Skin
         virtual double getTextureScale(const Texture &texture) const = 0;
 
     protected:
-        Texture createAndPaintTexture(int width, int height, bool multisampled);
+        Texture createAndPaintTexture(int width, int height);
         virtual void paint(QPainter *painter) = 0;
+
+    private:
+        std::vector<std::shared_ptr<QOpenGLTexture>> m_textures;
+        QObject m_signalHandler; // for disconnecting signals after destroyed
 };
 
 } // namespace scratchcpprender
