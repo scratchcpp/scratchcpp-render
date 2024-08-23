@@ -54,6 +54,7 @@ class PenBlocksTest : public testing::Test
             else {
                 auto input = addNullInput(block, name, id);
                 auto menu = std::make_shared<Block>(block->id() + "_menu", block->opcode() + "_menu");
+                menu->setShadow(true);
                 input->setValueBlock(menu);
                 addDropdownField(menu, name, -1, selectedValue, -1);
             }

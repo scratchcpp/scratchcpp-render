@@ -85,8 +85,7 @@ void PenBlocks::compileChangePenColorParamBy(libscratchcpp::Compiler *compiler)
 {
     Input *input = compiler->input(COLOR_PARAM);
 
-    if (input->type() != Input::Type::ObscuredShadow) {
-        assert(input->pointsToDropdownMenu());
+    if (input->pointsToDropdownMenu()) {
         std::string value = input->selectedMenuItem();
         BlockFunc f = nullptr;
 
@@ -114,8 +113,7 @@ void PenBlocks::compileSetPenColorParamTo(Compiler *compiler)
 {
     Input *input = compiler->input(COLOR_PARAM);
 
-    if (input->type() != Input::Type::ObscuredShadow) {
-        assert(input->pointsToDropdownMenu());
+    if (input->pointsToDropdownMenu()) {
         std::string value = input->selectedMenuItem();
         BlockFunc f = nullptr;
 
