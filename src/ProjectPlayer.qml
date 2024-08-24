@@ -14,7 +14,8 @@ ProjectScene {
     property alias fps: loader.fps
     property alias turboMode: loader.turboMode
 	property alias cloneLimit: loader.cloneLimit
-	property alias spriteFencing: loader.spriteFencing
+    property alias spriteFencing: loader.spriteFencing
+    property alias mute: loader.mute
     property bool showLoadingProgress: true
     readonly property bool loading: priv.loading
     readonly property int downloadedAssets: loader.downloadedAssets
