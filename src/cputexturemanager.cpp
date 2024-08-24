@@ -51,6 +51,12 @@ const std::vector<QPoint> &CpuTextureManager::getTextureConvexHullPoints(const T
         return it->second;
 }
 
+bool CpuTextureManager::textureContainsPoint(const Texture &texture, const QPointF &localPoint)
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/7b823985bc6fe92f572cc3276a8915e550f7c5e6/src/Silhouette.js#L219-L226
+    return getPointAlpha(texture, localPoint.x(), localPoint.y()) > 0;
+}
+
 void CpuTextureManager::removeTexture(const Texture &texture)
 {
     if (!texture.isValid())
@@ -130,4 +136,13 @@ bool CpuTextureManager::addTexture(const Texture &texture)
     glF.glDeleteFramebuffers(1, &fbo);
 
     return true;
+}
+
+int CpuTextureManager::getPointAlpha(const Texture &texture, int x, int y)
+{
+    if ((x < 0 || x >= texture.width()) || (y < 0 || y >= texture.height()))
+        return 0;
+
+    GLubyte *pixels = getTextureData(texture);
+    return pixels[(y * texture.width() + x) * 4 + 3];
 }

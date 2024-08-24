@@ -129,3 +129,44 @@ TEST_F(CpuTextureManagerTest, TextureDataAndHullPoints)
     // Cleanup
     context.doneCurrent();
 }
+
+TEST_F(CpuTextureManagerTest, TextureContainsPoint)
+{
+    // Create OpenGL context
+    QOpenGLContext context;
+    QOffscreenSurface surface;
+    createContextAndSurface(&context, &surface);
+
+    // Paint
+    QNanoPainter painter;
+    ImagePainter imgPainter(&painter, "image.png");
+
+    // Read texture data
+    Texture texture(imgPainter.fbo()->texture(), imgPainter.fbo()->size());
+
+    // Test
+    CpuTextureManager manager;
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 0, 0 }));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 1, 0 }));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 2, 0 }));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 3, 0 }));
+
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 0, 1 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 1 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1.4, 1.25 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 2, 1 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 1 }));
+
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 2 }));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 2, 2 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 2 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3.5, 2.1 }));
+
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 3 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 2, 3 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 3 }));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3.3, 3.5 }));
+
+    // Cleanup
+    context.doneCurrent();
+}
