@@ -324,3 +324,23 @@ TEST_F(ProjectLoaderTest, SpriteFencing)
     ASSERT_EQ(spy.count(), 1);
     ASSERT_TRUE(loader.spriteFencing());
 }
+
+TEST_F(ProjectLoaderTest, Mute)
+{
+    ProjectLoader loader;
+    EngineMock engine;
+    loader.setEngine(&engine);
+    ASSERT_FALSE(loader.mute());
+
+    EXPECT_CALL(engine, setGlobalVolume(0));
+    QSignalSpy spy(&loader, SIGNAL(muteChanged()));
+    loader.setMute(true);
+    ASSERT_EQ(spy.count(), 1);
+    ASSERT_TRUE(loader.mute());
+
+    EXPECT_CALL(engine, setGlobalVolume(100));
+    spy.clear();
+    loader.setMute(false);
+    ASSERT_EQ(spy.count(), 1);
+    ASSERT_FALSE(loader.mute());
+}

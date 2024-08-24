@@ -35,6 +35,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(unsigned int stageHeight READ stageHeight WRITE setStageHeight NOTIFY stageHeightChanged)
         Q_PROPERTY(int cloneLimit READ cloneLimit WRITE setCloneLimit NOTIFY cloneLimitChanged)
         Q_PROPERTY(bool spriteFencing READ spriteFencing WRITE setSpriteFencing NOTIFY spriteFencingChanged)
+        Q_PROPERTY(bool mute READ mute WRITE setMute NOTIFY muteChanged)
         Q_PROPERTY(unsigned int downloadedAssets READ downloadedAssets NOTIFY downloadedAssetsChanged)
         Q_PROPERTY(unsigned int assetCount READ assetCount NOTIFY assetCountChanged)
 
@@ -84,6 +85,9 @@ class ProjectLoader : public QObject
         bool spriteFencing() const;
         void setSpriteFencing(bool newSpriteFencing);
 
+        bool mute() const;
+        void setMute(bool newMute);
+
         unsigned int downloadedAssets() const;
 
         unsigned int assetCount() const;
@@ -103,6 +107,7 @@ class ProjectLoader : public QObject
         void stageHeightChanged();
         void cloneLimitChanged();
         void spriteFencingChanged();
+        void muteChanged();
         void downloadedAssetsChanged();
         void assetCountChanged();
         void cloneCreated(SpriteModel *model);
@@ -143,6 +148,7 @@ class ProjectLoader : public QObject
         unsigned int m_stageHeight = 360;
         int m_cloneLimit = 300;
         bool m_spriteFencing = true;
+        bool m_mute = false;
         std::atomic<unsigned int> m_downloadedAssets = 0;
         std::atomic<unsigned int> m_assetCount = 0;
         std::atomic<bool> m_stopLoading = false;

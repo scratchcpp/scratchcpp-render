@@ -249,6 +249,7 @@ void ProjectLoader::load()
     m_engine->setStageHeight(m_stageHeight);
     m_engine->setCloneLimit(m_cloneLimit);
     m_engine->setSpriteFencingEnabled(m_spriteFencing);
+    m_engine->setGlobalVolume(m_mute ? 0 : 100);
 
     m_engine->aboutToRender().connect(&ProjectLoader::redraw, this);
     m_engine->monitorAdded().connect(&ProjectLoader::addMonitor, this);
@@ -520,6 +521,26 @@ void ProjectLoader::setSpriteFencing(bool newSpriteFencing)
 
     m_engineMutex.unlock();
     emit spriteFencingChanged();
+}
+
+bool ProjectLoader::mute() const
+{
+    return m_mute;
+}
+
+void ProjectLoader::setMute(bool newMute)
+{
+    if (m_mute == newMute)
+        return;
+
+    m_mute = newMute;
+    m_engineMutex.lock();
+
+    if (m_engine)
+        m_engine->setGlobalVolume(newMute ? 0 : 100);
+
+    m_engineMutex.unlock();
+    emit muteChanged();
 }
 
 unsigned int ProjectLoader::downloadedAssets() const
