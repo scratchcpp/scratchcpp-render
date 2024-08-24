@@ -814,20 +814,7 @@ void RenderedTarget::updateHullPoints()
 
 bool RenderedTarget::containsLocalPoint(const QPointF &point) const
 {
-    if (!boundingRect().contains(point))
-        return false;
-
-    const std::vector<QPoint> &points = hullPoints();
-    QPoint intPoint = point.toPoint();
-    auto it = std::lower_bound(points.begin(), points.end(), intPoint, [](const QPointF &lhs, const QPointF &rhs) { return (lhs.y() < rhs.y()) || (lhs.y() == rhs.y() && lhs.x() < rhs.x()); });
-
-    if (it == points.end()) {
-        // The point is beyond the last point in the convex hull
-        return false;
-    }
-
-    // Check if the point is equal to the one found
-    return *it == intPoint;
+    return textureManager()->textureContainsPoint(m_cpuTexture, point);
 }
 
 QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const

@@ -394,12 +394,12 @@ TEST_F(RenderedTargetTest, CpuRendering)
     ASSERT_TRUE(target.contains({ 1, 2 }));
     ASSERT_FALSE(target.contains({ 2, 2 }));
     ASSERT_TRUE(target.contains({ 3, 2 }));
-    ASSERT_FALSE(target.contains({ 3.5, 2.1 }));
+    ASSERT_TRUE(target.contains({ 3.5, 2.1 }));
 
     ASSERT_TRUE(target.contains({ 1, 3 }));
     ASSERT_TRUE(target.contains({ 2, 3 }));
     ASSERT_TRUE(target.contains({ 3, 3 }));
-    ASSERT_FALSE(target.contains({ 3.3, 3.5 }));
+    ASSERT_TRUE(target.contains({ 3.3, 3.5 }));
 
     // Test contains() with horizontal mirroring
     target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
@@ -408,9 +408,9 @@ TEST_F(RenderedTargetTest, CpuRendering)
     ASSERT_TRUE(target.contains({ -1, 1 }));
     ASSERT_FALSE(target.contains({ -2, 2 }));
     ASSERT_TRUE(target.contains({ -3, 2 }));
-    ASSERT_FALSE(target.contains({ -3.5, 2.1 }));
+    ASSERT_TRUE(target.contains({ -3.5, 2.1 }));
     ASSERT_TRUE(target.contains({ -2, 3 }));
-    ASSERT_FALSE(target.contains({ -3.3, 3.5 }));
+    ASSERT_TRUE(target.contains({ -3.3, 3.5 }));
 
     // Test containsScratchPoint()
     target.updateDirection(0);
@@ -425,15 +425,15 @@ TEST_F(RenderedTargetTest, CpuRendering)
     ASSERT_TRUE(target.containsScratchPoint(-226, 164));      // [2, 1]
     ASSERT_TRUE(target.containsScratchPoint(-225, 164));      // [3, 1]
 
-    ASSERT_TRUE(target.containsScratchPoint(-227, 163));      // [1, 2]
-    ASSERT_FALSE(target.containsScratchPoint(-226, 163));     // [2, 2]
-    ASSERT_TRUE(target.containsScratchPoint(-225, 163));      // [3, 2]
-    ASSERT_FALSE(target.containsScratchPoint(-224.5, 162.9)); // [3.5, 2.1]
+    ASSERT_TRUE(target.containsScratchPoint(-227, 163));     // [1, 2]
+    ASSERT_FALSE(target.containsScratchPoint(-226, 163));    // [2, 2]
+    ASSERT_TRUE(target.containsScratchPoint(-225, 163));     // [3, 2]
+    ASSERT_TRUE(target.containsScratchPoint(-224.5, 162.9)); // [3.5, 2.1]
 
-    ASSERT_TRUE(target.containsScratchPoint(-227, 162));      // [1, 3]
-    ASSERT_TRUE(target.containsScratchPoint(-226, 162));      // [2, 3]
-    ASSERT_TRUE(target.containsScratchPoint(-225, 162));      // [3, 3]
-    ASSERT_FALSE(target.containsScratchPoint(-224.7, 161.5)); // [3.3, 3.5]
+    ASSERT_TRUE(target.containsScratchPoint(-227, 162));     // [1, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-226, 162));     // [2, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-225, 162));     // [3, 3]
+    ASSERT_TRUE(target.containsScratchPoint(-224.7, 161.5)); // [3.3, 3.5]
 
     // Test colorAtScratchPoint()
     ASSERT_EQ(target.colorAtScratchPoint(-228, 165), 0); // [0, 0]
