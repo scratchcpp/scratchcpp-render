@@ -119,7 +119,6 @@ TEST_F(CpuTextureManagerTest, TextureDataAndHullPoints)
     const auto &hullPoints1 = manager.getTextureConvexHullPoints(texture);
     ASSERT_EQ(hullPoints1, refHullPoints1);
 
-    imgPainter1.fbo()->toImage().save("/home/adazem009/test.png");
     manager.removeTexture(texture);
     data = manager.getTextureData(texture);
     ASSERT_EQ(memcmp(data, refData2, 96), 0);

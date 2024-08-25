@@ -59,6 +59,5 @@ Texture Skin::createAndPaintTexture(int width, int height)
     texture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
     texture->setMagnificationFilter(QOpenGLTexture::Linear);
 
-    // Texture(texture, width, height).toImage().save("/home/adazem009/test.png");
     return Texture(texture->textureId(), width, height);
 }
