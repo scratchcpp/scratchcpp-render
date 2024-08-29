@@ -16,6 +16,7 @@ ProjectScene {
 	property alias cloneLimit: loader.cloneLimit
     property alias spriteFencing: loader.spriteFencing
     property alias mute: loader.mute
+    property alias hqPen: projectPenLayer.hqPen
     property bool showLoadingProgress: true
     readonly property bool loading: priv.loading
     readonly property int downloadedAssets: loader.downloadedAssets
@@ -141,9 +142,9 @@ ProjectScene {
             engine: loader.engine
             anchors.top: parent.top
             anchors.left: parent.left
-            width: stageWidth
-            height: stageHeight
-            scale: stageScale
+            width: hqPen ? parent.width : stageWidth
+            height: hqPen ? parent.height : stageHeight
+            scale: hqPen ? 1 : stageScale
             transformOrigin: Item.TopLeft
             visible: !priv.loading
         }
