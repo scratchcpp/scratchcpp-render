@@ -58,11 +58,7 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 
     if (m_engine && QOpenGLContext::currentContext()) {
         m_projectPenLayers[m_engine] = this;
-        QOpenGLFramebufferObjectFormat fboFormat;
-        fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        m_fbo = std::make_unique<QOpenGLFramebufferObject>(m_engine->stageWidth(), m_engine->stageHeight(), fboFormat);
-        Q_ASSERT(m_fbo->isValid());
-        m_texture = Texture(m_fbo->texture(), m_fbo->size());
+        createFbo();
 
         if (!m_painter)
             m_painter = std::make_unique<QNanoPainter>();
@@ -106,6 +102,21 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
     emit engineChanged();
 }
 
+bool PenLayer::hqPen() const
+{
+    return m_hqPen;
+}
+
+void PenLayer::setHqPen(bool newHqPen)
+{
+    if (m_hqPen == newHqPen)
+        return;
+
+    m_hqPen = newHqPen;
+    createFbo();
+    emit hqPenChanged();
+}
+
 void scratchcpprender::PenLayer::clear()
 {
     if (!m_fbo)
@@ -138,16 +149,23 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
 
     m_painter->beginFrame(m_fbo->width(), m_fbo->height());
 
+    // Apply scale (HQ pen)
+    x0 *= m_scale;
+    y0 *= m_scale;
+    x1 *= m_scale;
+    y1 *= m_scale;
+
     // Translate to Scratch coordinate system
-    double stageWidthHalf = m_engine->stageWidth() / 2;
-    double stageHeightHalf = m_engine->stageHeight() / 2;
+    double stageWidthHalf = width() / 2;
+    double stageHeightHalf = height() / 2;
     x0 += stageWidthHalf;
     y0 = stageHeightHalf - y0;
     x1 += stageWidthHalf;
     y1 = stageHeightHalf - y1;
 
     // Set pen attributes
-    m_painter->setLineWidth(penAttributes.diameter);
+    const double diameter = penAttributes.diameter * m_scale;
+    m_painter->setLineWidth(diameter);
     m_painter->setStrokeStyle(penAttributes.color);
     m_painter->setFillStyle(penAttributes.color);
     m_painter->setLineJoin(QNanoPainter::JOIN_ROUND);
@@ -156,11 +174,11 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
     m_painter->beginPath();
 
     // Width 1 and 3 lines need to be offset by 0.5
-    const double offset = (std::fmod(std::max(4 - penAttributes.diameter, 0.0), 2)) / 2;
+    const double offset = (std::fmod(std::max(4 - diameter, 0.0), 2)) / 2;
 
     // If the start and end coordinates are the same, draw a point, otherwise draw a line
     if (x0 == x1 && y0 == y1) {
-        m_painter->circle(x0 + offset, y0 + offset, penAttributes.diameter / 2);
+        m_painter->circle(x0 + offset, y0 + offset, diameter / 2);
         m_painter->fill();
     } else {
         m_painter->moveTo(x0 + offset, y0 + offset);
@@ -223,6 +241,9 @@ void PenLayer::stamp(IRenderedTarget *target)
     } else
         costume = target->stageModel()->stage()->currentCostume();
 
+    // Apply scale (HQ pen)
+    scale *= m_scale;
+
     const double bitmapRes = costume->bitmapResolution();
     const double centerX = costume->rotationCenterX() / bitmapRes;
     const double centerY = costume->rotationCenterY() / bitmapRes;
@@ -234,8 +255,11 @@ void PenLayer::stamp(IRenderedTarget *target)
 
     const double textureScale = texture.width() / static_cast<double>(target->costumeWidth());
 
+    // Apply scale (HQ pen)
+    x *= m_scale;
+    y *= m_scale;
+
     // Translate the coordinates
-    // TODO: Apply scale (HQ pen)
     x = std::floor(x + m_texture.width() / 2.0);
     y = std::floor(-y + m_texture.height() / 2.0);
 
@@ -352,8 +376,11 @@ QRgb PenLayer::colorAtScratchPoint(double x, double y) const
     const double width = m_texture.width();
     const double height = m_texture.height();
 
+    // Apply scale (HQ pen)
+    x *= m_scale;
+    y *= m_scale;
+
     // Translate the coordinates
-    // TODO: Apply scale
     x = std::floor(x + width / 2.0);
     y = std::floor(-y + height / 2.0);
 
@@ -393,7 +420,6 @@ const libscratchcpp::Rect &PenLayer::getBounds() const
         }
 
         for (const QPointF &point : points) {
-            // TODO: Apply scale
             double x = point.x() - width / 2;
             double y = -point.y() + height / 2;
 
@@ -410,10 +436,10 @@ const libscratchcpp::Rect &PenLayer::getBounds() const
                 bottom = y;
         }
 
-        m_bounds.setLeft(left);
-        m_bounds.setTop(top);
-        m_bounds.setRight(right + 1);
-        m_bounds.setBottom(bottom - 1);
+        m_bounds.setLeft(left / m_scale);
+        m_bounds.setTop(top / m_scale);
+        m_bounds.setRight(right / m_scale + 1);
+        m_bounds.setBottom(bottom / m_scale - 1);
     }
 
     return m_bounds;
@@ -437,6 +463,33 @@ void PenLayer::addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer)
 QNanoQuickItemPainter *PenLayer::createItemPainter() const
 {
     return new PenLayerPainter;
+}
+
+void PenLayer::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    if (m_hqPen && newGeometry != oldGeometry)
+        createFbo();
+
+    QNanoQuickItem::geometryChange(newGeometry, oldGeometry);
+}
+
+void PenLayer::createFbo()
+{
+    if (!QOpenGLContext::currentContext() || !m_engine)
+        return;
+
+    QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    QOpenGLFramebufferObject *newFbo = new QOpenGLFramebufferObject(width(), height(), fboFormat);
+    Q_ASSERT(newFbo->isValid());
+
+    if (m_fbo)
+        QOpenGLFramebufferObject::blitFramebuffer(newFbo, m_fbo.get());
+
+    m_fbo.reset(newFbo);
+    m_texture = Texture(m_fbo->texture(), m_fbo->size());
+    m_scale = width() / m_engine->stageWidth();
 }
 
 void PenLayer::updateTexture()
