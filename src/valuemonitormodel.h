@@ -2,16 +2,7 @@
 
 #pragma once
 
-#include <QColor>
-
 #include "monitormodel.h"
-
-namespace libscratchcpp
-{
-
-class IBlockSection;
-
-}
 
 namespace scratchcpprender
 {
@@ -21,7 +12,6 @@ class ValueMonitorModel : public MonitorModel
         Q_OBJECT
         QML_ELEMENT
         Q_PROPERTY(QString value READ value WRITE setValue NOTIFY valueChanged)
-        Q_PROPERTY(QColor color READ color NOTIFY colorChanged)
         Q_PROPERTY(Mode mode READ mode NOTIFY modeChanged)
         Q_PROPERTY(double sliderMin READ sliderMin NOTIFY sliderMinChanged)
         Q_PROPERTY(double sliderMax READ sliderMax NOTIFY sliderMaxChanged)
@@ -47,7 +37,6 @@ class ValueMonitorModel : public MonitorModel
         const QString &value() const;
         void setValue(const QString &newValue);
 
-        const QColor &color() const;
         Mode mode() const;
         double sliderMin() const;
         double sliderMax() const;
@@ -63,7 +52,6 @@ class ValueMonitorModel : public MonitorModel
 
     private:
         QString m_value;
-        QColor m_color = Qt::green;
 };
 
 } // namespace scratchcpprender

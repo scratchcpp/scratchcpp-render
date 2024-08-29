@@ -2,17 +2,28 @@
 #include <scratchcpp/monitor.h>
 #include <scratchcpp/sprite.h>
 #include <monitormodel.h>
+#include <blocksectionmock.h>
 
 #include "../common.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
 
+using ::testing::Return;
+
 TEST(MonitorModelTest, Constructors)
 {
-    MonitorModel model1;
-    MonitorModel model2(&model1);
-    ASSERT_EQ(model2.parent(), &model1);
+    {
+        MonitorModel model1;
+        MonitorModel model2(&model1);
+        ASSERT_EQ(model2.parent(), &model1);
+    }
+
+    {
+        MonitorModel model1;
+        MonitorModel model2(nullptr, &model1);
+        ASSERT_EQ(model2.parent(), &model1);
+    }
 }
 
 TEST(MonitorModelTest, Init)
@@ -73,6 +84,63 @@ TEST(MonitorModelTest, Type)
 {
     MonitorModel model;
     ASSERT_EQ(model.type(), MonitorModel::Type::Invalid);
+}
+
+TEST(MonitorModelTest, Color)
+{
+    {
+        MonitorModel model;
+        ASSERT_EQ(model.color(), Qt::green);
+    }
+
+    {
+        MonitorModel model(nullptr, nullptr);
+        ASSERT_EQ(model.color(), Qt::green);
+    }
+
+    BlockSectionMock section;
+
+    {
+        // Invalid
+        EXPECT_CALL(section, name()).WillOnce(Return(""));
+        MonitorModel model(&section);
+        ASSERT_EQ(model.color(), Qt::green);
+    }
+
+    {
+        // Motion
+        EXPECT_CALL(section, name()).WillOnce(Return("Motion"));
+        MonitorModel model(&section);
+        ASSERT_EQ(model.color(), QColor::fromString("#4C97FF"));
+    }
+
+    {
+        // Looks
+        EXPECT_CALL(section, name()).WillOnce(Return("Looks"));
+        MonitorModel model(&section);
+        ASSERT_EQ(model.color(), QColor::fromString("#9966FF"));
+    }
+
+    {
+        // Sound
+        EXPECT_CALL(section, name()).WillOnce(Return("Sound"));
+        MonitorModel model(&section);
+        ASSERT_EQ(model.color(), QColor::fromString("#CF63CF"));
+    }
+
+    {
+        // Variables
+        EXPECT_CALL(section, name()).WillOnce(Return("Variables"));
+        MonitorModel model(&section);
+        ASSERT_EQ(model.color(), QColor::fromString("#FF8C1A"));
+    }
+
+    {
+        // Lists
+        EXPECT_CALL(section, name()).WillOnce(Return("Lists"));
+        MonitorModel model(&section);
+        ASSERT_EQ(model.color(), QColor::fromString("#FF661A"));
+    }
 }
 
 TEST(MonitorModelTest, X)

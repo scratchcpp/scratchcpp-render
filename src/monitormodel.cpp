@@ -2,14 +2,37 @@
 
 #include <scratchcpp/monitor.h>
 #include <scratchcpp/sprite.h>
+#include <scratchcpp/iblocksection.h>
 
 #include "monitormodel.h"
 
 using namespace scratchcpprender;
 
 MonitorModel::MonitorModel(QObject *parent) :
+    MonitorModel(nullptr, parent)
+{
+}
+
+MonitorModel::MonitorModel(libscratchcpp::IBlockSection *section, QObject *parent) :
     QObject(parent)
 {
+    if (!section)
+        return;
+
+    // TODO: Get the color from the block section
+    std::string name = section->name();
+    if (name == "Motion")
+        m_color = QColor::fromString("#4C97FF");
+    else if (name == "Looks")
+        m_color = QColor::fromString("#9966FF");
+    else if (name == "Sound")
+        m_color = QColor::fromString("#CF63CF");
+    else if (name == "Sensing")
+        m_color = QColor::fromString("#5CB1D6");
+    else if (name == "Variables")
+        m_color = QColor::fromString("#FF8C1A");
+    else if (name == "Lists")
+        m_color = QColor::fromString("#FF661A");
 }
 
 QString MonitorModel::name() const
@@ -29,6 +52,11 @@ bool MonitorModel::visible() const
         return m_monitor->visible();
     else
         return false;
+}
+
+const QColor &MonitorModel::color() const
+{
+    return m_color;
 }
 
 void MonitorModel::init(libscratchcpp::Monitor *monitor)

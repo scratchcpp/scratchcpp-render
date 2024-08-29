@@ -3,14 +3,11 @@
 #include <scratchcpp/list.h>
 #include <listmonitormodel.h>
 #include <listmonitorlistmodel.h>
-#include <blocksectionmock.h>
 
 #include "../common.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
-
-using ::testing::Return;
 
 TEST(ListMonitorModelTest, Constructors)
 {
@@ -70,61 +67,4 @@ TEST(ListMonitorModelTest, Type)
 {
     ListMonitorModel model;
     ASSERT_EQ(model.type(), MonitorModel::Type::List);
-}
-
-TEST(ListMonitorModelTest, Color)
-{
-    {
-        ListMonitorModel model;
-        ASSERT_EQ(model.color(), Qt::green);
-    }
-
-    {
-        ListMonitorModel model(nullptr, nullptr);
-        ASSERT_EQ(model.color(), Qt::green);
-    }
-
-    BlockSectionMock section;
-
-    {
-        // Invalid
-        EXPECT_CALL(section, name()).WillOnce(Return(""));
-        ListMonitorModel model(&section);
-        ASSERT_EQ(model.color(), Qt::green);
-    }
-
-    {
-        // Motion
-        EXPECT_CALL(section, name()).WillOnce(Return("Motion"));
-        ListMonitorModel model(&section);
-        ASSERT_EQ(model.color(), QColor::fromString("#4C97FF"));
-    }
-
-    {
-        // Looks
-        EXPECT_CALL(section, name()).WillOnce(Return("Looks"));
-        ListMonitorModel model(&section);
-        ASSERT_EQ(model.color(), QColor::fromString("#9966FF"));
-    }
-
-    {
-        // Sound
-        EXPECT_CALL(section, name()).WillOnce(Return("Sound"));
-        ListMonitorModel model(&section);
-        ASSERT_EQ(model.color(), QColor::fromString("#CF63CF"));
-    }
-
-    {
-        // Variables
-        EXPECT_CALL(section, name()).WillOnce(Return("Variables"));
-        ListMonitorModel model(&section);
-        ASSERT_EQ(model.color(), QColor::fromString("#FF8C1A"));
-    }
-
-    {
-        // Lists
-        EXPECT_CALL(section, name()).WillOnce(Return("Lists"));
-        ListMonitorModel model(&section);
-        ASSERT_EQ(model.color(), QColor::fromString("#FF661A"));
-    }
 }

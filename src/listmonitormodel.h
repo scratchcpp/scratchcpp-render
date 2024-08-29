@@ -3,18 +3,10 @@
 #pragma once
 
 #include <QAbstractListModel>
-#include <QColor>
 
 #include "monitormodel.h"
 
 Q_MOC_INCLUDE("listmonitorlistmodel.h")
-
-namespace libscratchcpp
-{
-
-class IBlockSection;
-
-}
 
 namespace scratchcpprender
 {
@@ -25,7 +17,6 @@ class ListMonitorModel : public MonitorModel
 {
         Q_OBJECT
         QML_ELEMENT
-        Q_PROPERTY(QColor color READ color NOTIFY colorChanged)
         Q_PROPERTY(ListMonitorListModel *listModel READ listModel NOTIFY listModelChanged)
 
     public:
@@ -36,8 +27,6 @@ class ListMonitorModel : public MonitorModel
 
         Type type() const override;
 
-        const QColor &color() const;
-
         ListMonitorListModel *listModel() const;
 
     signals:
@@ -45,7 +34,6 @@ class ListMonitorModel : public MonitorModel
         void listModelChanged();
 
     private:
-        QColor m_color = Qt::green;
         ListMonitorListModel *m_listModel = nullptr;
 };
 

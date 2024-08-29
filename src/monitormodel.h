@@ -4,7 +4,15 @@
 
 #include <QObject>
 #include <QQmlEngine>
+#include <QColor>
 #include <scratchcpp/imonitorhandler.h>
+
+namespace libscratchcpp
+{
+
+class IBlockSection;
+
+}
 
 namespace scratchcpprender
 {
@@ -18,6 +26,7 @@ class MonitorModel
         Q_PROPERTY(QString name READ name NOTIFY nameChanged)
         Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
         Q_PROPERTY(Type type READ type NOTIFY typeChanged)
+        Q_PROPERTY(QColor color READ color NOTIFY colorChanged)
         Q_PROPERTY(int x READ x NOTIFY xChanged)
         Q_PROPERTY(int y READ y NOTIFY yChanged)
         Q_PROPERTY(unsigned int width READ width WRITE setWidth NOTIFY widthChanged)
@@ -34,6 +43,7 @@ class MonitorModel
         Q_ENUM(Type)
 
         MonitorModel(QObject *parent = nullptr);
+        MonitorModel(libscratchcpp::IBlockSection *section, QObject *parent = nullptr);
 
         void init(libscratchcpp::Monitor *monitor) override final;
 
@@ -48,6 +58,8 @@ class MonitorModel
 
         virtual Type type() const { return Type::Invalid; }
 
+        const QColor &color() const;
+
         int x() const;
 
         int y() const;
@@ -61,6 +73,7 @@ class MonitorModel
     signals:
         void visibleChanged();
         void typeChanged();
+        void colorChanged();
         void xChanged();
         void yChanged();
         void widthChanged();
@@ -69,6 +82,7 @@ class MonitorModel
 
     private:
         libscratchcpp::Monitor *m_monitor = nullptr;
+        QColor m_color = Qt::green;
 };
 
 } // namespace scratchcpprender

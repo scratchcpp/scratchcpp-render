@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include <scratchcpp/virtualmachine.h>
-#include <scratchcpp/iblocksection.h>
 #include <scratchcpp/monitor.h>
 
 #include "valuemonitormodel.h"
@@ -13,30 +12,13 @@ static const std::unordered_map<Monitor::Mode, ValueMonitorModel::Mode>
     MODE_MAP = { { Monitor::Mode::Default, ValueMonitorModel::Mode::Default }, { Monitor::Mode::Large, ValueMonitorModel::Mode::Large }, { Monitor::Mode::Slider, ValueMonitorModel::Mode::Slider } };
 
 ValueMonitorModel::ValueMonitorModel(QObject *parent) :
-    MonitorModel(parent)
+    ValueMonitorModel(nullptr, parent)
 {
 }
 
 ValueMonitorModel::ValueMonitorModel(IBlockSection *section, QObject *parent) :
-    MonitorModel(parent)
+    MonitorModel(section, parent)
 {
-    if (!section)
-        return;
-
-    // TODO: Get the color from the block section
-    std::string name = section->name();
-    if (name == "Motion")
-        m_color = QColor::fromString("#4C97FF");
-    else if (name == "Looks")
-        m_color = QColor::fromString("#9966FF");
-    else if (name == "Sound")
-        m_color = QColor::fromString("#CF63CF");
-    else if (name == "Sensing")
-        m_color = QColor::fromString("#5CB1D6");
-    else if (name == "Variables")
-        m_color = QColor::fromString("#FF8C1A");
-    else if (name == "Lists")
-        m_color = QColor::fromString("#FF661A");
 }
 
 void ValueMonitorModel::onValueChanged(const VirtualMachine *vm)
@@ -68,11 +50,6 @@ void ValueMonitorModel::setValue(const QString &newValue)
         m_value = newValue;
         emit valueChanged();
     }
-}
-
-const QColor &ValueMonitorModel::color() const
-{
-    return m_color;
 }
 
 ValueMonitorModel::Mode ValueMonitorModel::mode() const
