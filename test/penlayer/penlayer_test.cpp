@@ -56,13 +56,15 @@ TEST_F(PenLayerTest, Engine)
     ASSERT_EQ(penLayer.engine(), nullptr);
 
     EngineMock engine1, engine2;
+    penLayer.setWidth(480);
+    penLayer.setHeight(360);
     EXPECT_CALL(engine1, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine1, stageHeight()).WillOnce(Return(360));
     penLayer.setEngine(&engine1);
     ASSERT_EQ(penLayer.engine(), &engine1);
 
+    penLayer.setWidth(500);
+    penLayer.setHeight(400);
     EXPECT_CALL(engine2, stageWidth()).WillOnce(Return(500));
-    EXPECT_CALL(engine2, stageHeight()).WillOnce(Return(400));
     penLayer.setEngine(&engine2);
     ASSERT_EQ(penLayer.engine(), &engine2);
 
@@ -75,9 +77,10 @@ TEST_F(PenLayerTest, FramebufferObject)
     PenLayer penLayer;
     ASSERT_TRUE(penLayer.antialiasingEnabled());
 
-    EngineMock engine1, engine2;
+    EngineMock engine1, engine2, engine3;
+    penLayer.setWidth(480);
+    penLayer.setHeight(360);
     EXPECT_CALL(engine1, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine1, stageHeight()).WillOnce(Return(360));
     penLayer.setEngine(&engine1);
 
     QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
@@ -89,9 +92,33 @@ TEST_F(PenLayerTest, FramebufferObject)
     penLayer.setAntialiasingEnabled(false);
     ASSERT_FALSE(penLayer.antialiasingEnabled());
 
+    penLayer.setWidth(500);
+    penLayer.setHeight(400);
     EXPECT_CALL(engine2, stageWidth()).WillOnce(Return(500));
-    EXPECT_CALL(engine2, stageHeight()).WillOnce(Return(400));
     penLayer.setEngine(&engine2);
+
+    fbo = penLayer.framebufferObject();
+    ASSERT_EQ(fbo->width(), 500);
+    ASSERT_EQ(fbo->height(), 400);
+    ASSERT_EQ(fbo->format().attachment(), QOpenGLFramebufferObject::CombinedDepthStencil);
+    ASSERT_EQ(fbo->format().samples(), 0);
+
+    penLayer.setWidth(960);
+    penLayer.setHeight(720);
+    EXPECT_CALL(engine3, stageWidth()).WillOnce(Return(480));
+    penLayer.setEngine(&engine3);
+
+    fbo = penLayer.framebufferObject();
+    ASSERT_EQ(fbo->width(), 960);
+    ASSERT_EQ(fbo->height(), 720);
+    ASSERT_EQ(fbo->format().attachment(), QOpenGLFramebufferObject::CombinedDepthStencil);
+    ASSERT_EQ(fbo->format().samples(), 0);
+
+    EXPECT_CALL(engine3, stageWidth()).Times(3).WillRepeatedly(Return(100));
+    penLayer.setHqPen(true);
+    penLayer.setWidth(500);
+    penLayer.setHeight(400);
+    penLayer.setEngine(&engine3);
 
     fbo = penLayer.framebufferObject();
     ASSERT_EQ(fbo->width(), 500);
@@ -103,6 +130,8 @@ TEST_F(PenLayerTest, FramebufferObject)
 TEST_F(PenLayerTest, GetProjectPenLayer)
 {
     PenLayer penLayer;
+    penLayer.setWidth(480);
+    penLayer.setHeight(360);
     ASSERT_EQ(PenLayer::getProjectPenLayer(nullptr), nullptr);
 
     EngineMock engine1, engine2;
@@ -110,13 +139,11 @@ TEST_F(PenLayerTest, GetProjectPenLayer)
     ASSERT_EQ(PenLayer::getProjectPenLayer(&engine2), nullptr);
 
     EXPECT_CALL(engine1, stageWidth()).WillOnce(Return(1));
-    EXPECT_CALL(engine1, stageHeight()).WillOnce(Return(1));
     penLayer.setEngine(&engine1);
     ASSERT_EQ(PenLayer::getProjectPenLayer(&engine1), &penLayer);
     ASSERT_EQ(PenLayer::getProjectPenLayer(&engine2), nullptr);
 
     EXPECT_CALL(engine2, stageWidth()).WillOnce(Return(1));
-    EXPECT_CALL(engine2, stageHeight()).WillOnce(Return(1));
     penLayer.setEngine(&engine2);
     ASSERT_EQ(PenLayer::getProjectPenLayer(&engine1), nullptr);
     ASSERT_EQ(PenLayer::getProjectPenLayer(&engine2), &penLayer);
@@ -134,8 +161,9 @@ TEST_F(PenLayerTest, Clear)
 {
     PenLayer penLayer;
     EngineMock engine;
+    penLayer.setWidth(480);
+    penLayer.setHeight(360);
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     penLayer.setEngine(&engine);
 
     QOpenGLExtraFunctions glF(&m_context);
@@ -175,99 +203,149 @@ TEST_F(PenLayerTest, DrawPoint)
 {
     PenLayer penLayer;
     penLayer.setAntialiasingEnabled(false);
+    penLayer.setWidth(480);
+    penLayer.setHeight(360);
     EngineMock engine;
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     penLayer.setEngine(&engine);
 
-    PenAttributes attr;
-    attr.color = QNanoColor(255, 0, 0);
-    attr.diameter = 3;
+    auto draw = [&penLayer]() {
+        PenAttributes attr;
+        attr.color = QNanoColor(255, 0, 0);
+        attr.diameter = 3;
 
+        penLayer.drawPoint(attr, 63, 164);
+        penLayer.drawPoint(attr, -56, 93);
+        penLayer.drawPoint(attr, 130, 77);
+
+        attr.color = QNanoColor(0, 128, 0, 128);
+        attr.diameter = 10;
+
+        penLayer.drawPoint(attr, 152, -158);
+        penLayer.drawPoint(attr, -228, 145);
+        penLayer.drawPoint(attr, -100, 139);
+
+        attr.color = QNanoColor(255, 50, 200, 185);
+        attr.diameter = 25.6;
+
+        penLayer.drawPoint(attr, -11, 179);
+        penLayer.drawPoint(attr, 90, -48);
+        penLayer.drawPoint(attr, -54, 21);
+    };
+
+    draw();
+
+    {
+        QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+        QImage image = fbo->toImage();
+        QBuffer buffer;
+        image.save(&buffer, "png");
+        QFile ref("points.png");
+        ref.open(QFile::ReadOnly);
+        buffer.open(QFile::ReadOnly);
+        ASSERT_EQ(ref.readAll(), buffer.readAll());
+    }
+
+    // Test HQ pen - resize existing texture
     EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
-    EXPECT_CALL(engine, stageHeight()).Times(3).WillRepeatedly(Return(360));
-    penLayer.drawPoint(attr, 63, 164);
-    penLayer.drawPoint(attr, -56, 93);
-    penLayer.drawPoint(attr, 130, 77);
+    penLayer.setHqPen(true);
+    penLayer.setWidth(720);
+    penLayer.setHeight(540);
 
-    attr.color = QNanoColor(0, 128, 0, 128);
-    attr.diameter = 10;
+    {
+        QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+        QImage image = fbo->toImage();
+        QImage ref("points_resized.png");
+        ASSERT_LE(fuzzyCompareImages(image, ref), 0.01);
+    }
 
-    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
-    EXPECT_CALL(engine, stageHeight()).Times(3).WillRepeatedly(Return(360));
-    penLayer.drawPoint(attr, 152, -158);
-    penLayer.drawPoint(attr, -228, 145);
-    penLayer.drawPoint(attr, -100, 139);
+    // Test HQ pen - draw
+    penLayer.clear();
+    draw();
 
-    attr.color = QNanoColor(255, 50, 200, 185);
-    attr.diameter = 25.6;
-
-    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
-    EXPECT_CALL(engine, stageHeight()).Times(3).WillRepeatedly(Return(360));
-    penLayer.drawPoint(attr, -11, 179);
-    penLayer.drawPoint(attr, 90, -48);
-    penLayer.drawPoint(attr, -54, 21);
-
-    QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
-    QImage image = fbo->toImage();
-    QBuffer buffer;
-    image.save(&buffer, "png");
-    QFile ref("points.png");
-    ref.open(QFile::ReadOnly);
-    buffer.open(QFile::ReadOnly);
-    ASSERT_EQ(ref.readAll(), buffer.readAll());
+    {
+        QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+        QImage image = fbo->toImage();
+        QBuffer buffer;
+        image.save(&buffer, "png");
+        QFile ref("points_hq.png");
+        ref.open(QFile::ReadOnly);
+        buffer.open(QFile::ReadOnly);
+        ASSERT_EQ(ref.readAll(), buffer.readAll());
+    }
 }
 
 TEST_F(PenLayerTest, DrawLine)
 {
     PenLayer penLayer;
     penLayer.setAntialiasingEnabled(false);
+    penLayer.setWidth(480);
+    penLayer.setHeight(360);
     EngineMock engine;
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     penLayer.setEngine(&engine);
 
-    PenAttributes attr;
-    attr.color = QNanoColor(255, 0, 0);
-    attr.diameter = 3;
+    auto draw = [&penLayer]() {
+        PenAttributes attr;
+        attr.color = QNanoColor(255, 0, 0);
+        attr.diameter = 3;
 
-    EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
-    EXPECT_CALL(engine, stageHeight()).Times(2).WillRepeatedly(Return(360));
-    penLayer.drawLine(attr, 63, 164, -56, 93);
-    penLayer.drawLine(attr, 130, 77, 125, -22);
+        penLayer.drawLine(attr, 63, 164, -56, 93);
+        penLayer.drawLine(attr, 130, 77, 125, -22);
 
-    attr.color = QNanoColor(0, 128, 0, 128);
-    attr.diameter = 10;
+        attr.color = QNanoColor(0, 128, 0, 128);
+        attr.diameter = 10;
 
-    EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
-    EXPECT_CALL(engine, stageHeight()).Times(2).WillRepeatedly(Return(360));
-    penLayer.drawLine(attr, 152, -158, -228, 145);
-    penLayer.drawLine(attr, -100, 139, 20, 72);
+        penLayer.drawLine(attr, 152, -158, -228, 145);
+        penLayer.drawLine(attr, -100, 139, 20, 72);
 
-    attr.color = QNanoColor(255, 50, 200, 185);
-    attr.diameter = 25.6;
+        attr.color = QNanoColor(255, 50, 200, 185);
+        attr.diameter = 25.6;
 
-    EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
-    EXPECT_CALL(engine, stageHeight()).Times(2).WillRepeatedly(Return(360));
-    penLayer.drawLine(attr, -11, 179, 90, -48);
-    penLayer.drawLine(attr, -54, 21, 88, -6);
+        penLayer.drawLine(attr, -11, 179, 90, -48);
+        penLayer.drawLine(attr, -54, 21, 88, -6);
+    };
 
-    QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
-    QImage image = fbo->toImage().scaled(240, 180);
-    QBuffer buffer;
-    image.save(&buffer, "png");
-    QFile ref("lines.png");
-    ref.open(QFile::ReadOnly);
-    buffer.open(QFile::ReadOnly);
-    ASSERT_EQ(ref.readAll(), buffer.readAll());
+    draw();
+
+    {
+        QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+        QImage image = fbo->toImage().scaled(240, 180);
+        QBuffer buffer;
+        image.save(&buffer, "png");
+        QFile ref("lines.png");
+        ref.open(QFile::ReadOnly);
+        buffer.open(QFile::ReadOnly);
+        ASSERT_EQ(ref.readAll(), buffer.readAll());
+    }
+
+    // Test HQ pen
+    penLayer.clear();
+    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
+    penLayer.setHqPen(true);
+    penLayer.setWidth(720);
+    penLayer.setHeight(540);
+    draw();
+
+    {
+        QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+        QImage image = fbo->toImage();
+        QBuffer buffer;
+        image.save(&buffer, "png");
+        QFile ref("lines_hq.png");
+        ref.open(QFile::ReadOnly);
+        buffer.open(QFile::ReadOnly);
+        ASSERT_EQ(ref.readAll(), buffer.readAll());
+    }
 }
 
 TEST_F(PenLayerTest, Stamp)
 {
     PenLayer penLayer;
+    penLayer.setWidth(480);
+    penLayer.setHeight(360);
     EngineMock engine;
     EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
-    EXPECT_CALL(engine, stageHeight()).WillOnce(Return(360));
     penLayer.setEngine(&engine);
 
     ProjectLoader loader;
@@ -302,19 +380,39 @@ TEST_F(PenLayerTest, Stamp)
     for (const auto &target : targets)
         penLayer.stamp(target.get());
 
-    QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
-    QImage image = fbo->toImage().scaled(240, 180);
-    QImage ref("stamp.png");
-    ASSERT_LE(fuzzyCompareImages(image, ref), 0.1668);
+    {
+        QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+        QImage image = fbo->toImage().scaled(240, 180);
+        QImage ref("stamp.png");
+        ASSERT_LE(fuzzyCompareImages(image, ref), 0.1668);
+    }
+
+    // Test HQ pen
+    penLayer.clear();
+    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
+    penLayer.setHqPen(true);
+    penLayer.setWidth(720);
+    penLayer.setHeight(540);
+
+    for (const auto &target : targets)
+        penLayer.stamp(target.get());
+
+    {
+        QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+        QImage image = fbo->toImage();
+        QImage ref("stamp_hq.png");
+        ASSERT_LE(fuzzyCompareImages(image, ref), 0.32);
+    }
 }
 
 TEST_F(PenLayerTest, TextureData)
 {
     PenLayer penLayer;
+    penLayer.setWidth(6);
+    penLayer.setHeight(4);
     penLayer.setAntialiasingEnabled(false);
     EngineMock engine;
     EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(6));
-    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(4));
     penLayer.setEngine(&engine);
 
     PenAttributes attr;
@@ -379,4 +477,74 @@ TEST_F(PenLayerTest, TextureData)
     ASSERT_EQ(bounds.top(), 1);
     ASSERT_EQ(bounds.right(), 2);
     ASSERT_EQ(bounds.bottom(), -2);
+
+    // Test HQ pen
+    penLayer.clear();
+    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
+    penLayer.setHqPen(true);
+    penLayer.setWidth(720);
+    penLayer.setHeight(540);
+
+    attr = PenAttributes();
+    attr.color = QNanoColor(255, 0, 0);
+    attr.diameter = 1;
+    penLayer.drawLine(attr, -3, 2, 3, -2);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), qRgb(255, 0, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 2), qRgba(0, 0, 0, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-1, 1), qRgb(255, 0, 0));
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -3.33);
+    ASSERT_EQ(bounds.top(), 2);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 3.67);
+    ASSERT_EQ(bounds.bottom(), -3);
+
+    attr.color = QNanoColor(0, 128, 0, 128);
+    attr.diameter = 2;
+    penLayer.drawLine(attr, -3, -2, 3, 2);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), qRgb(255, 0, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 2), 0);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-1, 1), qRgb(255, 0, 0));
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -3.33);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 2.67);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 4.33);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -3.67);
+
+    penLayer.clear();
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), 0);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 2), 0);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-1, 1), 0);
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(bounds.left(), 0);
+    ASSERT_EQ(bounds.top(), 0);
+    ASSERT_EQ(bounds.right(), 0);
+    ASSERT_EQ(bounds.bottom(), 0);
+
+    attr.color = QNanoColor(0, 255, 0, 255);
+    attr.diameter = 1;
+    penLayer.drawLine(attr, 0, -1, 1, 1);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgba(0, 0, 0, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 0), qRgb(0, 255, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 1), qRgba(0, 0, 0, 0));
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(bounds.left(), 0);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1.33);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 1.67);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -1.67);
+
+    attr.diameter = 2;
+    penLayer.drawPoint(attr, -2, 0);
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 1), qRgba(0, 0, 0, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(0, 0), qRgb(0, 255, 0));
+    ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 1), 0);
+
+    bounds = penLayer.getBounds();
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -2.67);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1.33);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 1.67);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -1.67);
 }

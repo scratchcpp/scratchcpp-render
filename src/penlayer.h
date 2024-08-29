@@ -19,6 +19,7 @@ class PenLayer : public IPenLayer
         Q_OBJECT
         QML_ELEMENT
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine WRITE setEngine NOTIFY engineChanged)
+        Q_PROPERTY(bool hqPen READ hqPen WRITE setHqPen NOTIFY hqPenChanged)
 
     public:
         PenLayer(QNanoQuickItem *parent = nullptr);
@@ -29,6 +30,9 @@ class PenLayer : public IPenLayer
 
         libscratchcpp::IEngine *engine() const override;
         void setEngine(libscratchcpp::IEngine *newEngine) override;
+
+        bool hqPen() const;
+        void setHqPen(bool newHqPen);
 
         void clear() override;
         void drawPoint(const PenAttributes &penAttributes, double x, double y) override;
@@ -45,17 +49,22 @@ class PenLayer : public IPenLayer
 
     signals:
         void engineChanged();
+        void hqPenChanged();
 
     protected:
         QNanoQuickItemPainter *createItemPainter() const override;
+        void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
     private:
+        void createFbo();
         void updateTexture();
 
         static std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> m_projectPenLayers;
         bool m_antialiasingEnabled = true;
         libscratchcpp::IEngine *m_engine = nullptr;
+        bool m_hqPen = false;
         std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
+        double m_scale = 1;
         std::unique_ptr<QNanoPainter> m_painter;
         std::unique_ptr<QOpenGLExtraFunctions> m_glF;
         Texture m_texture;
