@@ -29,6 +29,8 @@ ProjectScene {
     engine: loader.engine
     stageScale: (stageWidth == 0 || stageHeight == 0) ? 1 : Math.min(width / stageWidth, height / stageHeight)
     onFileNameChanged: priv.loading = true;
+    onLoaded: priv.loaded = true
+    onFailedToLoad: priv.loaded = false
 
 	function load(fileName) {
 		loader.fileName = fileName;
@@ -37,6 +39,7 @@ ProjectScene {
     QtObject {
         id: priv
         property bool loading: false
+        property bool loaded: false
     }
 
     ProjectLoader {
@@ -111,7 +114,7 @@ ProjectScene {
         anchors.top: parent.top
         width: stageWidth * stageScale
         height: stageHeight * stageScale
-        color: priv.loading ? "transparent" : "white"
+        color: priv.loading || !priv.loaded ? "transparent" : "white"
         clip: true
 
         RenderedTarget {
