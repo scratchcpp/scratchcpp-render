@@ -1,3 +1,4 @@
+#include <QSignalSpy>
 #include <scratchcpp/keyevent.h>
 #include <projectscene.h>
 #include <enginemock.h>
@@ -11,20 +12,24 @@ using ::testing::Return;
 TEST(ProjectSceneTest, Engine)
 {
     ProjectScene scene;
+    QSignalSpy spy(&scene, &ProjectScene::engineChanged);
     ASSERT_EQ(scene.engine(), nullptr);
 
     EngineMock engine;
     scene.setEngine(&engine);
     ASSERT_EQ(scene.engine(), &engine);
+    ASSERT_EQ(spy.count(), 1);
 }
 
 TEST(ProjectSceneTest, StageScale)
 {
     ProjectScene scene;
+    QSignalSpy spy(&scene, &ProjectScene::stageScaleChanged);
     ASSERT_EQ(scene.stageScale(), 1);
 
     scene.setStageScale(5.79);
     ASSERT_EQ(scene.stageScale(), 5.79);
+    ASSERT_EQ(spy.count(), 1);
 }
 
 TEST(ProjectSceneTest, HandleMouseMove)

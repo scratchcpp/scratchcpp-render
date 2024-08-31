@@ -623,31 +623,37 @@ TEST_F(RenderedTargetTest, SpriteDragging)
 TEST_F(RenderedTargetTest, Engine)
 {
     RenderedTarget target;
+    QSignalSpy spy(&target, &RenderedTarget::engineChanged);
     ASSERT_EQ(target.engine(), nullptr);
 
     EngineMock engine;
     target.setEngine(&engine);
     ASSERT_EQ(target.engine(), &engine);
+    ASSERT_EQ(spy.count(), 1);
 }
 
 TEST_F(RenderedTargetTest, StageModel)
 {
     RenderedTarget target;
+    QSignalSpy spy(&target, &RenderedTarget::stageModelChanged);
     ASSERT_EQ(target.stageModel(), nullptr);
 
     StageModel model;
     target.setStageModel(&model);
     ASSERT_EQ(target.stageModel(), &model);
+    ASSERT_EQ(spy.count(), 1);
 }
 
 TEST_F(RenderedTargetTest, SpriteModel)
 {
     RenderedTarget target;
+    QSignalSpy spy(&target, &RenderedTarget::spriteModelChanged);
     ASSERT_EQ(target.spriteModel(), nullptr);
 
     SpriteModel model;
     target.setSpriteModel(&model);
     ASSERT_EQ(target.spriteModel(), &model);
+    ASSERT_EQ(spy.count(), 1);
 }
 
 TEST_F(RenderedTargetTest, ScratchTarget)
@@ -672,20 +678,24 @@ TEST_F(RenderedTargetTest, ScratchTarget)
 TEST_F(RenderedTargetTest, MouseArea)
 {
     RenderedTarget target;
+    QSignalSpy spy(&target, &RenderedTarget::mouseAreaChanged);
     ASSERT_EQ(target.mouseArea(), nullptr);
 
     SceneMouseArea mouseArea;
     target.setMouseArea(&mouseArea);
     ASSERT_EQ(target.mouseArea(), &mouseArea);
+    ASSERT_EQ(spy.count(), 1);
 }
 
 TEST_F(RenderedTargetTest, StageScale)
 {
     RenderedTarget target;
+    QSignalSpy spy(&target, &RenderedTarget::stageScaleChanged);
     ASSERT_EQ(target.stageScale(), 1);
 
     target.setStageScale(6.4);
     ASSERT_EQ(target.stageScale(), 6.4);
+    ASSERT_EQ(spy.count(), 1);
 }
 
 TEST_F(RenderedTargetTest, GraphicEffects)

@@ -8,6 +8,7 @@ target_link_libraries(
   GTest::gtest_main
   scratchcpp-render
   ${QT_LIBS}
+  Qt6::Test
 )
 
 add_test(textbubbleshape_test)

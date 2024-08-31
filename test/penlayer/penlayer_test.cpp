@@ -2,6 +2,7 @@
 #include <QOpenGLExtraFunctions>
 #include <QBuffer>
 #include <QFile>
+#include <QSignalSpy>
 #include <penlayer.h>
 #include <penattributes.h>
 #include <projectloader.h>
@@ -53,6 +54,7 @@ TEST_F(PenLayerTest, Constructors)
 TEST_F(PenLayerTest, Engine)
 {
     PenLayer penLayer;
+    QSignalSpy spy(&penLayer, &PenLayer::engineChanged);
     ASSERT_EQ(penLayer.engine(), nullptr);
 
     EngineMock engine1, engine2;
@@ -61,15 +63,33 @@ TEST_F(PenLayerTest, Engine)
     EXPECT_CALL(engine1, stageWidth()).WillOnce(Return(480));
     penLayer.setEngine(&engine1);
     ASSERT_EQ(penLayer.engine(), &engine1);
+    ASSERT_EQ(spy.count(), 1);
 
     penLayer.setWidth(500);
     penLayer.setHeight(400);
     EXPECT_CALL(engine2, stageWidth()).WillOnce(Return(500));
     penLayer.setEngine(&engine2);
     ASSERT_EQ(penLayer.engine(), &engine2);
+    ASSERT_EQ(spy.count(), 2);
 
     penLayer.setEngine(nullptr);
     ASSERT_EQ(penLayer.engine(), nullptr);
+    ASSERT_EQ(spy.count(), 3);
+}
+
+TEST_F(PenLayerTest, HqPen)
+{
+    PenLayer penLayer;
+    QSignalSpy spy(&penLayer, &PenLayer::hqPenChanged);
+    ASSERT_FALSE(penLayer.hqPen());
+
+    penLayer.setHqPen(true);
+    ASSERT_TRUE(penLayer.hqPen());
+    ASSERT_EQ(spy.count(), 1);
+
+    penLayer.setHqPen(false);
+    ASSERT_FALSE(penLayer.hqPen());
+    ASSERT_EQ(spy.count(), 2);
 }
 
 TEST_F(PenLayerTest, FramebufferObject)

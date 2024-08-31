@@ -10,6 +10,7 @@ target_link_libraries(
   scratchcpp-render
   scratchcpprender_mocks
   ${QT_LIBS}
+  Qt6::Test
 )
 
 add_test(penlayer_test)
