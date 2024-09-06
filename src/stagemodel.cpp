@@ -112,6 +112,11 @@ bool StageModel::touchingColor(const libscratchcpp::Value &color) const
     return m_renderedTarget->touchingColor(color);
 }
 
+bool StageModel::touchingColor(const libscratchcpp::Value &color, const libscratchcpp::Value &mask) const
+{
+    return false;
+}
+
 void StageModel::loadCostume()
 {
     if (m_renderedTarget && m_stage)
