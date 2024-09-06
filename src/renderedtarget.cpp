@@ -678,10 +678,13 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
 bool RenderedTarget::touchingColor(const Value &color) const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L775-L841
+    if (!m_engine)
+        return false;
+
     QRgb rgb = convertColor(color);
 
     std::vector<Target *> targets;
-    getVisibleTargets(targets);
+    m_engine->getVisibleTargets(targets);
 
     QRectF myRect = touchingBounds();
     std::vector<IRenderedTarget *> candidates;
@@ -868,38 +871,6 @@ CpuTextureManager *RenderedTarget::textureManager() const
         m_textureManager = std::make_shared<CpuTextureManager>();
 
     return m_textureManager.get();
-}
-
-void RenderedTarget::getVisibleTargets(std::vector<Target *> &dst) const
-{
-    dst.clear();
-
-    if (!m_engine)
-        return;
-
-    const auto &targets = m_engine->targets();
-
-    for (auto target : targets) {
-        Q_ASSERT(target);
-
-        if (target->isStage())
-            dst.push_back(target.get());
-        else {
-            Sprite *sprite = static_cast<Sprite *>(target.get());
-
-            if (sprite->visible())
-                dst.push_back(target.get());
-
-            const auto &clones = sprite->clones();
-
-            for (auto clone : clones) {
-                if (clone->visible())
-                    dst.push_back(clone.get());
-            }
-        }
-    }
-
-    std::sort(dst.begin(), dst.end(), [](Target *t1, Target *t2) { return t1->layerOrder() > t2->layerOrder(); });
 }
 
 QRectF RenderedTarget::touchingBounds() const

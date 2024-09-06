@@ -130,7 +130,6 @@ class RenderedTarget : public IRenderedTarget
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
         QPointF mapFromScratchToLocal(const QPointF &point) const;
         CpuTextureManager *textureManager() const;
-        void getVisibleTargets(std::vector<libscratchcpp::Target *> &dst) const;
         QRectF touchingBounds() const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst) const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const;

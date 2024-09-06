@@ -23,6 +23,8 @@ using namespace libscratchcpp;
 
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::Invoke;
+using ::testing::_;
 
 class RenderedTargetTest : public testing::Test
 {
@@ -1093,6 +1095,31 @@ TEST_F(RenderedTargetTest, TouchingColor)
     sprite2->setLayerOrder(3);
 
     const std::vector<std::shared_ptr<Target>> targets = { stage, sprite, sprite1 };
+    EXPECT_CALL(engine, getVisibleTargets(_)).WillRepeatedly(Invoke([&targets](std::vector<Target *> &dst) {
+        dst.clear();
+
+        for (auto target : targets) {
+            ASSERT_TRUE(target);
+
+            if (target->isStage())
+                dst.push_back(target.get());
+            else {
+                Sprite *sprite = static_cast<Sprite *>(target.get());
+
+                if (sprite->visible())
+                    dst.push_back(target.get());
+
+                const auto &clones = sprite->clones();
+
+                for (auto clone : clones) {
+                    if (clone->visible())
+                        dst.push_back(clone.get());
+                }
+            }
+        }
+
+        std::sort(dst.begin(), dst.end(), [](Target *t1, Target *t2) { return t1->layerOrder() > t2->layerOrder(); });
+    }));
 
     QQuickItem parent;
     parent.setWidth(480);
@@ -1128,7 +1155,6 @@ TEST_F(RenderedTargetTest, TouchingColor)
     target.beforeRedraw();
 
     Rect penBounds(5, 1, 6, -5);
-    EXPECT_CALL(engine, targets()).WillRepeatedly(ReturnRef(targets));
     EXPECT_CALL(stageTarget, stageModel()).WillRepeatedly(Return(&stageModel));
     EXPECT_CALL(target1, stageModel()).WillRepeatedly(Return(nullptr));
     EXPECT_CALL(target2, stageModel()).WillRepeatedly(Return(nullptr));
