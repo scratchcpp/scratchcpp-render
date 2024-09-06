@@ -28,11 +28,11 @@ ProjectScene {
     id: root
     engine: loader.engine
     stageScale: (stageWidth == 0 || stageHeight == 0) ? 1 : Math.min(width / stageWidth, height / stageHeight)
-    onFileNameChanged: priv.loading = true;
     onLoaded: priv.loaded = true
     onFailedToLoad: priv.loaded = false
 
 	function load(fileName) {
+        priv.loading = true;
 		loader.fileName = fileName;
 	}
 
