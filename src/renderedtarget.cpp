@@ -817,7 +817,7 @@ void RenderedTarget::updateHullPoints()
 
 bool RenderedTarget::containsLocalPoint(const QPointF &point) const
 {
-    return textureManager()->textureContainsPoint(m_cpuTexture, point);
+    return textureManager()->textureContainsPoint(m_cpuTexture, point, m_graphicEffects);
 }
 
 QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const
