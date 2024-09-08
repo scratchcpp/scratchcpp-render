@@ -636,11 +636,7 @@ QRgb RenderedTarget::colorAtScratchPoint(double x, double y) const
     if ((x < 0 || x >= width) || (y < 0 || y >= height))
         return qRgba(0, 0, 0, 0);
 
-    GLubyte *data = textureManager()->getTextureData(m_cpuTexture);
-    const int index = (y * width + x) * 4; // RGBA channels
-    Q_ASSERT(index >= 0 && index < width * height * 4);
-    // TODO: Apply graphic effects (#117)
-    return qRgba(data[index], data[index + 1], data[index + 2], data[index + 3]);
+    return textureManager()->getPointColor(m_cpuTexture, x, y, m_graphicEffects);
 }
 
 bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
@@ -817,7 +813,7 @@ void RenderedTarget::updateHullPoints()
 
 bool RenderedTarget::containsLocalPoint(const QPointF &point) const
 {
-    return textureManager()->textureContainsPoint(m_cpuTexture, point);
+    return textureManager()->textureContainsPoint(m_cpuTexture, point, m_graphicEffects);
 }
 
 QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const

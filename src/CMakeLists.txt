@@ -72,6 +72,8 @@ qt_add_qml_module(scratchcpp-render
 	textbubblepainter.h
     cputexturemanager.cpp
     cputexturemanager.h
+    effecttransform.cpp
+    effecttransform.h
 	blocks/penextension.cpp
 	blocks/penextension.h
 	blocks/penblocks.cpp

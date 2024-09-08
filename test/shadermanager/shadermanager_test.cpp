@@ -179,6 +179,8 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
     static const QString uniformName = "u_" + effectName;
     static const ShaderManager::Effect effect = ShaderManager::Effect::Color;
 
+    std::unordered_map<ShaderManager::Effect, float> values;
+
     QOpenGLFunctions glF(&m_context);
     glF.initializeOpenGLFunctions();
     ShaderManager manager;
@@ -190,28 +192,34 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 64.9 } };
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(value, 0.3245f);
+    ASSERT_EQ(values.at(effect), value);
 
     // Below the minimum
     effects[effect] = -395.7;
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 0.02f);
+    ASSERT_EQ(values.at(effect), value);
 
     // Above the maximum
     effects[effect] = 579.05;
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 0.9f);
+    ASSERT_EQ(values.at(effect), value);
 
     program.release();
 }
@@ -221,6 +229,8 @@ TEST_F(ShaderManagerTest, BrightnessEffectValue)
     static const QString effectName = "brightness";
     static const QString uniformName = "u_" + effectName;
     static const ShaderManager::Effect effect = ShaderManager::Effect::Brightness;
+
+    std::unordered_map<ShaderManager::Effect, float> values;
 
     QOpenGLFunctions glF(&m_context);
     glF.initializeOpenGLFunctions();
@@ -233,28 +243,34 @@ TEST_F(ShaderManagerTest, BrightnessEffectValue)
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 4.6 } };
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(value, 0.046f);
+    ASSERT_EQ(values.at(effect), value);
 
     // Below the minimum
     effects[effect] = -102.9;
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(value, -1.0f);
+    ASSERT_EQ(values.at(effect), value);
 
     // Above the maximum
     effects[effect] = 353.2;
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(value, 1.0f);
+    ASSERT_EQ(values.at(effect), value);
 
     program.release();
 }
@@ -264,6 +280,8 @@ TEST_F(ShaderManagerTest, GhostEffectValue)
     static const QString effectName = "ghost";
     static const QString uniformName = "u_" + effectName;
     static const ShaderManager::Effect effect = ShaderManager::Effect::Ghost;
+
+    std::unordered_map<ShaderManager::Effect, float> values;
 
     QOpenGLFunctions glF(&m_context);
     glF.initializeOpenGLFunctions();
@@ -276,28 +294,34 @@ TEST_F(ShaderManagerTest, GhostEffectValue)
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 1000.0f) / 1000.0f, 0.415f);
+    ASSERT_EQ(values.at(effect), value);
 
     // Below the minimum
     effects[effect] = -20.8;
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(value, 1.0f);
+    ASSERT_EQ(values.at(effect), value);
 
     // Above the maximum
     effects[effect] = 248.2;
     program.bind();
     manager.setUniforms(&program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
 
     value = 0.0f;
     glF.glGetUniformfv(program.programId(), program.uniformLocation(uniformName), &value);
     ASSERT_EQ(value, 0.0f);
+    ASSERT_EQ(values.at(effect), value);
 
     program.release();
 }
