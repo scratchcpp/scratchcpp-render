@@ -599,7 +599,7 @@ const std::vector<QPoint> &RenderedTarget::hullPoints() const
 
 bool RenderedTarget::contains(const QPointF &point) const
 {
-    if (!m_costume || !m_texture.isValid() || !m_cpuTexture.isValid() || !parentItem())
+    if (!isVisible() || !m_costume || !m_texture.isValid() || !m_cpuTexture.isValid() || !parentItem())
         return false;
 
     const double scaleRatio = m_skin->getTextureScale(m_texture) / m_skin->getTextureScale(m_cpuTexture);
@@ -612,7 +612,7 @@ bool RenderedTarget::contains(const QPointF &point) const
 
 bool RenderedTarget::containsScratchPoint(double x, double y) const
 {
-    if (!m_engine || !m_skin || !m_costume)
+    if (!isVisible() || !m_engine || !m_skin || !m_costume)
         return false;
 
     return containsLocalPoint(mapFromScratchToLocal(QPointF(x, y)));
