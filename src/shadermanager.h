@@ -26,6 +26,7 @@ class ShaderManager : public QObject
         static ShaderManager *instance();
 
         QOpenGLShaderProgram *getShaderProgram(const std::unordered_map<Effect, double> &effectValues);
+        static void getUniformValuesForEffects(const std::unordered_map<Effect, double> &effectValues, std::unordered_map<Effect, float> &dst);
         void setUniforms(QOpenGLShaderProgram *program, int textureUnit, const std::unordered_map<Effect, double> &effectValues);
 
     private:

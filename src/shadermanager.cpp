@@ -101,12 +101,10 @@ QOpenGLShaderProgram *ShaderManager::getShaderProgram(const std::unordered_map<E
         return it->second;
 }
 
-void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, const std::unordered_map<Effect, double> &effectValues)
+void ShaderManager::getUniformValuesForEffects(const std::unordered_map<Effect, double> &effectValues, std::unordered_map<Effect, float> &dst)
 {
-    // Set the texture unit
-    program->setUniformValue(TEXTURE_UNIT_UNIFORM, textureUnit);
+    dst.clear();
 
-    // Set the uniform values for the enabled effects and reset the other effects
     for (const auto &[effect, name] : EFFECT_TO_NAME) {
         const auto it = effectValues.find(effect);
         double value;
@@ -117,8 +115,21 @@ void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, 
             value = it->second;
 
         auto converter = EFFECT_CONVERTER.at(effect);
-        program->setUniformValue(EFFECT_UNIFORM_NAME.at(effect), converter(value));
+        dst[effect] = converter(value);
     }
+}
+
+void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, const std::unordered_map<Effect, double> &effectValues)
+{
+    // Set the texture unit
+    program->setUniformValue(TEXTURE_UNIT_UNIFORM, textureUnit);
+
+    // Set uniform values
+    std::unordered_map<Effect, float> values;
+    getUniformValuesForEffects(effectValues, values);
+
+    for (const auto &[effect, value] : values)
+        program->setUniformValue(EFFECT_UNIFORM_NAME.at(effect), value);
 }
 
 void ShaderManager::registerEffects()
