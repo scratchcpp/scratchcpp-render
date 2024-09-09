@@ -163,12 +163,35 @@ TEST_F(ProjectLoaderTest, StartStop)
 TEST_F(ProjectLoaderTest, TimerEvent)
 {
     ProjectLoader loader;
+    ASSERT_FALSE(loader.running());
     EngineMock engine;
     loader.setEngine(&engine);
     QTimerEvent event(0);
 
+    QSignalSpy runningSpy(&loader, &ProjectLoader::runningChanged);
     EXPECT_CALL(engine, step());
+    EXPECT_CALL(engine, isRunning()).WillOnce(Return(false));
     QCoreApplication::sendEvent(&loader, &event);
+    ASSERT_FALSE(loader.running());
+    ASSERT_TRUE(runningSpy.empty());
+
+    EXPECT_CALL(engine, step());
+    EXPECT_CALL(engine, isRunning()).WillOnce(Return(true));
+    QCoreApplication::sendEvent(&loader, &event);
+    ASSERT_TRUE(loader.running());
+    ASSERT_EQ(runningSpy.size(), 1);
+
+    EXPECT_CALL(engine, step());
+    EXPECT_CALL(engine, isRunning()).WillOnce(Return(true));
+    QCoreApplication::sendEvent(&loader, &event);
+    ASSERT_TRUE(loader.running());
+    ASSERT_EQ(runningSpy.size(), 1);
+
+    EXPECT_CALL(engine, step());
+    EXPECT_CALL(engine, isRunning()).WillOnce(Return(false));
+    QCoreApplication::sendEvent(&loader, &event);
+    ASSERT_FALSE(loader.running());
+    ASSERT_EQ(runningSpy.size(), 2);
 }
 
 TEST_F(ProjectLoaderTest, QuestionAsked)
