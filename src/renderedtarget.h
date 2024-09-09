@@ -124,6 +124,7 @@ class RenderedTarget : public IRenderedTarget
         void handleSceneMouseMove(qreal x, qreal y);
         bool convexHullPointsNeeded() const;
         void updateHullPoints();
+        const std::vector<QPointF> &transformedHullPoints() const;
         bool containsLocalPoint(const QPointF &point) const;
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const;
         QPointF transformPoint(double scratchX, double scratchY, double originX, double originY, double sinRot, double cosRot) const;
@@ -169,7 +170,9 @@ class RenderedTarget : public IRenderedTarget
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();
         bool m_convexHullDirty = true;
         std::vector<QPoint> m_hullPoints;
-        bool m_clicked = false; // left mouse button only!
+        bool m_transformedHullDirty = true;
+        mutable std::vector<QPointF> m_transformedHullPoints; // NOTE: Use transformedHullPoints();
+        bool m_clicked = false;                               // left mouse button only!
         double m_dragX = 0;
         double m_dragY = 0;
         double m_dragDeltaX = 0;

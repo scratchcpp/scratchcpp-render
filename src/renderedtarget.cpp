@@ -371,31 +371,16 @@ void RenderedTarget::setHeight(qreal height)
 Rect RenderedTarget::getBounds() const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/c3ede9c3d54769730c7b023021511e2aba167b1f/src/Rectangle.js#L33-L55
-    if (!m_costume || !m_skin || !m_texture.isValid() || !m_cpuTexture.isValid())
-        return Rect(m_x, m_y, m_x, m_y);
-
-    const double textureScale = m_skin->getTextureScale(m_cpuTexture);
-    const double bitmapRes = m_costume->bitmapResolution();
-    const double width = m_cpuTexture.width() * m_size / textureScale;
-    const double height = m_cpuTexture.height() * m_size / textureScale;
-    const double originX = m_costume->rotationCenterX() * m_size / bitmapRes - width / 2;
-    const double originY = -m_costume->rotationCenterY() * m_size / bitmapRes + height / 2;
-    const double rot = -rotation() * pi / 180;
-    const double sinRot = std::sin(rot);
-    const double cosRot = std::cos(rot);
     double left = std::numeric_limits<double>::infinity();
     double top = -std::numeric_limits<double>::infinity();
     double right = -std::numeric_limits<double>::infinity();
     double bottom = std::numeric_limits<double>::infinity();
 
-    const std::vector<QPoint> &points = hullPoints();
+    const std::vector<QPointF> &points = transformedHullPoints();
 
     for (const QPointF &point : points) {
-        double x = point.x() * m_size / textureScale / bitmapRes - width / 2;
-        double y = height / 2 - point.y() * m_size / textureScale / bitmapRes;
-        const QPointF transformed = transformPoint(x, y, originX, originY, sinRot, cosRot);
-        x = transformed.x() * (m_mirrorHorizontally ? -1 : 1);
-        y = transformed.y();
+        const double x = point.x();
+        const double y = point.y();
 
         if (x < left)
             left = x;
@@ -733,6 +718,8 @@ void RenderedTarget::calculatePos()
         else
             setTransformOrigin(QQuickItem::Center);
     }
+
+    m_transformedHullDirty = true;
 }
 
 void RenderedTarget::calculateRotation()
@@ -764,6 +751,8 @@ void RenderedTarget::calculateRotation()
         if (m_mirrorHorizontally != oldMirrorHorizontally)
             emit mirrorHorizontallyChanged();
     }
+
+    m_transformedHullDirty = true;
 }
 
 void RenderedTarget::calculateSize()
@@ -779,6 +768,8 @@ void RenderedTarget::calculateSize()
 
         if (wasValid && m_cpuTexture.handle() != oldTexture)
             m_convexHullDirty = true;
+
+        m_transformedHullDirty = true;
     }
 }
 
@@ -809,6 +800,42 @@ void RenderedTarget::updateHullPoints()
 
     m_hullPoints = textureManager()->getTextureConvexHullPoints(m_cpuTexture);
     // TODO: Apply graphic effects (#117)
+}
+
+const std::vector<QPointF> &RenderedTarget::transformedHullPoints() const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/9fe90e8f4c2da35d4684359f84b69c264d884133/src/Drawable.js#L594-L616
+    if (!m_transformedHullDirty)
+        return m_transformedHullPoints;
+
+    m_transformedHullPoints.clear();
+
+    if (!m_costume || !m_skin || !m_texture.isValid() || !m_cpuTexture.isValid())
+        return m_transformedHullPoints;
+
+    const double textureScale = m_skin->getTextureScale(m_cpuTexture);
+    const double bitmapRes = m_costume->bitmapResolution();
+    const double width = m_cpuTexture.width() * m_size / textureScale;
+    const double height = m_cpuTexture.height() * m_size / textureScale;
+    const double originX = m_costume->rotationCenterX() * m_size / bitmapRes - width / 2;
+    const double originY = -m_costume->rotationCenterY() * m_size / bitmapRes + height / 2;
+    const double rot = -rotation() * pi / 180;
+    const double sinRot = std::sin(rot);
+    const double cosRot = std::cos(rot);
+
+    const std::vector<QPoint> &points = hullPoints();
+    m_transformedHullPoints.reserve(points.size());
+
+    for (const QPoint &point : points) {
+        double x = point.x() * m_size / textureScale / bitmapRes - width / 2;
+        double y = height / 2 - point.y() * m_size / textureScale / bitmapRes;
+        const QPointF transformed = transformPoint(x, y, originX, originY, sinRot, cosRot);
+        x = transformed.x() * (m_mirrorHorizontally ? -1 : 1);
+        y = transformed.y();
+        m_transformedHullPoints.push_back(QPointF(x, y));
+    }
+
+    return m_transformedHullPoints;
 }
 
 bool RenderedTarget::containsLocalPoint(const QPointF &point) const
