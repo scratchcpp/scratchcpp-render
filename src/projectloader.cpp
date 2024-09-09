@@ -128,6 +128,11 @@ bool ProjectLoader::loadStatus() const
     return m_loadStatus;
 }
 
+bool ProjectLoader::running() const
+{
+    return m_running;
+}
+
 IEngine *ProjectLoader::engine() const
 {
     if (m_loadThread.isRunning())
@@ -216,8 +221,14 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
     if (m_loadThread.isRunning())
         return;
 
-    if (m_engine)
+    if (m_engine) {
         m_engine->step();
+
+        if (m_running != m_engine->isRunning()) {
+            m_running = !m_running;
+            emit runningChanged();
+        }
+    }
 
     event->accept();
 }

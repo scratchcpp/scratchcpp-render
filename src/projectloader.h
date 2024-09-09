@@ -24,6 +24,7 @@ class ProjectLoader : public QObject
         QML_ELEMENT
         Q_PROPERTY(QString fileName READ fileName WRITE setFileName NOTIFY fileNameChanged)
         Q_PROPERTY(bool loadStatus READ loadStatus NOTIFY loadStatusChanged)
+        Q_PROPERTY(bool running READ running NOTIFY runningChanged)
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine NOTIFY engineChanged)
         Q_PROPERTY(StageModel *stage READ stage NOTIFY stageChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
@@ -47,6 +48,8 @@ class ProjectLoader : public QObject
         void setFileName(const QString &newFileName);
 
         bool loadStatus() const;
+
+        bool running() const;
 
         libscratchcpp::IEngine *engine() const;
         void setEngine(libscratchcpp::IEngine *engine);
@@ -96,6 +99,7 @@ class ProjectLoader : public QObject
         void fileNameChanged();
         void loadStatusChanged();
         void loadingFinished();
+        void runningChanged();
         void engineChanged();
         void stageChanged();
         void spritesChanged();
@@ -135,6 +139,7 @@ class ProjectLoader : public QObject
         QString m_fileName;
         QFuture<void> m_loadThread;
         libscratchcpp::Project m_project;
+        bool m_running = false;
         libscratchcpp::IEngine *m_engine = nullptr;
         QMutex m_engineMutex;
         bool m_loadStatus = false;
