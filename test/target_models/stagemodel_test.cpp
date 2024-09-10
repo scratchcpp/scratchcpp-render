@@ -181,12 +181,18 @@ TEST(StageModelTest, TouchingColor)
     RenderedTargetMock renderedTarget;
     model.setRenderedTarget(&renderedTarget);
 
-    Value color = 123;
-    EXPECT_CALL(renderedTarget, touchingColor(color)).WillOnce(Return(false));
-    ASSERT_FALSE(model.touchingColor(color));
+    Value color1 = 123, color2 = 456;
+    EXPECT_CALL(renderedTarget, touchingColor(color1)).WillOnce(Return(false));
+    ASSERT_FALSE(model.touchingColor(color1));
 
-    EXPECT_CALL(renderedTarget, touchingColor(color)).WillOnce(Return(true));
-    ASSERT_TRUE(model.touchingColor(color));
+    EXPECT_CALL(renderedTarget, touchingColor(color1)).WillOnce(Return(true));
+    ASSERT_TRUE(model.touchingColor(color1));
+
+    EXPECT_CALL(renderedTarget, touchingColor(color1, color2)).WillOnce(Return(false));
+    ASSERT_FALSE(model.touchingColor(color1, color2));
+
+    EXPECT_CALL(renderedTarget, touchingColor(color1, color2)).WillOnce(Return(true));
+    ASSERT_TRUE(model.touchingColor(color1, color2));
 }
 
 TEST(StageModelTest, RenderedTarget)

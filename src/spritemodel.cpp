@@ -177,7 +177,7 @@ bool SpriteModel::touchingColor(const libscratchcpp::Value &color) const
 
 bool SpriteModel::touchingColor(const libscratchcpp::Value &color, const libscratchcpp::Value &mask) const
 {
-    return false;
+    return m_renderedTarget->touchingColor(color, mask);
 }
 
 libscratchcpp::Sprite *SpriteModel::sprite() const
