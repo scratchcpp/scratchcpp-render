@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 - [x] Clones
 - [x] Sprite dragging
 - [x] Touching sprite block
-- [ ] Touching color blocks (color is touching color is not implemented yet)
+- [x] Touching color blocks
 - [x] Pen blocks
 - [x] Monitors
 - [ ] Graphics effects (color, brightness and ghost are implemented)

@@ -1269,6 +1269,33 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(stageTarget, colorAtScratchPoint).Times(0);
     ASSERT_FALSE(target.touchingColor(color3));
 
+    // Mask (color is touching color)
+    EXPECT_CALL(stageTarget, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6, 2, -8)));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color4.toInt()));
+    EXPECT_CALL(target1, colorAtScratchPoint(3, -3)).WillOnce(Return(color1.toInt()));
+    ASSERT_TRUE(target.touchingColor(color5, color3));
+
+    EXPECT_CALL(stageTarget, getFastBounds()).WillOnce(Return(Rect(5, 1, 6, -5)));
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(5, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6, 2, -8)));
+    EXPECT_CALL(target2, colorAtScratchPoint).Times(0);
+    EXPECT_CALL(target1, colorAtScratchPoint).Times(0);
+    EXPECT_CALL(penLayer, colorAtScratchPoint).Times(0);
+    EXPECT_CALL(stageTarget, colorAtScratchPoint).Times(0);
+    ASSERT_FALSE(target.touchingColor(color3, color3));
+
+    // Ghost effect shouldn't affect mask check
+    target.setGraphicEffect(ShaderManager::Effect::Ghost, 100);
+    EXPECT_CALL(stageTarget, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
+    EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
+    EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6, 2, -8)));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color4.toInt()));
+    EXPECT_CALL(target1, colorAtScratchPoint(3, -3)).WillOnce(Return(color1.toInt()));
+    ASSERT_TRUE(target.touchingColor(color5, color3));
+    ASSERT_EQ(target.graphicEffects().at(ShaderManager::Effect::Ghost), 100);
+
     // Out of bounds: top left
     target.updateX(-300);
     target.updateY(200);
