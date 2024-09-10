@@ -658,43 +658,12 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
 
 bool RenderedTarget::touchingColor(const Value &color) const
 {
-    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L775-L841
-    if (!m_engine)
-        return false;
+    return touchingColor(color, false, Value());
+}
 
-    QRgb rgb = convertColor(color);
-
-    std::vector<Target *> targets;
-    m_engine->getVisibleTargets(targets);
-
-    QRectF myRect = touchingBounds();
-    std::vector<IRenderedTarget *> candidates;
-    QRectF bounds = candidatesBounds(myRect, targets, candidates);
-
-    if (colorMatches(rgb, qRgb(255, 255, 255))) {
-        // The color we're checking for is the background color which spans the entire stage
-        bounds = myRect;
-
-        if (bounds.isEmpty())
-            return false;
-    } else if (candidates.empty()) {
-        // If not checking for the background color, we can return early if there are no candidate drawables
-        return false;
-    }
-
-    // Loop through the points of the union
-    for (int y = bounds.top(); y <= bounds.bottom(); y++) {
-        for (int x = bounds.left(); x <= bounds.right(); x++) {
-            if (this->containsScratchPoint(x, y)) {
-                QRgb pixelColor = sampleColor3b(x, y, candidates);
-
-                if (colorMatches(rgb, pixelColor))
-                    return true;
-            }
-        }
-    }
-
-    return false;
+bool RenderedTarget::touchingColor(const Value &color, const Value &mask) const
+{
+    return touchingColor(color, true, mask);
 }
 
 void RenderedTarget::calculatePos()
@@ -896,6 +865,70 @@ CpuTextureManager *RenderedTarget::textureManager() const
     return m_textureManager.get();
 }
 
+bool RenderedTarget::touchingColor(const libscratchcpp::Value &color, bool hasMask, const libscratchcpp::Value &mask) const
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L775-L841
+    if (!m_engine)
+        return false;
+
+    QRgb rgb = convertColor(color);
+    QRgb mask3b;
+    double ghostValue = 0;
+
+    if (hasMask) {
+        // Ignore ghost effect when checking mask
+        auto it = m_graphicEffects.find(ShaderManager::Effect::Ghost);
+
+        if (it != m_graphicEffects.cend()) {
+            ghostValue = it->second;
+            m_graphicEffects.erase(ShaderManager::Effect::Ghost);
+        }
+
+        mask3b = convertColor(mask);
+    }
+
+    std::vector<Target *> targets;
+    m_engine->getVisibleTargets(targets);
+
+    QRectF myRect = touchingBounds();
+    std::vector<IRenderedTarget *> candidates;
+    QRectF bounds = candidatesBounds(myRect, targets, candidates);
+
+    if (colorMatches(rgb, qRgb(255, 255, 255))) {
+        // The color we're checking for is the background color which spans the entire stage
+        bounds = myRect;
+
+        if (bounds.isEmpty())
+            return false;
+    } else if (candidates.empty()) {
+        // If not checking for the background color, we can return early if there are no candidate drawables
+        return false;
+    }
+
+    // Loop through the points of the union
+    for (int y = bounds.top(); y <= bounds.bottom(); y++) {
+        for (int x = bounds.left(); x <= bounds.right(); x++) {
+            if (hasMask ? maskMatches(colorAtScratchPoint(x, y), mask3b) : this->containsScratchPoint(x, y)) {
+                QRgb pixelColor = sampleColor3b(x, y, candidates);
+
+                if (colorMatches(rgb, pixelColor)) {
+                    // Restore ghost effect value
+                    if (hasMask && ghostValue != 0)
+                        m_graphicEffects[ShaderManager::Effect::Ghost] = ghostValue;
+
+                    return true;
+                }
+            }
+        }
+    }
+
+    // Restore ghost effect value
+    if (hasMask && ghostValue != 0)
+        m_graphicEffects[ShaderManager::Effect::Ghost] = ghostValue;
+
+    return false;
+}
+
 QRectF RenderedTarget::touchingBounds() const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L1330-L1350
@@ -1051,7 +1084,13 @@ QRgb RenderedTarget::convertColor(const libscratchcpp::Value &color)
 bool RenderedTarget::colorMatches(QRgb a, QRgb b)
 {
     // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L77-L81
-    return (qRed(a) & 0b11111000) == (qRed(b) & 0b11111000) && (qGreen(a) & 0b11111000) == (qGreen(b) & 0b11111000) && (qBlue(a) & 0b11110000) == (qBlue(b) & 0b11110000);
+    return qAlpha(a) > 0 && (qRed(a) & 0b11111000) == (qRed(b) & 0b11111000) && (qGreen(a) & 0b11111000) == (qGreen(b) & 0b11111000) && (qBlue(a) & 0b11110000) == (qBlue(b) & 0b11110000);
+}
+
+bool RenderedTarget::maskMatches(QRgb a, QRgb b)
+{
+    // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L59-L65
+    return (qRed(a) & 0b11111000) == (qRed(b) & 0b11111000) && (qGreen(a) & 0b11111000) == (qGreen(b) & 0b11111000) && (qBlue(a) & 0b11111000) == (qBlue(b) & 0b11111000);
 }
 
 QRgb RenderedTarget::sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const

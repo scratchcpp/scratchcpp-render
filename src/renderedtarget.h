@@ -102,6 +102,7 @@ class RenderedTarget : public IRenderedTarget
 
         bool touchingClones(const std::vector<libscratchcpp::Sprite *> &) const override;
         bool touchingColor(const libscratchcpp::Value &color) const override;
+        bool touchingColor(const libscratchcpp::Value &color, const libscratchcpp::Value &mask) const override;
 
     signals:
         void engineChanged();
@@ -131,6 +132,7 @@ class RenderedTarget : public IRenderedTarget
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
         QPointF mapFromScratchToLocal(const QPointF &point) const;
         CpuTextureManager *textureManager() const;
+        bool touchingColor(const libscratchcpp::Value &color, bool hasMask, const libscratchcpp::Value &mask) const;
         QRectF touchingBounds() const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst) const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const;
@@ -139,6 +141,7 @@ class RenderedTarget : public IRenderedTarget
         static void clampRect(libscratchcpp::Rect &rect, double left, double right, double bottom, double top);
         static QRgb convertColor(const libscratchcpp::Value &color);
         static bool colorMatches(QRgb a, QRgb b);
+        static bool maskMatches(QRgb a, QRgb b);
         QRgb sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const;
 
         libscratchcpp::IEngine *m_engine = nullptr;
@@ -156,7 +159,7 @@ class RenderedTarget : public IRenderedTarget
         Texture m_cpuTexture;                                        // without stage scale
         mutable std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
         std::unique_ptr<QOpenGLFunctions> m_glF;
-        std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
+        mutable std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
         double m_size = 1;
         double m_x = 0;
         double m_y = 0;
