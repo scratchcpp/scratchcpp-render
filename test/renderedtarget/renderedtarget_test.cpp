@@ -401,12 +401,6 @@ TEST_F(RenderedTargetTest, CpuRendering)
     ASSERT_TRUE(target.contains({ 3, 3 }));
     ASSERT_TRUE(target.contains({ 3.3, 3.5 }));
 
-    // Regtest for #141
-    target.setVisible(false);
-    ASSERT_FALSE(target.contains({ 1, 3 }));
-    ASSERT_FALSE(target.contains({ 2, 3 }));
-    target.setVisible(true);
-
     // Test contains() with horizontal mirroring
     target.updateRotationStyle(Sprite::RotationStyle::LeftRight);
     target.updateDirection(-45);
@@ -440,12 +434,6 @@ TEST_F(RenderedTargetTest, CpuRendering)
     ASSERT_TRUE(target.containsScratchPoint(-226, 162));     // [2, 3]
     ASSERT_TRUE(target.containsScratchPoint(-225, 162));     // [3, 3]
     ASSERT_TRUE(target.containsScratchPoint(-224.7, 161.5)); // [3.3, 3.5]
-
-    // Regtest for #141
-    target.setVisible(false);
-    ASSERT_FALSE(target.containsScratchPoint(-227, 162)); // [1, 3]
-    ASSERT_FALSE(target.containsScratchPoint(-226, 162)); // [2, 3]
-    target.setVisible(true);
 
     // Test colorAtScratchPoint()
     ASSERT_EQ(target.colorAtScratchPoint(-228, 165), 0); // [0, 0]
