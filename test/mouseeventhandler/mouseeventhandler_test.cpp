@@ -281,20 +281,24 @@ TEST(MouseEventHandlerTest, MouseMoveEvent)
 TEST(MouseEventHandlerTest, MousePressReleaseEvent)
 {
     MouseEventHandler handler;
-    RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3;
-    SpriteModel model1, model2, model3;
+    RenderedTargetMock stage, renderedTarget1, renderedTarget2, renderedTarget3, renderedTarget4;
+    SpriteModel model1, model2, model3, model4;
     model1.setRenderedTarget(&renderedTarget1);
     model2.setRenderedTarget(&renderedTarget2);
     model3.setRenderedTarget(&renderedTarget3);
-    Sprite sprite1, sprite2, sprite3;
+    model4.setRenderedTarget(&renderedTarget4);
+    Sprite sprite1, sprite2, sprite3, sprite4;
     sprite1.setLayerOrder(2);
     sprite2.setLayerOrder(1);
     sprite3.setLayerOrder(3);
+    sprite4.setLayerOrder(4);
+    sprite4.setVisible(false);
     ProjectLoader loader;
     auto sprites = loader.sprites();
     sprites.append(&sprites, &model1);
     sprites.append(&sprites, &model2);
     sprites.append(&sprites, &model3);
+    sprites.append(&sprites, &model4);
     handler.setStage(&stage);
     handler.setProjectLoader(&loader);
     QPointingDevice dev;
@@ -307,6 +311,7 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     EXPECT_CALL(renderedTarget1, scratchTarget()).WillRepeatedly(Return(&sprite1));
     EXPECT_CALL(renderedTarget2, scratchTarget()).WillRepeatedly(Return(&sprite2));
     EXPECT_CALL(renderedTarget3, scratchTarget()).WillRepeatedly(Return(&sprite3));
+    EXPECT_CALL(renderedTarget4, scratchTarget()).WillRepeatedly(Return(&sprite4));
     emit loader.spritesChanged();
 
     EXPECT_CALL(renderedTarget1, mapFromScene(scenePos)).WillRepeatedly(Return(localPos));
@@ -387,6 +392,7 @@ TEST(MouseEventHandlerTest, MousePressReleaseEvent)
     EXPECT_CALL(renderedTarget3, contains(localPos)).WillOnce(Return(false));
     EXPECT_CALL(renderedTarget1, contains(localPos)).WillOnce(Return(false));
     EXPECT_CALL(renderedTarget2, contains(localPos)).WillOnce(Return(false));
+    EXPECT_CALL(renderedTarget4, contains).Times(0);
     EXPECT_CALL(stage, mousePressEvent(_)).WillOnce(WithArgs<0>(Invoke(checkPressEvent)));
     ASSERT_TRUE(handler.eventFilter(nullptr, &pressEvent));
     ASSERT_EQ(pressedSpy.count(), 1);
