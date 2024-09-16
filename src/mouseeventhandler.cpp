@@ -165,7 +165,7 @@ void MouseEventHandler::forwardPointEvent(QSinglePointEvent *event, QQuickItem *
         // contains() expects position in the item's coordinate system
         QPointF localPos = sprite->mapFromScene(event->scenePosition());
 
-        if (sprite->contains(localPos)) {
+        if (static_cast<libscratchcpp::Sprite *>(sprite->scratchTarget())->visible() && sprite->contains(localPos)) {
             hoveredItem = sprite;
             break;
         }
