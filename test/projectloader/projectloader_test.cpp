@@ -32,6 +32,7 @@ class ProjectLoaderTest : public testing::Test
             QSignalSpy clonesSpy(loader, &ProjectLoader::clonesChanged);
             QSignalSpy monitorsSpy(loader, &ProjectLoader::monitorsChanged);
             QSignalSpy monitorAddedSpy(loader, &ProjectLoader::monitorAdded);
+            QSignalSpy unsupportedBlocksSpy(loader, &ProjectLoader::unsupportedBlocksChanged);
 
             loader->setFileName(fileName);
 
@@ -60,6 +61,7 @@ class ProjectLoaderTest : public testing::Test
             ASSERT_EQ(clonesSpy.count(), 1);
             ASSERT_EQ(monitorsSpy.count(), loader->monitorList().size() + 1);
             ASSERT_EQ(monitorAddedSpy.count(), loader->monitorList().size());
+            ASSERT_EQ(unsupportedBlocksSpy.count(), 1);
         }
 };
 
@@ -105,6 +107,25 @@ TEST_F(ProjectLoaderTest, Load)
     ValueMonitorModel *valueMonitorModel = dynamic_cast<ValueMonitorModel *>(monitors[3]);
     ASSERT_EQ(valueMonitorModel->monitor(), engine->monitors().at(3).get());
     ASSERT_EQ(valueMonitorModel->color(), QColor::fromString("#FF8C1A"));
+}
+
+TEST_F(ProjectLoaderTest, UnsupportedBlocks)
+{
+    ProjectLoader loader;
+    ASSERT_TRUE(loader.fileName().isEmpty());
+    ASSERT_FALSE(loader.loadStatus());
+    ASSERT_TRUE(loader.stage());
+
+    loader.setFileName("unsupported_blocks.sb3");
+    loader.start(); // wait until it loads
+
+    auto engine = loader.engine();
+    const auto &blocks = loader.unsupportedBlocks();
+    const auto &refBlocks = engine->unsupportedBlocks();
+    ASSERT_EQ(blocks.size(), refBlocks.size());
+
+    for (const QString &opcode : blocks)
+        ASSERT_NE(refBlocks.find(opcode.toStdString()), refBlocks.cend());
 }
 
 TEST_F(ProjectLoaderTest, Clones)

@@ -12,6 +12,7 @@ ProjectScene {
     property int stageWidth: 480
     property int stageHeight: 360
     readonly property bool running: loader.running
+    readonly property list<string> unsupportedBlocks: loader.unsupportedBlocks
     property alias fps: loader.fps
     property alias turboMode: loader.turboMode
 	property alias cloneLimit: loader.cloneLimit

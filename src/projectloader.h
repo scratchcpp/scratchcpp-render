@@ -30,6 +30,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> clones READ clones NOTIFY clonesChanged)
         Q_PROPERTY(QQmlListProperty<MonitorModel> monitors READ monitors NOTIFY monitorsChanged)
+        Q_PROPERTY(QStringList unsupportedBlocks READ unsupportedBlocks NOTIFY unsupportedBlocksChanged)
         Q_PROPERTY(double fps READ fps WRITE setFps NOTIFY fpsChanged)
         Q_PROPERTY(bool turboMode READ turboMode WRITE setTurboMode NOTIFY turboModeChanged)
         Q_PROPERTY(unsigned int stageWidth READ stageWidth WRITE setStageWidth NOTIFY stageWidthChanged)
@@ -64,6 +65,8 @@ class ProjectLoader : public QObject
 
         QQmlListProperty<MonitorModel> monitors();
         const QList<MonitorModel *> &monitorList() const;
+
+        const QStringList &unsupportedBlocks() const;
 
         Q_INVOKABLE void start();
         Q_INVOKABLE void stop();
@@ -105,6 +108,7 @@ class ProjectLoader : public QObject
         void spritesChanged();
         void clonesChanged();
         void monitorsChanged();
+        void unsupportedBlocksChanged();
         void fpsChanged();
         void turboModeChanged();
         void stageWidthChanged();
@@ -147,6 +151,7 @@ class ProjectLoader : public QObject
         QList<SpriteModel *> m_sprites;
         QList<SpriteModel *> m_clones;
         QList<MonitorModel *> m_monitors;
+        QStringList m_unsupportedBlocks;
         double m_fps = 30;
         bool m_turboMode = false;
         unsigned int m_stageWidth = 480;
