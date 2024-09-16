@@ -188,6 +188,11 @@ const QList<MonitorModel *> &ProjectLoader::monitorList() const
     return m_monitors;
 }
 
+const QStringList &ProjectLoader::unsupportedBlocks() const
+{
+    return m_unsupportedBlocks;
+}
+
 void ProjectLoader::start()
 {
     if (m_loadThread.isRunning())
@@ -299,6 +304,15 @@ void ProjectLoader::load()
         emit spritesChanged();
         return;
     }
+
+    // Get unsupported blocks
+    const auto &unsupportedBlocks = m_engine->unsupportedBlocks();
+    m_unsupportedBlocks.clear();
+
+    for (const std::string &opcode : unsupportedBlocks)
+        m_unsupportedBlocks.push_back(QString::fromStdString(opcode));
+
+    emit unsupportedBlocksChanged();
 
     m_engineMutex.unlock();
 
