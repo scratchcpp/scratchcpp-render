@@ -57,7 +57,7 @@ QVariant ListMonitorListModel::data(const QModelIndex &index, int role) const
     if (!m_list || index.row() < 0 || index.row() >= m_list->size())
         return QVariant();
 
-    return QString::fromStdString((*m_list)[index.row()].toString());
+    return QString::fromStdString(libscratchcpp::Value((*m_list)[index.row()]).toString());
 }
 
 QHash<int, QByteArray> ListMonitorListModel::roleNames() const
