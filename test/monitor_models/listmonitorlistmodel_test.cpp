@@ -26,8 +26,8 @@ TEST(ListMonitorListModelTest, LoadData)
     QSignalSpy removeSpy(&model, &ListMonitorListModel::rowsRemoved);
 
     List list1("", "");
-    list1.push_back(1);
-    list1.push_back(2);
+    list1.append(1);
+    list1.append(2);
     model.setList(&list1);
     ASSERT_TRUE(dataChangedSpy.empty());
     ASSERT_EQ(aboutToResetSpy.count(), 1);
@@ -87,8 +87,8 @@ TEST(ListMonitorListModelTest, AddRows)
     QSignalSpy removeSpy(&model, &ListMonitorListModel::rowsRemoved);
 
     List list1("", "");
-    list1.push_back(1);
-    list1.push_back(2);
+    list1.append(1);
+    list1.append(2);
     model.setList(&list1);
     ASSERT_TRUE(dataChangedSpy.empty());
     ASSERT_EQ(aboutToResetSpy.count(), 1);
@@ -98,9 +98,9 @@ TEST(ListMonitorListModelTest, AddRows)
     ASSERT_TRUE(aboutToRemoveSpy.empty());
     ASSERT_TRUE(removeSpy.empty());
 
-    list1.push_back(9);
-    list1.push_back(8);
-    list1.push_back(7);
+    list1.append(9);
+    list1.append(8);
+    list1.append(7);
     model.setList(&list1);
     ASSERT_EQ(dataChangedSpy.count(), 2);
     ASSERT_EQ(aboutToResetSpy.count(), 1);
@@ -147,9 +147,9 @@ TEST(ListMonitorListModelTest, RemoveRows)
     QSignalSpy removeSpy(&model, &ListMonitorListModel::rowsRemoved);
 
     List list1("", "");
-    list1.push_back(1);
-    list1.push_back(2);
-    list1.push_back(3);
+    list1.append(1);
+    list1.append(2);
+    list1.append(3);
     model.setList(&list1);
     ASSERT_TRUE(dataChangedSpy.empty());
     ASSERT_EQ(aboutToResetSpy.count(), 1);
@@ -190,9 +190,9 @@ TEST(ListMonitorListModelTest, RowCount)
 {
     ListMonitorListModel model;
     List list("", "");
-    list.push_back(1);
-    list.push_back(2);
-    list.push_back(3);
+    list.append(1);
+    list.append(2);
+    list.append(3);
     model.setList(&list);
     ASSERT_EQ(model.rowCount(QModelIndex()), list.size());
 }
@@ -201,9 +201,9 @@ TEST(ListMonitorListModelTest, Data)
 {
     ListMonitorListModel model;
     List list("", "");
-    list.push_back(1);
-    list.push_back(2);
-    list.push_back(3);
+    list.append(1);
+    list.append(2);
+    list.append(3);
     model.setList(&list);
     ASSERT_EQ(model.data(model.index(0), 0).toString(), "1");
     ASSERT_EQ(model.data(model.index(1), 0).toString(), "2");
