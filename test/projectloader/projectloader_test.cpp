@@ -98,7 +98,7 @@ TEST_F(ProjectLoaderTest, Load)
     ASSERT_EQ(sprites[1]->sprite(), engine->targetAt(2));
 
     const auto &monitors = loader.monitorList();
-    ASSERT_EQ(monitors.size(), 11);
+    ASSERT_EQ(monitors.size(), 10);
 
     ListMonitorModel *listMonitorModel = dynamic_cast<ListMonitorModel *>(monitors[0]);
     ASSERT_EQ(listMonitorModel->monitor(), engine->monitors().at(0).get());
