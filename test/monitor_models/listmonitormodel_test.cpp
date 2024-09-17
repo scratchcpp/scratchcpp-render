@@ -31,19 +31,19 @@ TEST(ListMonitorModelTest, OnValueChanged)
     VirtualMachine vm;
 
     List list1("", "");
-    list1.push_back(1);
-    list1.push_back(2);
+    list1.append(1);
+    list1.append(2);
 
     List list2("", "");
-    list2.push_back(1);
-    list2.push_back(2);
-    list2.push_back(3);
-    list2.push_back(4);
+    list2.append(1);
+    list2.append(2);
+    list2.append(3);
+    list2.append(4);
 
     List list3("", "");
-    list3.push_back(1);
-    list3.push_back(2);
-    list3.push_back(3);
+    list3.append(1);
+    list3.append(2);
+    list3.append(3);
 
     List *lists[] = { &list1, &list2, &list3 };
     vm.setLists(lists);
