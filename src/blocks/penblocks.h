@@ -3,7 +3,7 @@
 #pragma once
 
 #include <QColor>
-#include <scratchcpp/iblocksection.h>
+#include <scratchcpp/iextension.h>
 
 namespace scratchcpprender
 {
@@ -11,7 +11,7 @@ namespace scratchcpprender
 class SpriteModel;
 class PenState;
 
-class PenBlocks : public libscratchcpp::IBlockSection
+class PenBlocks : public libscratchcpp::IExtension
 {
     public:
         enum Inputs
@@ -25,6 +25,7 @@ class PenBlocks : public libscratchcpp::IBlockSection
         };
 
         std::string name() const override;
+        std::string description() const override;
 
         void registerBlocks(libscratchcpp::IEngine *engine) override;
 

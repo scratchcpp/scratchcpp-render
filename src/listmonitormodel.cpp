@@ -12,8 +12,8 @@ ListMonitorModel::ListMonitorModel(QObject *parent) :
 {
 }
 
-ListMonitorModel::ListMonitorModel(libscratchcpp::IBlockSection *section, QObject *parent) :
-    MonitorModel(section, parent)
+ListMonitorModel::ListMonitorModel(libscratchcpp::IExtension *extension, QObject *parent) :
+    MonitorModel(extension, parent)
 {
     m_listModel = new ListMonitorListModel(this);
 }

@@ -74,8 +74,6 @@ qt_add_qml_module(scratchcpp-render
     cputexturemanager.h
     effecttransform.cpp
     effecttransform.h
-	blocks/penextension.cpp
-	blocks/penextension.h
 	blocks/penblocks.cpp
 	blocks/penblocks.h
 )

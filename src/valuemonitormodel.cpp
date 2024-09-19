@@ -16,8 +16,8 @@ ValueMonitorModel::ValueMonitorModel(QObject *parent) :
 {
 }
 
-ValueMonitorModel::ValueMonitorModel(IBlockSection *section, QObject *parent) :
-    MonitorModel(section, parent)
+ValueMonitorModel::ValueMonitorModel(IExtension *extension, QObject *parent) :
+    MonitorModel(extension, parent)
 {
 }
 

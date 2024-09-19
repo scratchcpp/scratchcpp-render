@@ -2,7 +2,7 @@
 
 #include <scratchcpp/monitor.h>
 #include <scratchcpp/sprite.h>
-#include <scratchcpp/iblocksection.h>
+#include <scratchcpp/iextension.h>
 
 #include "monitormodel.h"
 
@@ -13,14 +13,14 @@ MonitorModel::MonitorModel(QObject *parent) :
 {
 }
 
-MonitorModel::MonitorModel(libscratchcpp::IBlockSection *section, QObject *parent) :
+MonitorModel::MonitorModel(libscratchcpp::IExtension *extension, QObject *parent) :
     QObject(parent)
 {
-    if (!section)
+    if (!extension)
         return;
 
-    // TODO: Get the color from the block section
-    std::string name = section->name();
+    // TODO: Get the color from the extension
+    std::string name = extension->name();
     if (name == "Motion")
         m_color = QColor::fromString("#4C97FF");
     else if (name == "Looks")
@@ -67,6 +67,14 @@ void MonitorModel::init(libscratchcpp::Monitor *monitor)
 void MonitorModel::onVisibleChanged(bool visible)
 {
     emit visibleChanged();
+}
+
+void MonitorModel::onXChanged(int x)
+{
+}
+
+void MonitorModel::onYChanged(int y)
+{
 }
 
 libscratchcpp::Monitor *MonitorModel::monitor() const

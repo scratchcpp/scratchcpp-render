@@ -20,7 +20,7 @@ using ::testing::Return;
 class PenBlocksTest : public testing::Test
 {
     public:
-        void SetUp() override { m_section = std::make_unique<PenBlocks>(); }
+        void SetUp() override { m_extension = std::make_unique<PenBlocks>(); }
 
         void addValueInput(std::shared_ptr<Block> block, const std::string &name, PenBlocks::Inputs id, const Value &value) const
         {
@@ -77,46 +77,41 @@ class PenBlocksTest : public testing::Test
             return block;
         }
 
-        std::unique_ptr<IBlockSection> m_section;
+        std::unique_ptr<IExtension> m_extension;
         EngineMock m_engineMock;
 };
 
 TEST_F(PenBlocksTest, Name)
 {
-    ASSERT_EQ(m_section->name(), "Pen");
-}
-
-TEST_F(PenBlocksTest, CategoryVisible)
-{
-    ASSERT_TRUE(m_section->categoryVisible());
+    ASSERT_EQ(m_extension->name(), "pen");
 }
 
 TEST_F(PenBlocksTest, RegisterBlocks)
 {
     // Blocks
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_clear", &PenBlocks::compileClear));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_stamp", &PenBlocks::compileStamp));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penDown", &PenBlocks::compilePenDown));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_penUp", &PenBlocks::compilePenUp));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenColorToColor", &PenBlocks::compileSetPenColorToColor));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenColorParamBy", &PenBlocks::compileChangePenColorParamBy));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenColorParamTo", &PenBlocks::compileSetPenColorParamTo));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenSizeBy", &PenBlocks::compileChangePenSizeBy));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenSizeTo", &PenBlocks::compileSetPenSizeTo));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenShadeBy", &PenBlocks::compileChangePenShadeBy));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenShadeToNumber", &PenBlocks::compileSetPenShadeToNumber));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_changePenHueBy", &PenBlocks::compileChangePenHueBy));
-    EXPECT_CALL(m_engineMock, addCompileFunction(m_section.get(), "pen_setPenHueToNumber", &PenBlocks::compileSetPenHueToNumber));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_clear", &PenBlocks::compileClear));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_stamp", &PenBlocks::compileStamp));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_penDown", &PenBlocks::compilePenDown));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_penUp", &PenBlocks::compilePenUp));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_setPenColorToColor", &PenBlocks::compileSetPenColorToColor));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_changePenColorParamBy", &PenBlocks::compileChangePenColorParamBy));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_setPenColorParamTo", &PenBlocks::compileSetPenColorParamTo));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_changePenSizeBy", &PenBlocks::compileChangePenSizeBy));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_setPenSizeTo", &PenBlocks::compileSetPenSizeTo));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_changePenShadeBy", &PenBlocks::compileChangePenShadeBy));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_setPenShadeToNumber", &PenBlocks::compileSetPenShadeToNumber));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_changePenHueBy", &PenBlocks::compileChangePenHueBy));
+    EXPECT_CALL(m_engineMock, addCompileFunction(m_extension.get(), "pen_setPenHueToNumber", &PenBlocks::compileSetPenHueToNumber));
 
     // Inputs
-    EXPECT_CALL(m_engineMock, addInput(m_section.get(), "COLOR", PenBlocks::COLOR));
-    EXPECT_CALL(m_engineMock, addInput(m_section.get(), "COLOR_PARAM", PenBlocks::COLOR_PARAM));
-    EXPECT_CALL(m_engineMock, addInput(m_section.get(), "VALUE", PenBlocks::VALUE));
-    EXPECT_CALL(m_engineMock, addInput(m_section.get(), "SIZE", PenBlocks::SIZE));
-    EXPECT_CALL(m_engineMock, addInput(m_section.get(), "SHADE", PenBlocks::SHADE));
-    EXPECT_CALL(m_engineMock, addInput(m_section.get(), "HUE", PenBlocks::HUE));
+    EXPECT_CALL(m_engineMock, addInput(m_extension.get(), "COLOR", PenBlocks::COLOR));
+    EXPECT_CALL(m_engineMock, addInput(m_extension.get(), "COLOR_PARAM", PenBlocks::COLOR_PARAM));
+    EXPECT_CALL(m_engineMock, addInput(m_extension.get(), "VALUE", PenBlocks::VALUE));
+    EXPECT_CALL(m_engineMock, addInput(m_extension.get(), "SIZE", PenBlocks::SIZE));
+    EXPECT_CALL(m_engineMock, addInput(m_extension.get(), "SHADE", PenBlocks::SHADE));
+    EXPECT_CALL(m_engineMock, addInput(m_extension.get(), "HUE", PenBlocks::HUE));
 
-    m_section->registerBlocks(&m_engineMock);
+    m_extension->registerBlocks(&m_engineMock);
 }
 
 TEST_F(PenBlocksTest, Clear)

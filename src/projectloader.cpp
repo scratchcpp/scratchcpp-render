@@ -12,7 +12,7 @@
 #include "valuemonitormodel.h"
 #include "listmonitormodel.h"
 #include "renderedtarget.h"
-#include "blocks/penextension.h"
+#include "blocks/penblocks.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -35,7 +35,7 @@ ProjectLoader::ProjectLoader(QObject *parent) :
     initTimer();
 
     // Register pen blocks
-    ScratchConfiguration::registerExtension(std::make_shared<PenExtension>());
+    ScratchConfiguration::registerExtension(std::make_shared<PenBlocks>());
 }
 
 ProjectLoader::~ProjectLoader()
@@ -381,20 +381,20 @@ void ProjectLoader::deleteClone(SpriteModel *model)
 
 void ProjectLoader::addMonitor(Monitor *monitor)
 {
-    auto section = monitor->blockSection();
+    auto extension = monitor->extension();
 
-    if (!section)
+    if (!extension)
         return;
 
     MonitorModel *model = nullptr;
 
     switch (monitor->mode()) {
         case Monitor::Mode::List:
-            model = new ListMonitorModel(section.get());
+            model = new ListMonitorModel(extension);
             break;
 
         default:
-            model = new ValueMonitorModel(section.get());
+            model = new ValueMonitorModel(extension);
             break;
     }
 

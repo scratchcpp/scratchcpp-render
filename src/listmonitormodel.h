@@ -21,7 +21,7 @@ class ListMonitorModel : public MonitorModel
 
     public:
         ListMonitorModel(QObject *parent = nullptr);
-        ListMonitorModel(libscratchcpp::IBlockSection *section, QObject *parent = nullptr);
+        ListMonitorModel(libscratchcpp::IExtension *extension, QObject *parent = nullptr);
 
         void onValueChanged(const libscratchcpp::VirtualMachine *vm) override;
 

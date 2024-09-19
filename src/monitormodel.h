@@ -10,7 +10,7 @@
 namespace libscratchcpp
 {
 
-class IBlockSection;
+class IExtension;
 
 }
 
@@ -43,12 +43,14 @@ class MonitorModel
         Q_ENUM(Type)
 
         MonitorModel(QObject *parent = nullptr);
-        MonitorModel(libscratchcpp::IBlockSection *section, QObject *parent = nullptr);
+        MonitorModel(libscratchcpp::IExtension *extension, QObject *parent = nullptr);
 
         void init(libscratchcpp::Monitor *monitor) override final;
 
         virtual void onValueChanged(const libscratchcpp::VirtualMachine *vm) override { }
         void onVisibleChanged(bool visible) override final;
+        void onXChanged(int x) override final;
+        void onYChanged(int y) override final;
 
         libscratchcpp::Monitor *monitor() const;
 

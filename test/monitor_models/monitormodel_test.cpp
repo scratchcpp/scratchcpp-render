@@ -2,7 +2,7 @@
 #include <scratchcpp/monitor.h>
 #include <scratchcpp/sprite.h>
 #include <monitormodel.h>
-#include <blocksectionmock.h>
+#include <extensionmock.h>
 
 #include "../common.h"
 
@@ -98,47 +98,47 @@ TEST(MonitorModelTest, Color)
         ASSERT_EQ(model.color(), Qt::green);
     }
 
-    BlockSectionMock section;
+    ExtensionMock extension;
 
     {
         // Invalid
-        EXPECT_CALL(section, name()).WillOnce(Return(""));
-        MonitorModel model(&section);
+        EXPECT_CALL(extension, name()).WillOnce(Return(""));
+        MonitorModel model(&extension);
         ASSERT_EQ(model.color(), Qt::green);
     }
 
     {
         // Motion
-        EXPECT_CALL(section, name()).WillOnce(Return("Motion"));
-        MonitorModel model(&section);
+        EXPECT_CALL(extension, name()).WillOnce(Return("Motion"));
+        MonitorModel model(&extension);
         ASSERT_EQ(model.color(), QColor::fromString("#4C97FF"));
     }
 
     {
         // Looks
-        EXPECT_CALL(section, name()).WillOnce(Return("Looks"));
-        MonitorModel model(&section);
+        EXPECT_CALL(extension, name()).WillOnce(Return("Looks"));
+        MonitorModel model(&extension);
         ASSERT_EQ(model.color(), QColor::fromString("#9966FF"));
     }
 
     {
         // Sound
-        EXPECT_CALL(section, name()).WillOnce(Return("Sound"));
-        MonitorModel model(&section);
+        EXPECT_CALL(extension, name()).WillOnce(Return("Sound"));
+        MonitorModel model(&extension);
         ASSERT_EQ(model.color(), QColor::fromString("#CF63CF"));
     }
 
     {
         // Variables
-        EXPECT_CALL(section, name()).WillOnce(Return("Variables"));
-        MonitorModel model(&section);
+        EXPECT_CALL(extension, name()).WillOnce(Return("Variables"));
+        MonitorModel model(&extension);
         ASSERT_EQ(model.color(), QColor::fromString("#FF8C1A"));
     }
 
     {
         // Lists
-        EXPECT_CALL(section, name()).WillOnce(Return("Lists"));
-        MonitorModel model(&section);
+        EXPECT_CALL(extension, name()).WillOnce(Return("Lists"));
+        MonitorModel model(&extension);
         ASSERT_EQ(model.color(), QColor::fromString("#FF661A"));
     }
 }

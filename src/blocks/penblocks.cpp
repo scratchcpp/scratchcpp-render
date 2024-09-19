@@ -26,7 +26,12 @@ const std::unordered_map<std::string, PenBlocks::ColorParam>
 
 std::string PenBlocks::name() const
 {
-    return "Pen";
+    return "pen";
+}
+
+std::string PenBlocks::description() const
+{
+    return "Pen blocks";
 }
 
 void PenBlocks::registerBlocks(IEngine *engine)

@@ -28,7 +28,7 @@ class ValueMonitorModel : public MonitorModel
         Q_ENUM(Mode)
 
         ValueMonitorModel(QObject *parent = nullptr);
-        ValueMonitorModel(libscratchcpp::IBlockSection *section, QObject *parent = nullptr);
+        ValueMonitorModel(libscratchcpp::IExtension *extension, QObject *parent = nullptr);
 
         void onValueChanged(const libscratchcpp::VirtualMachine *vm) override;
 
