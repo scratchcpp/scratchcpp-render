@@ -209,12 +209,6 @@ TEST_F(CpuTextureManagerTest, TextureContainsPoint)
     ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 3 }, {}));
     ASSERT_TRUE(manager.textureContainsPoint(texture, { 3.3, 3.5 }, {}));
 
-    std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Ghost, 100 } };
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 1, 3 }, effects));
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 2, 3 }, effects));
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 3, 3 }, effects));
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 3.3, 3.5 }, effects));
-
     // TODO: Test point transform (graphic effects that change shape)
 
     // Cleanup

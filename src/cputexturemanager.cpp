@@ -81,7 +81,26 @@ QRgb CpuTextureManager::getPointColor(const Texture &texture, int x, int y, cons
 bool CpuTextureManager::textureContainsPoint(const Texture &texture, const QPointF &localPoint, const std::unordered_map<ShaderManager::Effect, double> &effects)
 {
     // https://github.com/scratchfoundation/scratch-render/blob/7b823985bc6fe92f572cc3276a8915e550f7c5e6/src/Silhouette.js#L219-L226
-    return qAlpha(getPointColor(texture, localPoint.x(), localPoint.y(), effects)) > 0;
+    const int width = texture.width();
+    const int height = texture.height();
+    int x = localPoint.x();
+    int y = localPoint.y();
+
+    if (!effects.empty()) {
+        // Get local position with effect transform
+        QVector2D transformedCoords;
+        const QVector2D localCoords(x / static_cast<float>(width), y / static_cast<float>(height));
+        EffectTransform::transformPoint(effects, localCoords, transformedCoords);
+        x = transformedCoords.x() * width;
+        y = transformedCoords.y() * height;
+    }
+
+    if ((x < 0 || x >= width) || (y < 0 || y >= height))
+        return false;
+
+    GLubyte *pixels = getTextureData(texture);
+    QRgb color = qRgba(pixels[(y * width + x) * 4], pixels[(y * width + x) * 4 + 1], pixels[(y * width + x) * 4 + 2], pixels[(y * width + x) * 4 + 3]);
+    return qAlpha(color) > 0;
 }
 
 void CpuTextureManager::removeTexture(const Texture &texture)
