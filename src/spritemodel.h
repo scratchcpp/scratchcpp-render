@@ -28,6 +28,7 @@ class SpriteModel
         Q_PROPERTY(IPenLayer *penLayer READ penLayer WRITE setPenLayer NOTIFY penLayerChanged)
         Q_PROPERTY(TextBubbleShape::Type bubbleType READ bubbleType NOTIFY bubbleTypeChanged)
         Q_PROPERTY(QString bubbleText READ bubbleText NOTIFY bubbleTextChanged)
+        Q_PROPERTY(int bubbleLayer READ bubbleLayer NOTIFY bubbleLayerChanged)
 
     public:
         SpriteModel(QObject *parent = nullptr);
@@ -82,6 +83,8 @@ class SpriteModel
 
         const QString &bubbleText() const;
 
+        int bubbleLayer() const;
+
     signals:
         void renderedTargetChanged();
         void penLayerChanged();
@@ -89,6 +92,7 @@ class SpriteModel
         void bubbleTextChanged();
         void cloned(SpriteModel *cloneModel);
         void cloneDeleted(SpriteModel *clone);
+        void bubbleLayerChanged();
 
     private:
         libscratchcpp::Sprite *m_sprite = nullptr;

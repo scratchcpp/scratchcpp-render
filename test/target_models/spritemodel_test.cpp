@@ -466,3 +466,15 @@ TEST(SpriteModelTest, PenDown)
     ASSERT_FALSE(model.penDown());
     ASSERT_FALSE(model.penState().penDown);
 }
+
+TEST(SpriteModelTest, BubbleLayer)
+{
+    SpriteModel model;
+    Sprite sprite;
+    model.init(&sprite);
+    QSignalSpy spy(&model, &SpriteModel::bubbleLayerChanged);
+
+    sprite.bubble()->setLayerOrder(5);
+    ASSERT_EQ(model.bubbleLayer(), 5);
+    // TODO: Use spy here
+}

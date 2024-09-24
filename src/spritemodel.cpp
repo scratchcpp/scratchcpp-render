@@ -261,4 +261,9 @@ const QString &SpriteModel::bubbleText() const
     return m_bubbleText;
 }
 
+int SpriteModel::bubbleLayer() const
+{
+    return m_sprite ? m_sprite->bubble()->layerOrder() : 0;
+}
+
 } // namespace scratchcpprender
