@@ -21,7 +21,7 @@ Rectangle {
     QtObject {
         id: priv
         readonly property int horizontalMargins: 9
-        readonly property double verticalMargins: 2
+        readonly property double verticalMargins: 2.5
         readonly property color bgColor: Qt.rgba(0.9, 0.94, 1, 1)
     }
 
