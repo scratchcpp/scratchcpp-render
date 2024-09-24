@@ -227,6 +227,11 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
         return;
 
     if (m_engine) {
+        for (Monitor *monitor : m_unpositionedMonitors)
+            monitor->autoPosition(m_engine->monitors());
+
+        m_unpositionedMonitors.clear();
+
         m_engine->step();
 
         if (m_running != m_engine->isRunning()) {
@@ -245,6 +250,7 @@ void ProjectLoader::callLoad(ProjectLoader *loader)
 
 void ProjectLoader::load()
 {
+    m_unpositionedMonitors.clear();
     m_loadStatus = m_project.load();
     m_engineMutex.lock();
     m_engine = m_project.engine().get();
@@ -400,6 +406,11 @@ void ProjectLoader::addMonitor(Monitor *monitor)
 
     if (!model)
         return;
+
+    if (monitor->needsAutoPosition()) {
+        if (std::find(m_unpositionedMonitors.begin(), m_unpositionedMonitors.end(), monitor) == m_unpositionedMonitors.end())
+            m_unpositionedMonitors.push_back(monitor);
+    }
 
     model->moveToThread(qApp->thread());
     model->setParent(this);

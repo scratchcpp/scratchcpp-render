@@ -151,6 +151,7 @@ class ProjectLoader : public QObject
         QList<SpriteModel *> m_sprites;
         QList<SpriteModel *> m_clones;
         QList<MonitorModel *> m_monitors;
+        std::vector<libscratchcpp::Monitor *> m_unpositionedMonitors;
         QStringList m_unsupportedBlocks;
         double m_fps = 30;
         bool m_turboMode = false;
