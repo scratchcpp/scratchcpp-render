@@ -225,3 +225,15 @@ TEST(StageModelTest, RenderedTarget)
     stage.setCostumeIndex(2);
     model.loadCostume();
 }
+
+TEST(StageModelTest, BubbleLayer)
+{
+    StageModel model;
+    Stage stage;
+    model.init(&stage);
+    QSignalSpy spy(&model, &StageModel::bubbleLayerChanged);
+
+    stage.bubble()->setLayerOrder(5);
+    ASSERT_EQ(model.bubbleLayer(), 5);
+    // TODO: Use spy here
+}

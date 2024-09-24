@@ -22,6 +22,7 @@ class StageModel
         Q_PROPERTY(IRenderedTarget *renderedTarget READ renderedTarget WRITE setRenderedTarget NOTIFY renderedTargetChanged)
         Q_PROPERTY(TextBubbleShape::Type bubbleType READ bubbleType NOTIFY bubbleTypeChanged)
         Q_PROPERTY(QString bubbleText READ bubbleText NOTIFY bubbleTextChanged)
+        Q_PROPERTY(int bubbleLayer READ bubbleLayer NOTIFY bubbleLayerChanged)
 
     public:
         explicit StageModel(QObject *parent = nullptr);
@@ -59,10 +60,13 @@ class StageModel
 
         const QString &bubbleText() const;
 
+        int bubbleLayer() const;
+
     signals:
         void renderedTargetChanged();
         void bubbleTypeChanged();
         void bubbleTextChanged();
+        void bubbleLayerChanged();
 
     private:
         libscratchcpp::Stage *m_stage = nullptr;

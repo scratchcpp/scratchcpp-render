@@ -154,3 +154,8 @@ const QString &StageModel::bubbleText() const
 {
     return m_bubbleText;
 }
+
+int StageModel::bubbleLayer() const
+{
+    return m_stage ? m_stage->bubble()->layerOrder() : 0;
+}
