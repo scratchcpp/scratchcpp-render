@@ -251,6 +251,11 @@ void ProjectLoader::callLoad(ProjectLoader *loader)
 void ProjectLoader::load()
 {
     m_unpositionedMonitors.clear();
+    m_sprites.clear();
+    m_clones.clear();
+    emit spritesChanged();
+    emit clonesChanged();
+
     m_loadStatus = m_project.load();
     m_engineMutex.lock();
     m_engine = m_project.engine().get();
@@ -262,6 +267,7 @@ void ProjectLoader::load()
         emit loadingFinished();
         emit engineChanged();
         emit spritesChanged();
+        emit clonesChanged();
         return;
     }
 
@@ -308,6 +314,7 @@ void ProjectLoader::load()
         emit loadingFinished();
         emit engineChanged();
         emit spritesChanged();
+        emit clonesChanged();
         return;
     }
 
@@ -327,6 +334,7 @@ void ProjectLoader::load()
     emit engineChanged();
     emit stageChanged();
     emit spritesChanged();
+    emit clonesChanged();
 }
 
 void ProjectLoader::initTimer()
