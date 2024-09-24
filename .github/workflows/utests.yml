@@ -16,7 +16,7 @@ jobs:
         include:
           - qt_version: '6.6'
             qt_arch: 'gcc_64'
-          - qt_version: '6.7'
+          - qt_version: '6.7.2'
             qt_arch: 'linux_gcc_64'
 
     runs-on: ubuntu-latest
