@@ -49,7 +49,7 @@ QString MonitorModel::name() const
 bool MonitorModel::visible() const
 {
     if (m_monitor)
-        return m_monitor->visible();
+        return m_monitor->visible() && !m_monitor->needsAutoPosition();
     else
         return false;
 }

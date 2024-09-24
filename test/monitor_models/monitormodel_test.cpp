@@ -71,6 +71,9 @@ TEST(MonitorModelTest, Visible)
     Monitor monitor("", "");
     monitor.setVisible(true);
     model.init(&monitor);
+    ASSERT_FALSE(model.visible());
+
+    monitor.autoPosition({});
     ASSERT_TRUE(model.visible());
 
     monitor.setVisible(false);
