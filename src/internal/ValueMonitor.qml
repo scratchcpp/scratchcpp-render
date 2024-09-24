@@ -15,6 +15,8 @@ Rectangle {
     width: layout.implicitWidth + priv.horizontalMargins * 2
     height: layout.implicitHeight + priv.verticalMargins * 2
     visible: model ? model.visible : true
+    onWidthChanged: if(model) model.width = width
+    onHeightChanged: if(model) model.height = height
 
     QtObject {
         id: priv

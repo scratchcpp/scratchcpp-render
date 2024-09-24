@@ -17,6 +17,8 @@ Rectangle {
     border.color: Qt.rgba(0.765, 0.8, 0.85, 1)
     radius: 5
     visible: model ? model.visible : true
+    onWidthChanged: if(model) model.width = width
+    onHeightChanged: if(model) model.height = height
 
     QtObject {
         id: priv
