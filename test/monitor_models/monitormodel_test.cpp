@@ -156,6 +156,13 @@ TEST(MonitorModelTest, X)
 
     monitor.setX(-2);
     ASSERT_EQ(model.x(), -2);
+
+    QSignalSpy xSpy(&model, &MonitorModel::xChanged);
+    QSignalSpy visibleSpy(&model, &MonitorModel::visibleChanged);
+
+    model.onXChanged(-2);
+    ASSERT_EQ(xSpy.count(), 1);
+    ASSERT_EQ(visibleSpy.count(), 1);
 }
 
 TEST(MonitorModelTest, Y)
@@ -168,6 +175,14 @@ TEST(MonitorModelTest, Y)
 
     monitor.setY(-8);
     ASSERT_EQ(model.y(), -8);
+
+    QSignalSpy ySpy(&model, &MonitorModel::yChanged);
+    QSignalSpy visibleSpy(&model, &MonitorModel::visibleChanged);
+
+    model.onYChanged(-8);
+    ASSERT_EQ(model.y(), -8);
+    ASSERT_EQ(ySpy.count(), 1);
+    ASSERT_EQ(visibleSpy.count(), 1);
 }
 
 TEST(MonitorModelTest, Width)

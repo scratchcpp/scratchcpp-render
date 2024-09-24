@@ -71,10 +71,14 @@ void MonitorModel::onVisibleChanged(bool visible)
 
 void MonitorModel::onXChanged(int x)
 {
+    emit xChanged();
+    emit visibleChanged();
 }
 
 void MonitorModel::onYChanged(int y)
 {
+    emit yChanged();
+    emit visibleChanged();
 }
 
 libscratchcpp::Monitor *MonitorModel::monitor() const
