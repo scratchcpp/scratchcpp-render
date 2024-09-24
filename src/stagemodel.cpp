@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include <scratchcpp/costume.h>
+#include <scratchcpp/textbubble.h>
 
 #include "stagemodel.h"
 #include "renderedtarget.h"
@@ -15,7 +16,35 @@ StageModel::StageModel(QObject *parent) :
 
 void StageModel::init(libscratchcpp::Stage *stage)
 {
+    if (!stage)
+        return;
+
     m_stage = stage;
+
+    m_stage->bubble()->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
+        if (type == libscratchcpp::TextBubble::Type::Say) {
+            if (m_bubbleType == TextBubbleShape::Type::Say)
+                return;
+
+            m_bubbleType = TextBubbleShape::Type::Say;
+        } else {
+            if (m_bubbleType == TextBubbleShape::Type::Think)
+                return;
+
+            m_bubbleType = TextBubbleShape::Type::Think;
+        }
+
+        emit bubbleTypeChanged();
+    });
+
+    m_stage->bubble()->textChanged().connect([this](const std::string &text) {
+        QString newText = QString::fromStdString(text);
+
+        if (m_bubbleText != newText) {
+            m_bubbleText = newText;
+            emit bubbleTextChanged();
+        }
+    });
 }
 
 void StageModel::onCostumeChanged(libscratchcpp::Costume *costume)
@@ -48,33 +77,6 @@ void StageModel::onGraphicsEffectsCleared()
 {
     if (m_renderedTarget)
         m_renderedTarget->clearGraphicEffects();
-}
-
-void StageModel::onBubbleTypeChanged(libscratchcpp::Target::BubbleType type)
-{
-    if (type == libscratchcpp::Target::BubbleType::Say) {
-        if (m_bubbleType == TextBubbleShape::Type::Say)
-            return;
-
-        m_bubbleType = TextBubbleShape::Type::Say;
-    } else {
-        if (m_bubbleType == TextBubbleShape::Type::Think)
-            return;
-
-        m_bubbleType = TextBubbleShape::Type::Think;
-    }
-
-    emit bubbleTypeChanged();
-}
-
-void StageModel::onBubbleTextChanged(const std::string &text)
-{
-    QString newText = QString::fromStdString(text);
-
-    if (m_bubbleText != newText) {
-        m_bubbleText = newText;
-        emit bubbleTextChanged();
-    }
 }
 
 int StageModel::costumeWidth() const

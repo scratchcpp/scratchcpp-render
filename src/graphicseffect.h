@@ -17,6 +17,8 @@ class GraphicsEffect : public libscratchcpp::IGraphicsEffect
         ShaderManager::Effect effect() const;
         std::string name() const override;
 
+        double clamp(double value) const override;
+
     private:
         ShaderManager::Effect m_effect = static_cast<ShaderManager::Effect>(0);
         std::string m_name;

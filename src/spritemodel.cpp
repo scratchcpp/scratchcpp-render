@@ -3,6 +3,7 @@
 #include <scratchcpp/costume.h>
 #include <scratchcpp/rect.h>
 #include <scratchcpp/iengine.h>
+#include <scratchcpp/textbubble.h>
 
 #include "spritemodel.h"
 #include "renderedtarget.h"
@@ -19,7 +20,35 @@ SpriteModel::SpriteModel(QObject *parent) :
 
 void SpriteModel::init(libscratchcpp::Sprite *sprite)
 {
+    if (!sprite)
+        return;
+
     m_sprite = sprite;
+
+    m_sprite->bubble()->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
+        if (type == libscratchcpp::TextBubble::Type::Say) {
+            if (m_bubbleType == TextBubbleShape::Type::Say)
+                return;
+
+            m_bubbleType = TextBubbleShape::Type::Say;
+        } else {
+            if (m_bubbleType == TextBubbleShape::Type::Think)
+                return;
+
+            m_bubbleType = TextBubbleShape::Type::Think;
+        }
+
+        emit bubbleTypeChanged();
+    });
+
+    m_sprite->bubble()->textChanged().connect([this](const std::string &text) {
+        QString newText = QString::fromStdString(text);
+
+        if (m_bubbleText != newText) {
+            m_bubbleText = newText;
+            emit bubbleTextChanged();
+        }
+    });
 }
 
 void SpriteModel::deinitClone()
@@ -111,33 +140,6 @@ void SpriteModel::onGraphicsEffectsCleared()
 {
     if (m_renderedTarget)
         m_renderedTarget->clearGraphicEffects();
-}
-
-void SpriteModel::onBubbleTypeChanged(libscratchcpp::Target::BubbleType type)
-{
-    if (type == libscratchcpp::Target::BubbleType::Say) {
-        if (m_bubbleType == TextBubbleShape::Type::Say)
-            return;
-
-        m_bubbleType = TextBubbleShape::Type::Say;
-    } else {
-        if (m_bubbleType == TextBubbleShape::Type::Think)
-            return;
-
-        m_bubbleType = TextBubbleShape::Type::Think;
-    }
-
-    emit bubbleTypeChanged();
-}
-
-void SpriteModel::onBubbleTextChanged(const std::string &text)
-{
-    QString newText = QString::fromStdString(text);
-
-    if (m_bubbleText != newText) {
-        m_bubbleText = newText;
-        emit bubbleTextChanged();
-    }
 }
 
 int SpriteModel::costumeWidth() const

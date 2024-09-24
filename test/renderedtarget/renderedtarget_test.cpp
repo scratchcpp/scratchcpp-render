@@ -568,7 +568,6 @@ TEST_F(RenderedTargetTest, SpriteDragging)
     QCoreApplication::sendEvent(&target, &pressEvent);
     EXPECT_CALL(engine, mouseX()).WillOnce(Return(67.95));
     EXPECT_CALL(engine, mouseY()).WillOnce(Return(2.1));
-    EXPECT_CALL(engine, moveSpriteToFront(&sprite));
     QCoreApplication::sendEvent(&target, &moveEvent);
     ASSERT_EQ(sprite.x(), 64.08);
     ASSERT_EQ(sprite.y(), -6.86);
@@ -1090,7 +1089,7 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(engine, cloneLimit()).WillOnce(Return(-1));
     EXPECT_CALL(engine, initClone);
     EXPECT_CALL(engine, requestRedraw);
-    EXPECT_CALL(engine, moveSpriteBehindOther);
+    EXPECT_CALL(engine, moveDrawableBehindOther);
     auto sprite2 = sprite1->clone();
     StageModel stageModel;
     SpriteModel model, model1, model2;

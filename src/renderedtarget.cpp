@@ -503,9 +503,6 @@ void RenderedTarget::mouseMoveEvent(QMouseEvent *event)
         m_dragDeltaX = m_engine->mouseX() - sprite->x();
         m_dragDeltaY = m_engine->mouseY() - sprite->y();
         m_mouseArea->setDraggedSprite(this);
-
-        // Move the sprite to the front layer
-        m_engine->moveSpriteToFront(sprite);
     }
 }
 

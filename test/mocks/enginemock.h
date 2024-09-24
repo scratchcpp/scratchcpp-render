@@ -106,10 +106,10 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(void, addWhenTouchingObjectScript, (std::shared_ptr<Block>), (override));
         MOCK_METHOD(void, addGreenFlagScript, (std::shared_ptr<Block>), (override));
-        MOCK_METHOD(void, addBroadcastScript, (std::shared_ptr<Block>, int, Broadcast *), (override));
-        MOCK_METHOD(void, addBackdropChangeScript, (std::shared_ptr<Block>, int), (override));
+        MOCK_METHOD(void, addBroadcastScript, (std::shared_ptr<Block>, Field *, Broadcast *), (override));
+        MOCK_METHOD(void, addBackdropChangeScript, (std::shared_ptr<Block>, Field *), (override));
         MOCK_METHOD(void, addCloneInitScript, (std::shared_ptr<Block>), (override));
-        MOCK_METHOD(void, addKeyPressScript, (std::shared_ptr<Block>, int), (override));
+        MOCK_METHOD(void, addKeyPressScript, (std::shared_ptr<Block>, Field *), (override));
         MOCK_METHOD(void, addTargetClickScript, (std::shared_ptr<Block>), (override));
         MOCK_METHOD(void, addWhenGreaterThanScript, (std::shared_ptr<Block>), (override));
 
@@ -119,11 +119,11 @@ class EngineMock : public IEngine
         MOCK_METHOD(void, getVisibleTargets, (std::vector<Target *> &), (const, override));
         MOCK_METHOD(int, findTarget, (const std::string &), (const, override));
 
-        MOCK_METHOD(void, moveSpriteToFront, (Sprite * sprite), (override));
-        MOCK_METHOD(void, moveSpriteToBack, (Sprite * sprite), (override));
-        MOCK_METHOD(void, moveSpriteForwardLayers, (Sprite * sprite, int layers), (override));
-        MOCK_METHOD(void, moveSpriteBackwardLayers, (Sprite * sprite, int layers), (override));
-        MOCK_METHOD(void, moveSpriteBehindOther, (Sprite * sprite, Sprite *other), (override));
+        MOCK_METHOD(void, moveDrawableToFront, (Drawable *), (override));
+        MOCK_METHOD(void, moveDrawableToBack, (Drawable *), (override));
+        MOCK_METHOD(void, moveDrawableForwardLayers, (Drawable *, int), (override));
+        MOCK_METHOD(void, moveDrawableBackwardLayers, (Drawable *, int), (override));
+        MOCK_METHOD(void, moveDrawableBehindOther, (Drawable *, Drawable *), (override));
 
         MOCK_METHOD(Stage *, stage, (), (const, override));
 

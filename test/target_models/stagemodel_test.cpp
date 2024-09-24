@@ -1,6 +1,7 @@
 #include <QtTest/QSignalSpy>
 #include <scratchcpp/costume.h>
 #include <scratchcpp/value.h>
+#include <scratchcpp/textbubble.h>
 #include <stagemodel.h>
 #include <graphicseffect.h>
 #include <renderedtargetmock.h>
@@ -70,44 +71,48 @@ TEST(StageModelTest, OnGraphicsEffectsCleared)
     model.onGraphicsEffectsCleared();
 }
 
-TEST(StageModelTest, OnBubbleTypeChanged)
+TEST(StageModelTest, BubbleTypeChange)
 {
     StageModel model;
+    Stage stage;
+    model.init(&stage);
     QSignalSpy spy(&model, &StageModel::bubbleTypeChanged);
     ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Say);
 
-    model.onBubbleTypeChanged(Target::BubbleType::Think);
+    stage.bubble()->setType(TextBubble::Type::Think);
     ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Think);
     ASSERT_EQ(spy.count(), 1);
 
-    model.onBubbleTypeChanged(Target::BubbleType::Think);
+    stage.bubble()->setType(TextBubble::Type::Think);
     ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Think);
     ASSERT_EQ(spy.count(), 1);
 
-    model.onBubbleTypeChanged(Target::BubbleType::Say);
+    stage.bubble()->setType(TextBubble::Type::Say);
     ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Say);
     ASSERT_EQ(spy.count(), 2);
 
-    model.onBubbleTypeChanged(Target::BubbleType::Say);
+    stage.bubble()->setType(TextBubble::Type::Say);
     ASSERT_EQ(model.bubbleType(), TextBubbleShape::Type::Say);
     ASSERT_EQ(spy.count(), 2);
 }
 
-TEST(StageModelTest, OnBubbleTextChanged)
+TEST(StageModelTest, BubbleTextChange)
 {
     StageModel model;
+    Stage stage;
+    model.init(&stage);
     QSignalSpy spy(&model, &StageModel::bubbleTextChanged);
     ASSERT_TRUE(model.bubbleText().isEmpty());
 
-    model.onBubbleTextChanged("Hello!");
+    stage.bubble()->setText("Hello!");
     ASSERT_EQ(model.bubbleText(), "Hello!");
     ASSERT_EQ(spy.count(), 1);
 
-    model.onBubbleTextChanged("Hello!");
+    stage.bubble()->setText("Hello!");
     ASSERT_EQ(model.bubbleText(), "Hello!");
     ASSERT_EQ(spy.count(), 1);
 
-    model.onBubbleTextChanged("test");
+    stage.bubble()->setText("test");
     ASSERT_EQ(model.bubbleText(), "test");
     ASSERT_EQ(spy.count(), 2);
 }

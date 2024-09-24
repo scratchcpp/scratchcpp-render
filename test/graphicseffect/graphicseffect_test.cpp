@@ -27,3 +27,32 @@ TEST(GraphicsEffectTest, Constructor)
         ASSERT_EQ(iface->name(), "brightness");
     }
 }
+
+TEST(GraphicsEffectTest, Clamp)
+{
+    {
+        GraphicsEffect effect(ShaderManager::Effect::Color, "color");
+        ASSERT_EQ(effect.clamp(-500), -500);
+        ASSERT_EQ(effect.clamp(0), 0);
+        ASSERT_EQ(effect.clamp(500), 500);
+    }
+
+    {
+        GraphicsEffect effect(ShaderManager::Effect::Brightness, "brightness");
+        ASSERT_EQ(effect.clamp(-125), -100);
+        ASSERT_EQ(effect.clamp(-100), -100);
+        ASSERT_EQ(effect.clamp(0), 0);
+        ASSERT_EQ(effect.clamp(100), 100);
+        ASSERT_EQ(effect.clamp(125), 100);
+    }
+
+    {
+        GraphicsEffect effect(ShaderManager::Effect::Ghost, "ghost");
+        ASSERT_EQ(effect.clamp(-50), 0);
+        ASSERT_EQ(effect.clamp(0), 0);
+        ASSERT_EQ(effect.clamp(100), 100);
+        ASSERT_EQ(effect.clamp(125), 100);
+    }
+
+    // TODO: Test remaining effects
+}
