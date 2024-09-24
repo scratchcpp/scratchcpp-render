@@ -119,6 +119,29 @@ ProjectScene {
         color: priv.loading || !priv.loaded ? "transparent" : "white"
         clip: true
 
+        Component {
+            id: renderedTextBubble
+
+            Loader {
+                property QtObject model: null
+                active: model ? model.bubbleText !== "" : false
+                z: model ? model.bubbleLayer : 0
+
+                sourceComponent: TextBubble {
+                    type: model.bubbleType
+                    text: model.bubbleText
+                    target: model.renderedTarget
+                    stageScale: root.stageScale
+                    stageWidth: root.stageWidth
+                    stageHeight: root.stageHeight
+                    x: target.x
+                    y: target.y
+                }
+
+                Component.onCompleted: model = modelData
+            }
+        }
+
         RenderedTarget {
             id: stageTarget
             engine: loader.engine
@@ -129,17 +152,9 @@ ProjectScene {
         }
 
         Loader {
-            readonly property alias model: stageTarget.stageModel
+            readonly property alias modelData: stageTarget.stageModel
             active: model ? model.bubbleText !== "" : false
-
-            sourceComponent: TextBubble {
-                type: model ? model.bubbleType : TextBubbleShape.Say
-                text: model ? model.bubbleText : ""
-                target: stageTarget
-                stageScale: root.stageScale
-                stageWidth: root.stageWidth
-                stageHeight: root.stageHeight
-            }
+            sourceComponent: renderedTextBubble
         }
 
         PenLayer {
@@ -220,20 +235,6 @@ ProjectScene {
                         Component.onCompleted: transform = targetItem.transform[0]
                     }
                 }*/
-
-                Loader {
-                    readonly property alias model: targetItem.spriteModel
-                    active: model ? model.bubbleText !== "" : false
-
-                    sourceComponent: TextBubble {
-                        type: model ? model.bubbleType : TextBubbleShape.Say
-                        text: model ? model.bubbleText : ""
-                        target: targetItem
-                        stageScale: root.stageScale
-                        stageWidth: root.stageWidth
-                        stageHeight: root.stageHeight
-                    }
-                }
             }
         }
 
@@ -247,6 +248,12 @@ ProjectScene {
             id: clones
             model: ListModel {}
             delegate: renderedSprite
+        }
+
+        Repeater {
+            id: textBubbles
+            model: loader.sprites
+            delegate: renderedTextBubble
         }
 
         SceneMouseArea {
