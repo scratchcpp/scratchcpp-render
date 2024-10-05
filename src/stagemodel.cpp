@@ -16,35 +16,34 @@ StageModel::StageModel(QObject *parent) :
 
 void StageModel::init(libscratchcpp::Stage *stage)
 {
-    if (!stage)
-        return;
-
     m_stage = stage;
 
-    m_stage->bubble()->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
-        if (type == libscratchcpp::TextBubble::Type::Say) {
-            if (m_bubbleType == TextBubbleShape::Type::Say)
-                return;
+    if (m_stage) {
+        m_stage->bubble()->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
+            if (type == libscratchcpp::TextBubble::Type::Say) {
+                if (m_bubbleType == TextBubbleShape::Type::Say)
+                    return;
 
-            m_bubbleType = TextBubbleShape::Type::Say;
-        } else {
-            if (m_bubbleType == TextBubbleShape::Type::Think)
-                return;
+                m_bubbleType = TextBubbleShape::Type::Say;
+            } else {
+                if (m_bubbleType == TextBubbleShape::Type::Think)
+                    return;
 
-            m_bubbleType = TextBubbleShape::Type::Think;
-        }
+                m_bubbleType = TextBubbleShape::Type::Think;
+            }
 
-        emit bubbleTypeChanged();
-    });
+            emit bubbleTypeChanged();
+        });
 
-    m_stage->bubble()->textChanged().connect([this](const std::string &text) {
-        QString newText = QString::fromStdString(text);
+        m_stage->bubble()->textChanged().connect([this](const std::string &text) {
+            QString newText = QString::fromStdString(text);
 
-        if (m_bubbleText != newText) {
-            m_bubbleText = newText;
-            emit bubbleTextChanged();
-        }
-    });
+            if (m_bubbleText != newText) {
+                m_bubbleText = newText;
+                emit bubbleTextChanged();
+            }
+        });
+    }
 }
 
 void StageModel::onCostumeChanged(libscratchcpp::Costume *costume)
