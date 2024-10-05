@@ -57,8 +57,8 @@ class ProjectLoaderTest : public testing::Test
             ASSERT_EQ(loadingFinishedSpy.count(), 1);
             ASSERT_EQ(engineSpy.count(), 2);
             ASSERT_EQ(stageSpy.count(), 1);
-            ASSERT_EQ(spritesSpy.count(), 3);
-            ASSERT_EQ(clonesSpy.count(), 3);
+            ASSERT_EQ(spritesSpy.count(), 2);
+            ASSERT_EQ(clonesSpy.count(), 1);
             ASSERT_EQ(monitorsSpy.count(), loader->monitorList().size() + 1);
             ASSERT_EQ(monitorAddedSpy.count(), loader->monitorList().size());
             ASSERT_EQ(unsupportedBlocksSpy.count(), 1);
@@ -137,13 +137,13 @@ TEST_F(ProjectLoaderTest, Clones)
     load(&loader, "clones.sb3");
     ASSERT_TRUE(cloneCreatedSpy.empty());
     ASSERT_TRUE(cloneDeletedSpy.empty());
-    ASSERT_EQ(clonesChangedSpy.count(), 3);
+    ASSERT_EQ(clonesChangedSpy.count(), 1);
 
     auto engine = loader.engine();
     engine->run();
     ASSERT_EQ(cloneCreatedSpy.count(), 3);
     ASSERT_EQ(cloneDeletedSpy.count(), 0);
-    ASSERT_EQ(clonesChangedSpy.count(), 6);
+    ASSERT_EQ(clonesChangedSpy.count(), 4);
 
     const auto &sprites = loader.spriteList();
     const auto &clones = loader.cloneList();
@@ -162,7 +162,7 @@ TEST_F(ProjectLoaderTest, Clones)
     clones[1]->sprite()->deleteClone();
     ASSERT_EQ(cloneCreatedSpy.count(), 3);
     ASSERT_EQ(cloneDeletedSpy.count(), 1);
-    ASSERT_EQ(clonesChangedSpy.count(), 7);
+    ASSERT_EQ(clonesChangedSpy.count(), 5);
     ASSERT_EQ(clones.size(), 2);
 }
 
