@@ -20,35 +20,34 @@ SpriteModel::SpriteModel(QObject *parent) :
 
 void SpriteModel::init(libscratchcpp::Sprite *sprite)
 {
-    if (!sprite)
-        return;
-
     m_sprite = sprite;
 
-    m_sprite->bubble()->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
-        if (type == libscratchcpp::TextBubble::Type::Say) {
-            if (m_bubbleType == TextBubbleShape::Type::Say)
-                return;
+    if (m_sprite) {
+        m_sprite->bubble()->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
+            if (type == libscratchcpp::TextBubble::Type::Say) {
+                if (m_bubbleType == TextBubbleShape::Type::Say)
+                    return;
 
-            m_bubbleType = TextBubbleShape::Type::Say;
-        } else {
-            if (m_bubbleType == TextBubbleShape::Type::Think)
-                return;
+                m_bubbleType = TextBubbleShape::Type::Say;
+            } else {
+                if (m_bubbleType == TextBubbleShape::Type::Think)
+                    return;
 
-            m_bubbleType = TextBubbleShape::Type::Think;
-        }
+                m_bubbleType = TextBubbleShape::Type::Think;
+            }
 
-        emit bubbleTypeChanged();
-    });
+            emit bubbleTypeChanged();
+        });
 
-    m_sprite->bubble()->textChanged().connect([this](const std::string &text) {
-        QString newText = QString::fromStdString(text);
+        m_sprite->bubble()->textChanged().connect([this](const std::string &text) {
+            QString newText = QString::fromStdString(text);
 
-        if (m_bubbleText != newText) {
-            m_bubbleText = newText;
-            emit bubbleTextChanged();
-        }
-    });
+            if (m_bubbleText != newText) {
+                m_bubbleText = newText;
+                emit bubbleTextChanged();
+            }
+        });
+    }
 }
 
 void SpriteModel::deinitClone()
