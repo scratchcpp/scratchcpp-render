@@ -32,6 +32,8 @@ ProjectLoader::ProjectLoader(QObject *parent) :
         }
     });
 
+    connect(qApp, &QCoreApplication::aboutToQuit, this, &ProjectLoader::clear);
+
     initTimer();
 
     // Register pen blocks
@@ -64,45 +66,7 @@ void ProjectLoader::setFileName(const QString &newFileName)
 
     m_fileName = newFileName;
 
-    // Stop the project
-    if (m_engine)
-        m_engine->stop();
-
-    // Reset stage model
-    m_stage.init(nullptr);
-
-    if (m_stage.renderedTarget())
-        m_stage.renderedTarget()->update();
-
-    // Delete old sprites
-    for (SpriteModel *sprite : m_sprites)
-        sprite->deleteLater();
-
-    m_sprites.clear();
-    emit spritesChanged();
-
-    // Delete old clones
-    for (SpriteModel *clone : m_clones)
-        deleteCloneObject(clone);
-
-    m_clones.clear();
-    emit clonesChanged();
-
-    // Delete old monitors
-    for (MonitorModel *monitor : m_monitors) {
-        emit monitorRemoved(monitor);
-        monitor->deleteLater();
-    }
-
-    m_monitors.clear();
-    emit monitorsChanged();
-
-    // Clear the engine
-    if (m_engine)
-        m_engine->clear();
-
-    m_engine = nullptr;
-    emit engineChanged();
+    clear();
 
     m_project.setFileName(m_fileName.toStdString());
     m_loadStatus = false;
@@ -246,6 +210,49 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
 void ProjectLoader::callLoad(ProjectLoader *loader)
 {
     loader->load();
+}
+
+void ProjectLoader::clear()
+{
+    // Stop the project
+    if (m_engine)
+        m_engine->stop();
+
+    // Reset stage model
+    m_stage.init(nullptr);
+
+    if (m_stage.renderedTarget())
+        m_stage.renderedTarget()->update();
+
+    // Delete old sprites
+    for (SpriteModel *sprite : m_sprites)
+        sprite->deleteLater();
+
+    m_sprites.clear();
+    emit spritesChanged();
+
+    // Delete old clones
+    for (SpriteModel *clone : m_clones)
+        deleteCloneObject(clone);
+
+    m_clones.clear();
+    emit clonesChanged();
+
+    // Delete old monitors
+    for (MonitorModel *monitor : m_monitors) {
+        emit monitorRemoved(monitor);
+        monitor->deleteLater();
+    }
+
+    m_monitors.clear();
+    emit monitorsChanged();
+
+    // Clear the engine
+    if (m_engine)
+        m_engine->clear();
+
+    m_engine = nullptr;
+    emit engineChanged();
 }
 
 void ProjectLoader::load()

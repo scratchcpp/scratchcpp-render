@@ -130,6 +130,7 @@ class ProjectLoader : public QObject
 
     private:
         static void callLoad(ProjectLoader *loader);
+        void clear();
         void load();
         void initTimer();
         void redraw();
