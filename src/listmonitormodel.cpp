@@ -23,7 +23,7 @@ void ListMonitorModel::onValueChanged(const libscratchcpp::VirtualMachine *vm)
     if (vm->registerCount() == 1) {
         long index = vm->getInput(0, 1)->toLong();
         libscratchcpp::List *list = vm->lists()[index];
-        m_listModel->setList(list);
+        m_listModel->setList(list, m_minIndex, m_maxIndex);
     }
 }
 
@@ -35,4 +35,32 @@ MonitorModel::Type ListMonitorModel::type() const
 ListMonitorListModel *ListMonitorModel::listModel() const
 {
     return m_listModel;
+}
+
+size_t ListMonitorModel::minIndex() const
+{
+    return m_minIndex;
+}
+
+void ListMonitorModel::setMinIndex(size_t newMinIndex)
+{
+    if (m_minIndex == newMinIndex)
+        return;
+
+    m_minIndex = newMinIndex;
+    emit minIndexChanged();
+}
+
+size_t ListMonitorModel::maxIndex() const
+{
+    return m_maxIndex;
+}
+
+void ListMonitorModel::setMaxIndex(size_t newMaxIndex)
+{
+    if (m_maxIndex == newMaxIndex)
+        return;
+
+    m_maxIndex = newMaxIndex;
+    emit maxIndexChanged();
 }

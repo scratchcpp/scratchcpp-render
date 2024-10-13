@@ -77,6 +77,7 @@ Rectangle {
     ListView {
         property real oldContentY
         readonly property int scrollBarWidth: 15
+        property int itemHeight: 24 // NOTE: Hard-coded value
 
         id: listView
         anchors.left: parent.left
@@ -87,6 +88,25 @@ Rectangle {
         clip: true
         model: root.model ? root.model.listModel : null
         boundsBehavior: Flickable.StopAtBounds
+        onContentXChanged: updateVisibleIndexRange()
+        onContentYChanged: updateVisibleIndexRange()
+        onCountChanged: updateVisibleIndexRange()
+
+        function getVisibleIndexRange() {
+            if(count === 0)
+                return [0, 0];
+
+            let y1 = listView.contentY - itemHeight;
+            let y2 = listView.contentY + listView.height;
+            return [Math.max(0, Math.ceil(y1 / itemHeight)),
+                    Math.min(Math.floor(y2 / itemHeight), count - 1)];
+        }
+
+        function updateVisibleIndexRange() {
+            let range = getVisibleIndexRange();
+            root.model.minIndex = range[0];
+            root.model.maxIndex = range[1];
+        }
 
         ScrollBar.vertical: ScrollBar {
             id: scrollBar

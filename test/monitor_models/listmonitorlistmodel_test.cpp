@@ -28,7 +28,9 @@ TEST(ListMonitorListModelTest, LoadData)
     List list1("", "");
     list1.append(1);
     list1.append(2);
-    model.setList(&list1);
+    list1.append(3);
+    list1.append(4);
+    model.setList(&list1, 0, 3);
     ASSERT_TRUE(dataChangedSpy.empty());
     ASSERT_EQ(aboutToResetSpy.count(), 1);
     ASSERT_EQ(resetSpy.count(), 1);
@@ -37,8 +39,17 @@ TEST(ListMonitorListModelTest, LoadData)
     ASSERT_TRUE(aboutToRemoveSpy.empty());
     ASSERT_TRUE(removeSpy.empty());
 
-    model.setList(&list1);
-    ASSERT_EQ(dataChangedSpy.count(), 2);
+    model.setList(&list1, 0, 3);
+    ASSERT_EQ(dataChangedSpy.count(), 4);
+    ASSERT_EQ(aboutToResetSpy.count(), 1);
+    ASSERT_EQ(resetSpy.count(), 1);
+    ASSERT_TRUE(aboutToInsertSpy.empty());
+    ASSERT_TRUE(insertSpy.empty());
+    ASSERT_TRUE(aboutToRemoveSpy.empty());
+    ASSERT_TRUE(removeSpy.empty());
+
+    model.setList(&list1, 1, 3);
+    ASSERT_EQ(dataChangedSpy.count(), 7);
     ASSERT_EQ(aboutToResetSpy.count(), 1);
     ASSERT_EQ(resetSpy.count(), 1);
     ASSERT_TRUE(aboutToInsertSpy.empty());
@@ -65,8 +76,8 @@ TEST(ListMonitorListModelTest, LoadData)
     ASSERT_TRUE(args.at(2).toList().isEmpty());
 
     List list2("", "");
-    model.setList(&list2);
-    ASSERT_EQ(dataChangedSpy.count(), 2);
+    model.setList(&list2, 0, 3);
+    ASSERT_EQ(dataChangedSpy.count(), 7);
     ASSERT_EQ(aboutToResetSpy.count(), 2);
     ASSERT_EQ(resetSpy.count(), 2);
     ASSERT_TRUE(aboutToInsertSpy.empty());
@@ -89,7 +100,7 @@ TEST(ListMonitorListModelTest, AddRows)
     List list1("", "");
     list1.append(1);
     list1.append(2);
-    model.setList(&list1);
+    model.setList(&list1, 0, 1);
     ASSERT_TRUE(dataChangedSpy.empty());
     ASSERT_EQ(aboutToResetSpy.count(), 1);
     ASSERT_EQ(resetSpy.count(), 1);
@@ -101,7 +112,7 @@ TEST(ListMonitorListModelTest, AddRows)
     list1.append(9);
     list1.append(8);
     list1.append(7);
-    model.setList(&list1);
+    model.setList(&list1, 2, 3);
     ASSERT_EQ(dataChangedSpy.count(), 2);
     ASSERT_EQ(aboutToResetSpy.count(), 1);
     ASSERT_EQ(resetSpy.count(), 1);
@@ -113,18 +124,18 @@ TEST(ListMonitorListModelTest, AddRows)
     auto args = dataChangedSpy.at(0);
     QModelIndex arg1 = args.at(0).value<QModelIndex>();
     QModelIndex arg2 = args.at(1).value<QModelIndex>();
-    ASSERT_EQ(arg1.row(), 0);
+    ASSERT_EQ(arg1.row(), 2);
     ASSERT_EQ(arg1.column(), 0);
-    ASSERT_EQ(arg2.row(), 0);
+    ASSERT_EQ(arg2.row(), 2);
     ASSERT_EQ(arg2.column(), 0);
     ASSERT_TRUE(args.at(2).toList().isEmpty());
 
     args = dataChangedSpy.at(1);
     arg1 = args.at(0).value<QModelIndex>();
     arg2 = args.at(1).value<QModelIndex>();
-    ASSERT_EQ(arg1.row(), 1);
+    ASSERT_EQ(arg1.row(), 3);
     ASSERT_EQ(arg1.column(), 0);
-    ASSERT_EQ(arg2.row(), 1);
+    ASSERT_EQ(arg2.row(), 3);
     ASSERT_EQ(arg2.column(), 0);
     ASSERT_TRUE(args.at(2).toList().isEmpty());
 
@@ -150,7 +161,7 @@ TEST(ListMonitorListModelTest, RemoveRows)
     list1.append(1);
     list1.append(2);
     list1.append(3);
-    model.setList(&list1);
+    model.setList(&list1, 0, 2);
     ASSERT_TRUE(dataChangedSpy.empty());
     ASSERT_EQ(aboutToResetSpy.count(), 1);
     ASSERT_EQ(resetSpy.count(), 1);
@@ -161,7 +172,7 @@ TEST(ListMonitorListModelTest, RemoveRows)
 
     list1.removeAt(2);
     list1.removeAt(0);
-    model.setList(&list1);
+    model.setList(&list1, 0, 0);
     ASSERT_EQ(dataChangedSpy.count(), 1);
     ASSERT_EQ(aboutToResetSpy.count(), 1);
     ASSERT_EQ(resetSpy.count(), 1);
@@ -193,7 +204,7 @@ TEST(ListMonitorListModelTest, RowCount)
     list.append(1);
     list.append(2);
     list.append(3);
-    model.setList(&list);
+    model.setList(&list, 0, 2);
     ASSERT_EQ(model.rowCount(QModelIndex()), list.size());
 }
 
@@ -204,7 +215,7 @@ TEST(ListMonitorListModelTest, Data)
     list.append(1);
     list.append(2);
     list.append(3);
-    model.setList(&list);
+    model.setList(&list, 0, 2);
     ASSERT_EQ(model.data(model.index(0), 0).toString(), "1");
     ASSERT_EQ(model.data(model.index(1), 0).toString(), "2");
     ASSERT_EQ(model.data(model.index(2), 0).toString(), "3");
