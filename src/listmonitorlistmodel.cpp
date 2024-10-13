@@ -11,10 +11,13 @@ ListMonitorListModel::ListMonitorListModel(QObject *parent) :
 {
 }
 
-void ListMonitorListModel::setList(libscratchcpp::List *list)
+void ListMonitorListModel::setList(libscratchcpp::List *list, size_t minVisibleIndex, size_t maxVisibleIndex)
 {
     if (!list)
         return;
+
+    m_minIndex = minVisibleIndex;
+    m_maxIndex = maxVisibleIndex;
 
     // Initial load
     if (m_list != list) {
@@ -25,10 +28,8 @@ void ListMonitorListModel::setList(libscratchcpp::List *list)
         return;
     }
 
-    // Notify about changed items
-    int count = std::min(m_oldRowCount, static_cast<int>(m_list->size()));
-
-    for (int i = 0; i < count; i++)
+    // Update visible items
+    for (size_t i = minVisibleIndex; i <= maxVisibleIndex; i++)
         emit dataChanged(index(i), index(i));
 
     // Notify about new items (at the end of the list)
@@ -54,8 +55,8 @@ int ListMonitorListModel::rowCount(const QModelIndex &parent) const
 
 QVariant ListMonitorListModel::data(const QModelIndex &index, int role) const
 {
-    if (!m_list || index.row() < 0 || index.row() >= m_list->size())
-        return QVariant();
+    if (!m_list || index.row() < m_minIndex || index.row() > m_maxIndex)
+        return "";
 
     return QString::fromStdString(libscratchcpp::Value((*m_list)[index.row()]).toString());
 }
