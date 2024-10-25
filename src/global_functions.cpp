@@ -7,6 +7,10 @@ void scratchcpprender::init()
 {
     qputenv("QSG_RENDER_LOOP", "basic");
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setSwapInterval(0);
+    QSurfaceFormat::setDefaultFormat(format);
 }
 
 const std::string &scratchcpprender::version()
