@@ -35,6 +35,7 @@ ProjectLoader::ProjectLoader(QObject *parent) :
     connect(qApp, &QCoreApplication::aboutToQuit, this, &ProjectLoader::clear);
 
     initTimer();
+    m_renderTimer.start();
 
     // Register pen blocks
     ScratchConfiguration::registerExtension(std::make_shared<PenBlocks>());
@@ -95,6 +96,11 @@ bool ProjectLoader::loadStatus() const
 bool ProjectLoader::running() const
 {
     return m_running;
+}
+
+int ProjectLoader::renderFps() const
+{
+    return m_renderFps;
 }
 
 IEngine *ProjectLoader::engine() const
@@ -202,6 +208,15 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
             m_running = !m_running;
             emit runningChanged();
         }
+
+        // FPS counter
+        if (m_renderTimer.elapsed() >= 1000) {
+            m_renderFps = m_renderFpsCounter;
+            m_renderFpsCounter = 0;
+            emit renderFpsChanged();
+            m_renderTimer.restart();
+        } else
+            m_renderFpsCounter++;
     }
 
     event->accept();

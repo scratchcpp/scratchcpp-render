@@ -25,6 +25,7 @@ class ProjectLoader : public QObject
         Q_PROPERTY(QString fileName READ fileName WRITE setFileName NOTIFY fileNameChanged)
         Q_PROPERTY(bool loadStatus READ loadStatus NOTIFY loadStatusChanged)
         Q_PROPERTY(bool running READ running NOTIFY runningChanged)
+        Q_PROPERTY(int renderFps READ renderFps NOTIFY renderFpsChanged FINAL)
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine NOTIFY engineChanged)
         Q_PROPERTY(StageModel *stage READ stage NOTIFY stageChanged)
         Q_PROPERTY(QQmlListProperty<SpriteModel> sprites READ sprites NOTIFY spritesChanged)
@@ -98,11 +99,14 @@ class ProjectLoader : public QObject
 
         unsigned int assetCount() const;
 
+        int renderFps() const;
+
     signals:
         void fileNameChanged();
         void loadStatusChanged();
         void loadingFinished();
         void runningChanged();
+        void renderFpsChanged();
         void engineChanged();
         void stageChanged();
         void spritesChanged();
@@ -145,6 +149,9 @@ class ProjectLoader : public QObject
         QFuture<void> m_loadThread;
         libscratchcpp::Project m_project;
         bool m_running = false;
+        QElapsedTimer m_renderTimer;
+        int m_renderFps = 0;
+        int m_renderFpsCounter = 0;
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::IEngine *m_oldEngine = nullptr;
         QMutex m_engineMutex;
