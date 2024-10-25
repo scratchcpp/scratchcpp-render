@@ -18,6 +18,8 @@ jobs:
             qt_arch: 'gcc_64'
           - qt_version: '6.7'
             qt_arch: 'linux_gcc_64'
+          - qt_version: '6.8'
+            qt_arch: 'linux_gcc_64'
 
     runs-on: ubuntu-latest
 
