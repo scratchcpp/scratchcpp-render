@@ -251,6 +251,7 @@ void ProjectLoader::clear()
     if (m_engine)
         m_engine->clear();
 
+    m_oldEngine = m_engine;
     m_engine = nullptr;
     emit engineChanged();
 }
@@ -280,12 +281,14 @@ void ProjectLoader::load()
     m_engine->setSpriteFencingEnabled(m_spriteFencing);
     m_engine->setGlobalVolume(m_mute ? 0 : 100);
 
-    m_engine->aboutToRender().connect(&ProjectLoader::redraw, this);
-    m_engine->monitorAdded().connect(&ProjectLoader::addMonitor, this);
-    m_engine->monitorRemoved().connect(&ProjectLoader::removeMonitor, this);
+    if (m_engine != m_oldEngine) {
+        m_engine->aboutToRender().connect(&ProjectLoader::redraw, this);
+        m_engine->monitorAdded().connect(&ProjectLoader::addMonitor, this);
+        m_engine->monitorRemoved().connect(&ProjectLoader::removeMonitor, this);
 
-    m_engine->questionAsked().connect([this](const std::string &question) { emit questionAsked(QString::fromStdString(question)); });
-    m_engine->questionAborted().connect([this]() { emit questionAborted(); });
+        m_engine->questionAsked().connect([this](const std::string &question) { emit questionAsked(QString::fromStdString(question)); });
+        m_engine->questionAborted().connect([this]() { emit questionAborted(); });
+    }
 
     // Load targets
     const auto &targets = m_engine->targets();

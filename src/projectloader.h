@@ -146,6 +146,7 @@ class ProjectLoader : public QObject
         libscratchcpp::Project m_project;
         bool m_running = false;
         libscratchcpp::IEngine *m_engine = nullptr;
+        libscratchcpp::IEngine *m_oldEngine = nullptr;
         QMutex m_engineMutex;
         bool m_loadStatus = false;
         StageModel m_stage;
