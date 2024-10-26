@@ -22,6 +22,14 @@ static float wrapClamp(float n, float min, float max)
 static const QString VERTEX_SHADER_SRC = ":/qt/qml/ScratchCPP/Render/shaders/sprite.vert";
 static const QString FRAGMENT_SHADER_SRC = ":/qt/qml/ScratchCPP/Render/shaders/sprite.frag";
 
+#if defined(Q_OS_WASM)
+static const QString SHADER_PREFIX = ""; // compiles, but doesn't work?
+#elif defined(Q_OS_ANDROID)
+static const QString SHADER_PREFIX = "#version 300 es\n";
+#else
+static const QString SHADER_PREFIX = "#version 140\n";
+#endif
+
 static const char *TEXTURE_UNIT_UNIFORM = "u_skin";
 
 static const std::unordered_map<ShaderManager::Effect, const char *>
@@ -58,7 +66,7 @@ ShaderManager::ShaderManager(QObject *parent) :
     QByteArray vertexShaderSource;
     QFile vertSource(VERTEX_SHADER_SRC);
     vertSource.open(QFile::ReadOnly);
-    vertexShaderSource = "#version 330 core\n" + vertSource.readAll();
+    vertexShaderSource = SHADER_PREFIX.toUtf8() + vertSource.readAll();
 
     m_vertexShader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     m_vertexShader->compileSourceCode(vertexShaderSource);
@@ -150,7 +158,7 @@ QOpenGLShaderProgram *ShaderManager::createShaderProgram(const std::unordered_ma
         return nullptr;
 
     // Version must be defined in the first line
-    QByteArray fragSource = "#version 330\n";
+    QByteArray fragSource = SHADER_PREFIX.toUtf8();
 
     // Add defines for the effects
     for (const auto &[effect, value] : effectValues) {

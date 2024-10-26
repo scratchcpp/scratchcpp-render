@@ -1,5 +1,11 @@
 // Ported from https://github.com/scratchfoundation/scratch-render/blob/4090e62e8abf427e55c83448da9b0df26120d2fb/src/shaders/sprite.frag
 
+#undef lowp
+#undef mediump
+#undef highp
+
+precision mediump float;
+
 #ifdef ENABLE_color
 uniform float u_color;
 #endif // ENABLE_color
@@ -12,8 +18,7 @@ uniform float u_brightness;
 uniform float u_ghost;
 #endif // ENABLE_ghost
 
-in vec2 v_texCoord;
-//out vec4 FragColor;
+varying vec2 v_texCoord;
 uniform sampler2D u_skin;
 
 // Add this to divisors to prevent division by 0, which results in NaNs propagating through calculations.

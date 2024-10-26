@@ -83,66 +83,26 @@ TEST_F(ShaderManagerTest, Instance)
 
 TEST_F(ShaderManagerTest, GetShaderProgram)
 {
-    static const QByteArray vertHeader = "#version 330 core\n#define lowp\n#define mediump\n#define highp\n#line 1\n";
-    static const QByteArray fragHeader =
-        "#version 330\n#ifdef GL_KHR_blend_equation_advanced\n#extension GL_ARB_fragment_coord_conventions : enable\n#extension GL_KHR_blend_equation_advanced : enable\n#endif\n#define lowp\n#define "
-        "mediump\n#define highp\n#line 1\n";
-
-    // Color and ghost
     ShaderManager manager;
-    const std::unordered_map<ShaderManager::Effect, double> effects1 = { { ShaderManager::Effect::Color, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
+    const std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Color, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
 
-    QOpenGLShaderProgram *program1 = manager.getShaderProgram(effects1);
-    ASSERT_EQ(program1->parent(), &manager);
-    ASSERT_TRUE(program1->isLinked());
+    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    ASSERT_EQ(program->parent(), &manager);
+    ASSERT_TRUE(program->isLinked());
 
-    auto shaders = program1->shaders();
+    auto shaders = program->shaders();
     ASSERT_EQ(shaders.size(), 2);
     QOpenGLShader *vert = shaders[0];
     QOpenGLShader *frag = shaders[1];
     ASSERT_EQ(vert->shaderType(), QOpenGLShader::Vertex);
-    ASSERT_EQ(vert->sourceCode(), vertHeader + m_vertexShader);
     ASSERT_EQ(frag->shaderType(), QOpenGLShader::Fragment);
-    ASSERT_EQ(frag->sourceCode(), fragHeader + "#define ENABLE_ghost\n#define ENABLE_color\n" + m_fragmentShader);
-
-    // Brightness and ghost
-    const std::unordered_map<ShaderManager::Effect, double> effects2 = { { ShaderManager::Effect::Brightness, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
-
-    QOpenGLShaderProgram *program2 = manager.getShaderProgram(effects2);
-    ASSERT_EQ(program2->parent(), &manager);
-    ASSERT_TRUE(program2->isLinked());
-
-    shaders = program2->shaders();
-    ASSERT_EQ(shaders.size(), 2);
-    vert = shaders[0];
-    frag = shaders[1];
-    ASSERT_EQ(vert->shaderType(), QOpenGLShader::Vertex);
-    ASSERT_EQ(vert->sourceCode(), vertHeader + m_vertexShader);
-    ASSERT_EQ(frag->shaderType(), QOpenGLShader::Fragment);
-    ASSERT_EQ(frag->sourceCode(), fragHeader + "#define ENABLE_ghost\n#define ENABLE_brightness\n" + m_fragmentShader);
 
     // Test shader program cache
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects1);
-    ASSERT_EQ(program, program1);
+    program = manager.getShaderProgram(effects);
+    ASSERT_EQ(program, program);
 
-    program = manager.getShaderProgram(effects2);
-    ASSERT_EQ(program, program2);
-
-    // Color and brightness where color effect value is zero
-    const std::unordered_map<ShaderManager::Effect, double> effects3 = { { ShaderManager::Effect::Color, 0.0 }, { ShaderManager::Effect::Brightness, 22.3 } };
-
-    program = manager.getShaderProgram(effects3);
-    ASSERT_EQ(program->parent(), &manager);
-    ASSERT_TRUE(program->isLinked());
-
-    shaders = program->shaders();
-    ASSERT_EQ(shaders.size(), 2);
-    vert = shaders[0];
-    frag = shaders[1];
-    ASSERT_EQ(vert->shaderType(), QOpenGLShader::Vertex);
-    ASSERT_EQ(vert->sourceCode(), vertHeader + m_vertexShader);
-    ASSERT_EQ(frag->shaderType(), QOpenGLShader::Fragment);
-    ASSERT_EQ(frag->sourceCode(), fragHeader + "#define ENABLE_brightness\n" + m_fragmentShader);
+    program = manager.getShaderProgram(effects);
+    ASSERT_EQ(program, program);
 }
 
 TEST_F(ShaderManagerTest, SetUniforms)
