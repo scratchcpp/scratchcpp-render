@@ -11,6 +11,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(SCRATCHCPPRENDER_BUILD_UNIT_TESTS "Build unit tests" ON)
 
+if(EMSCRIPTEN)
+    set(CMAKE_C_FLAGS "-pthread")
+    set(CMAKE_CXX_FLAGS "-pthread")
+endif()
+
 include(build/FindQt.cmake)
 
 qt_standard_project_setup(REQUIRES 6.6)
