@@ -37,8 +37,10 @@ ProjectLoader::ProjectLoader(QObject *parent) :
     initTimer();
     m_renderTimer.start();
 
+#ifndef USE_LLVM
     // Register pen blocks
     ScratchConfiguration::registerExtension(std::make_shared<PenBlocks>());
+#endif
 }
 
 ProjectLoader::~ProjectLoader()
