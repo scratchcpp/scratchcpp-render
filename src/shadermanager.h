@@ -18,7 +18,8 @@ class ShaderManager : public QObject
         {
             Color = 1 << 0,
             Brightness = 1 << 1,
-            Ghost = 1 << 2
+            Ghost = 1 << 2,
+            Fisheye = 1 << 3
         };
 
         explicit ShaderManager(QObject *parent = nullptr);

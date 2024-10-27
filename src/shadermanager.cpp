@@ -32,20 +32,29 @@ static const QString SHADER_PREFIX = "#version 140\n";
 
 static const char *TEXTURE_UNIT_UNIFORM = "u_skin";
 
-static const std::unordered_map<ShaderManager::Effect, const char *>
-    EFFECT_TO_NAME = { { ShaderManager::Effect::Color, "color" }, { ShaderManager::Effect::Brightness, "brightness" }, { ShaderManager::Effect::Ghost, "ghost" } };
+static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_TO_NAME = {
+    { ShaderManager::Effect::Color, "color" },
+    { ShaderManager::Effect::Brightness, "brightness" },
+    { ShaderManager::Effect::Ghost, "ghost" },
+    { ShaderManager::Effect::Fisheye, "fisheye" }
+};
 
-static const std::unordered_map<ShaderManager::Effect, const char *>
-    EFFECT_UNIFORM_NAME = { { ShaderManager::Effect::Color, "u_color" }, { ShaderManager::Effect::Brightness, "u_brightness" }, { ShaderManager::Effect::Ghost, "u_ghost" } };
+static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_UNIFORM_NAME = {
+    { ShaderManager::Effect::Color, "u_color" },
+    { ShaderManager::Effect::Brightness, "u_brightness" },
+    { ShaderManager::Effect::Ghost, "u_ghost" },
+    { ShaderManager::Effect::Fisheye, "u_fisheye" }
+};
 
 static const std::unordered_map<ShaderManager::Effect, ConverterFunc> EFFECT_CONVERTER = {
     { ShaderManager::Effect::Color, [](float x) { return wrapClamp(x / 200.0f, 0.0f, 1.0f); } },
     { ShaderManager::Effect::Brightness, [](float x) { return std::clamp(x, -100.0f, 100.0f) / 100.0f; } },
-    { ShaderManager::Effect::Ghost, [](float x) { return 1 - std::clamp(x, 0.0f, 100.0f) / 100.0f; } }
+    { ShaderManager::Effect::Ghost, [](float x) { return 1 - std::clamp(x, 0.0f, 100.0f) / 100.0f; } },
+    { ShaderManager::Effect::Fisheye, [](float x) { return std::max(0.0f, (x + 100.0f) / 100.0f); } }
 };
 
 static const std::unordered_map<ShaderManager::Effect, bool>
-    EFFECT_SHAPE_CHANGES = { { ShaderManager::Effect::Color, false }, { ShaderManager::Effect::Brightness, false }, { ShaderManager::Effect::Ghost, false } };
+    EFFECT_SHAPE_CHANGES = { { ShaderManager::Effect::Color, false }, { ShaderManager::Effect::Brightness, false }, { ShaderManager::Effect::Ghost, false }, { ShaderManager::Effect::Fisheye, true } };
 
 Q_GLOBAL_STATIC(ShaderManager, globalInstance)
 

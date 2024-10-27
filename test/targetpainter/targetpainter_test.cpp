@@ -103,6 +103,23 @@ TEST_F(TargetPainterTest, Paint)
     // Compare with reference image
     ASSERT_LE(fuzzyCompareImages(fbo.toImage(), QImage("color_effects.png")), 0.04);
 
+    // Paint with shape changing effects
+    glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glF.glClear(GL_COLOR_BUFFER_BIT);
+    effects.clear();
+    effects[ShaderManager::Effect::Fisheye] = 46;
+    /*effects[ShaderManager::Effect::Whirl] = 50;
+    effects[ShaderManager::Effect::Pixelate] = 25;
+    effects[ShaderManager::Effect::Mosaic] = 30;*/
+    EXPECT_CALL(target, texture()).WillOnce(Return(texture));
+    EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
+    targetPainter.paint(&painter);
+    painter.endFrame();
+    effects.clear();
+
+    // Compare with reference image
+    ASSERT_LE(fuzzyCompareImages(fbo.toImage(), QImage("shape_changing_effects.png")), 0.04);
+
     // Release
     fbo.release();
     refFbo.release();

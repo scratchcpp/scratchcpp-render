@@ -18,6 +18,10 @@ uniform float u_brightness;
 uniform float u_ghost;
 #endif // ENABLE_ghost
 
+#ifdef ENABLE_fisheye
+uniform float u_fisheye;
+#endif // ENABLE_fisheye
+
 varying vec2 v_texCoord;
 uniform sampler2D u_skin;
 
@@ -88,6 +92,17 @@ const vec2 kCenter = vec2(0.5, 0.5);
 void main()
 {
     vec2 texcoord0 = v_texCoord;
+
+    #ifdef ENABLE_fisheye
+    {
+        vec2 vec = (texcoord0 - kCenter) / kCenter;
+        float vecLength = length(vec);
+        float r = pow(min(vecLength, 1.0), u_fisheye) * max(1.0, vecLength);
+        vec2 unit = vec / vecLength;
+
+        texcoord0 = kCenter + r * unit * kCenter;
+    }
+    #endif // ENABLE_fisheye
 
     gl_FragColor = texture2D(u_skin, texcoord0);
 
