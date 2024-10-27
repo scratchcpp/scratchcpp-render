@@ -22,6 +22,10 @@ uniform float u_ghost;
 uniform float u_fisheye;
 #endif // ENABLE_fisheye
 
+#ifdef ENABLE_whirl
+uniform float u_whirl;
+#endif // ENABLE_whirl
+
 varying vec2 v_texCoord;
 uniform sampler2D u_skin;
 
@@ -92,6 +96,24 @@ const vec2 kCenter = vec2(0.5, 0.5);
 void main()
 {
     vec2 texcoord0 = v_texCoord;
+
+    #ifdef ENABLE_whirl
+    {
+        const float kRadius = 0.5;
+        vec2 offset = texcoord0 - kCenter;
+        float offsetMagnitude = length(offset);
+        float whirlFactor = max(1.0 - (offsetMagnitude / kRadius), 0.0);
+        float whirlActual = u_whirl * whirlFactor * whirlFactor;
+        float sinWhirl = sin(whirlActual);
+        float cosWhirl = cos(whirlActual);
+        mat2 rotationMatrix = mat2(
+            cosWhirl, -sinWhirl,
+            sinWhirl, cosWhirl
+        );
+
+        texcoord0 = rotationMatrix * offset + kCenter;
+    }
+    #endif // ENABLE_whirl
 
     #ifdef ENABLE_fisheye
     {

@@ -12,6 +12,8 @@ using namespace scratchcpprender;
 
 using ConverterFunc = float (*)(float);
 
+static const double pi = std::acos(-1); // TODO: Use std::numbers::pi in C++20
+
 static float wrapClamp(float n, float min, float max)
 {
     // TODO: Move this to a separate class
@@ -36,25 +38,33 @@ static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_TO_N
     { ShaderManager::Effect::Color, "color" },
     { ShaderManager::Effect::Brightness, "brightness" },
     { ShaderManager::Effect::Ghost, "ghost" },
-    { ShaderManager::Effect::Fisheye, "fisheye" }
+    { ShaderManager::Effect::Fisheye, "fisheye" },
+    { ShaderManager::Effect::Whirl, "whirl" }
 };
 
 static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_UNIFORM_NAME = {
     { ShaderManager::Effect::Color, "u_color" },
     { ShaderManager::Effect::Brightness, "u_brightness" },
     { ShaderManager::Effect::Ghost, "u_ghost" },
-    { ShaderManager::Effect::Fisheye, "u_fisheye" }
+    { ShaderManager::Effect::Fisheye, "u_fisheye" },
+    { ShaderManager::Effect::Whirl, "u_whirl" }
 };
 
 static const std::unordered_map<ShaderManager::Effect, ConverterFunc> EFFECT_CONVERTER = {
     { ShaderManager::Effect::Color, [](float x) { return wrapClamp(x / 200.0f, 0.0f, 1.0f); } },
     { ShaderManager::Effect::Brightness, [](float x) { return std::clamp(x, -100.0f, 100.0f) / 100.0f; } },
     { ShaderManager::Effect::Ghost, [](float x) { return 1 - std::clamp(x, 0.0f, 100.0f) / 100.0f; } },
-    { ShaderManager::Effect::Fisheye, [](float x) { return std::max(0.0f, (x + 100.0f) / 100.0f); } }
+    { ShaderManager::Effect::Fisheye, [](float x) { return std::max(0.0f, (x + 100.0f) / 100.0f); } },
+    { ShaderManager::Effect::Whirl, [](float x) { return x * (float)pi / 180.0f; } }
 };
 
-static const std::unordered_map<ShaderManager::Effect, bool>
-    EFFECT_SHAPE_CHANGES = { { ShaderManager::Effect::Color, false }, { ShaderManager::Effect::Brightness, false }, { ShaderManager::Effect::Ghost, false }, { ShaderManager::Effect::Fisheye, true } };
+static const std::unordered_map<ShaderManager::Effect, bool> EFFECT_SHAPE_CHANGES = {
+    { ShaderManager::Effect::Color, false },
+    { ShaderManager::Effect::Brightness, false },
+    { ShaderManager::Effect::Ghost, false },
+    { ShaderManager::Effect::Fisheye, true },
+    { ShaderManager::Effect::Whirl, true }
+};
 
 Q_GLOBAL_STATIC(ShaderManager, globalInstance)
 

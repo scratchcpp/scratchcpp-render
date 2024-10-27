@@ -314,3 +314,40 @@ TEST_F(ShaderManagerTest, FisheyeEffectValue)
 
     program->release();
 }
+
+TEST_F(ShaderManagerTest, WhirlEffectValue)
+{
+    static const QString effectName = "whirl";
+    static const QString uniformName = "u_" + effectName;
+    static const ShaderManager::Effect effect = ShaderManager::Effect::Whirl;
+
+    std::unordered_map<ShaderManager::Effect, float> values;
+
+    QOpenGLFunctions glF(&m_context);
+    glF.initializeOpenGLFunctions();
+    ShaderManager manager;
+
+    // In range
+    std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
+    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    program->bind();
+    manager.setUniforms(program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
+
+    GLfloat value = 0.0f;
+    glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
+    ASSERT_EQ(std::round(value * 1000) / 1000, 1.021f);
+    ASSERT_EQ(values.at(effect), value);
+
+    effects[effect] = -20.8;
+    program->bind();
+    manager.setUniforms(program, 0, effects);
+    manager.getUniformValuesForEffects(effects, values);
+
+    value = 0.0f;
+    glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
+    ASSERT_EQ(std::round(value * 1000) / 1000, -0.363f);
+    ASSERT_EQ(values.at(effect), value);
+
+    program->release();
+}

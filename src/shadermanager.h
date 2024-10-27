@@ -19,7 +19,8 @@ class ShaderManager : public QObject
             Color = 1 << 0,
             Brightness = 1 << 1,
             Ghost = 1 << 2,
-            Fisheye = 1 << 3
+            Fisheye = 1 << 3,
+            Whirl = 1 << 4
         };
 
         explicit ShaderManager(QObject *parent = nullptr);
