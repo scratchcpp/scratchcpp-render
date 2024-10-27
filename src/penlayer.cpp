@@ -303,7 +303,7 @@ void PenLayer::stamp(IRenderedTarget *target)
     m_glF->glBindVertexArray(m_vao);
     m_glF->glActiveTexture(GL_TEXTURE0);
     m_glF->glBindTexture(GL_TEXTURE_2D, texture.handle());
-    shaderManager->setUniforms(shaderProgram, 0, effects); // set texture and effect uniforms
+    shaderManager->setUniforms(shaderProgram, 0, texture.size(), effects); // set texture and effect uniforms
     m_glF->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     m_painter->endFrame();

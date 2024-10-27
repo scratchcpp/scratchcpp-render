@@ -33,6 +33,7 @@ static const QString SHADER_PREFIX = "#version 140\n";
 #endif
 
 static const char *TEXTURE_UNIT_UNIFORM = "u_skin";
+static const char *SKIN_SIZE_UNIFORM = "u_skinSize";
 
 static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_TO_NAME = {
     { ShaderManager::Effect::Color, "color" },
@@ -146,10 +147,13 @@ void ShaderManager::getUniformValuesForEffects(const std::unordered_map<Effect, 
     }
 }
 
-void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, const std::unordered_map<Effect, double> &effectValues)
+void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, const QSize skinSize, const std::unordered_map<Effect, double> &effectValues)
 {
     // Set the texture unit
     program->setUniformValue(TEXTURE_UNIT_UNIFORM, textureUnit);
+
+    // Set skin size
+    program->setUniformValue(SKIN_SIZE_UNIFORM, QVector2D(skinSize.width(), skinSize.height()));
 
     // Set uniform values
     std::unordered_map<Effect, float> values;

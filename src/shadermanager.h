@@ -20,7 +20,8 @@ class ShaderManager : public QObject
             Brightness = 1 << 1,
             Ghost = 1 << 2,
             Fisheye = 1 << 3,
-            Whirl = 1 << 4
+            Whirl = 1 << 4,
+            Pixelate = 1 << 5
         };
 
         explicit ShaderManager(QObject *parent = nullptr);
@@ -29,7 +30,7 @@ class ShaderManager : public QObject
 
         QOpenGLShaderProgram *getShaderProgram(const std::unordered_map<Effect, double> &effectValues);
         static void getUniformValuesForEffects(const std::unordered_map<Effect, double> &effectValues, std::unordered_map<Effect, float> &dst);
-        void setUniforms(QOpenGLShaderProgram *program, int textureUnit, const std::unordered_map<Effect, double> &effectValues);
+        void setUniforms(QOpenGLShaderProgram *program, int textureUnit, const QSize skinSize, const std::unordered_map<Effect, double> &effectValues);
 
     private:
         struct Registrar
