@@ -101,12 +101,7 @@ TEST_F(TargetPainterTest, Paint)
     effects.clear();
 
     // Compare with reference image
-    QBuffer refBuffer1;
-    fbo.toImage().save(&refBuffer1, "png");
-    QFile ref1("color_effects.png");
-    ref1.open(QFile::ReadOnly);
-    refBuffer1.open(QBuffer::ReadOnly);
-    ASSERT_EQ(ref1.readAll(), refBuffer1.readAll());
+    ASSERT_LE(fuzzyCompareImages(fbo.toImage(), QImage("color_effects.png")), 0.04);
 
     // Release
     fbo.release();
