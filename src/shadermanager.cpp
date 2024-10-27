@@ -36,13 +36,13 @@ static const char *TEXTURE_UNIT_UNIFORM = "u_skin";
 static const char *SKIN_SIZE_UNIFORM = "u_skinSize";
 
 static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_TO_NAME = {
-    { ShaderManager::Effect::Color, "color" },     { ShaderManager::Effect::Brightness, "brightness" }, { ShaderManager::Effect::Ghost, "ghost" },
-    { ShaderManager::Effect::Fisheye, "fisheye" }, { ShaderManager::Effect::Whirl, "whirl" },           { ShaderManager::Effect::Pixelate, "pixelate" }
+    { ShaderManager::Effect::Color, "color" }, { ShaderManager::Effect::Brightness, "brightness" }, { ShaderManager::Effect::Ghost, "ghost" },  { ShaderManager::Effect::Fisheye, "fisheye" },
+    { ShaderManager::Effect::Whirl, "whirl" }, { ShaderManager::Effect::Pixelate, "pixelate" },     { ShaderManager::Effect::Mosaic, "mosaic" }
 };
 
 static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_UNIFORM_NAME = {
-    { ShaderManager::Effect::Color, "u_color" },     { ShaderManager::Effect::Brightness, "u_brightness" }, { ShaderManager::Effect::Ghost, "u_ghost" },
-    { ShaderManager::Effect::Fisheye, "u_fisheye" }, { ShaderManager::Effect::Whirl, "u_whirl" },           { ShaderManager::Effect::Pixelate, "u_pixelate" }
+    { ShaderManager::Effect::Color, "u_color" }, { ShaderManager::Effect::Brightness, "u_brightness" }, { ShaderManager::Effect::Ghost, "u_ghost" },  { ShaderManager::Effect::Fisheye, "u_fisheye" },
+    { ShaderManager::Effect::Whirl, "u_whirl" }, { ShaderManager::Effect::Pixelate, "u_pixelate" },     { ShaderManager::Effect::Mosaic, "u_mosaic" }
 };
 
 static const std::unordered_map<ShaderManager::Effect, ConverterFunc> EFFECT_CONVERTER = {
@@ -51,12 +51,13 @@ static const std::unordered_map<ShaderManager::Effect, ConverterFunc> EFFECT_CON
     { ShaderManager::Effect::Ghost, [](float x) { return 1 - std::clamp(x, 0.0f, 100.0f) / 100.0f; } },
     { ShaderManager::Effect::Fisheye, [](float x) { return std::max(0.0f, (x + 100.0f) / 100.0f); } },
     { ShaderManager::Effect::Whirl, [](float x) { return x * (float)pi / 180.0f; } },
-    { ShaderManager::Effect::Pixelate, [](float x) { return std::abs(x) / 10.0f; } }
+    { ShaderManager::Effect::Pixelate, [](float x) { return std::abs(x) / 10.0f; } },
+    { ShaderManager::Effect::Mosaic, [](float x) { return std::max(1.0f, std::min(std::round((std::abs(x) + 10.0f) / 10.0f), 512.0f)); } }
 };
 
 static const std::unordered_map<ShaderManager::Effect, bool> EFFECT_SHAPE_CHANGES = {
-    { ShaderManager::Effect::Color, false },  { ShaderManager::Effect::Brightness, false }, { ShaderManager::Effect::Ghost, false },
-    { ShaderManager::Effect::Fisheye, true }, { ShaderManager::Effect::Whirl, true },       { ShaderManager::Effect::Pixelate, true }
+    { ShaderManager::Effect::Color, false }, { ShaderManager::Effect::Brightness, false }, { ShaderManager::Effect::Ghost, false }, { ShaderManager::Effect::Fisheye, true },
+    { ShaderManager::Effect::Whirl, true },  { ShaderManager::Effect::Pixelate, true },    { ShaderManager::Effect::Mosaic, true }
 };
 
 Q_GLOBAL_STATIC(ShaderManager, globalInstance)

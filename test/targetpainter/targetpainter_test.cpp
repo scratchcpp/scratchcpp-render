@@ -112,7 +112,7 @@ TEST_F(TargetPainterTest, Paint)
     effects[ShaderManager::Effect::Fisheye] = 46;
     effects[ShaderManager::Effect::Whirl] = 50;
     effects[ShaderManager::Effect::Pixelate] = 25;
-    // effects[ShaderManager::Effect::Mosaic] = 30;
+    effects[ShaderManager::Effect::Mosaic] = 30;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
     EXPECT_CALL(target, cpuTexture()).WillOnce(ReturnRef(texture));
     EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));

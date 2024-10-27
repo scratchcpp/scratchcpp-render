@@ -388,3 +388,62 @@ TEST_F(ShaderManagerTest, PixelateEffectValue)
 
     program->release();
 }
+
+TEST_F(ShaderManagerTest, MosaicEffectValue)
+{
+    static const QString effectName = "mosaic";
+    static const QString uniformName = "u_" + effectName;
+    static const ShaderManager::Effect effect = ShaderManager::Effect::Mosaic;
+
+    std::unordered_map<ShaderManager::Effect, float> values;
+
+    QOpenGLFunctions glF(&m_context);
+    glF.initializeOpenGLFunctions();
+    ShaderManager manager;
+
+    // In range
+    std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
+    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    program->bind();
+    manager.setUniforms(program, 0, QSize(), effects);
+    manager.getUniformValuesForEffects(effects, values);
+
+    GLfloat value = 0.0f;
+    glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
+    ASSERT_EQ(value, 7.0f);
+    ASSERT_EQ(values.at(effect), value);
+
+    effects[effect] = -21.8;
+    program->bind();
+    manager.setUniforms(program, 0, QSize(), effects);
+    manager.getUniformValuesForEffects(effects, values);
+
+    value = 0.0f;
+    glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
+    ASSERT_EQ(value, 3.0f);
+    ASSERT_EQ(values.at(effect), value);
+
+    // Below the minimum
+    effects[effect] = 4;
+    program->bind();
+    manager.setUniforms(program, 0, QSize(), effects);
+    manager.getUniformValuesForEffects(effects, values);
+
+    value = 0.0f;
+    glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
+    ASSERT_EQ(value, 1.0f);
+    ASSERT_EQ(values.at(effect), value);
+
+    // Above the maximum
+    effects[effect] = 5120;
+    program->bind();
+    manager.setUniforms(program, 0, QSize(), effects);
+    manager.getUniformValuesForEffects(effects, values);
+
+    value = 0.0f;
+    glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
+    ASSERT_EQ(value, 512.0f);
+    ASSERT_EQ(values.at(effect), value);
+
+    program->release();
+}

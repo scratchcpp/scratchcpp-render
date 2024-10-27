@@ -31,6 +31,10 @@ uniform float u_pixelate;
 uniform vec2 u_skinSize;
 #endif // ENABLE_pixelate
 
+#ifdef ENABLE_mosaic
+uniform float u_mosaic;
+#endif // ENABLE_mosaic
+
 varying vec2 v_texCoord;
 uniform sampler2D u_skin;
 
@@ -101,6 +105,10 @@ const vec2 kCenter = vec2(0.5, 0.5);
 void main()
 {
     vec2 texcoord0 = v_texCoord;
+
+    #ifdef ENABLE_mosaic
+    texcoord0 = fract(u_mosaic * texcoord0);
+    #endif // ENABLE_mosaic
 
     #ifdef ENABLE_pixelate
     {

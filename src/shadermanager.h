@@ -21,7 +21,8 @@ class ShaderManager : public QObject
             Ghost = 1 << 2,
             Fisheye = 1 << 3,
             Whirl = 1 << 4,
-            Pixelate = 1 << 5
+            Pixelate = 1 << 5,
+            Mosaic = 1 << 6
         };
 
         explicit ShaderManager(QObject *parent = nullptr);
