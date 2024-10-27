@@ -351,3 +351,40 @@ TEST_F(ShaderManagerTest, WhirlEffectValue)
 
     program->release();
 }
+
+TEST_F(ShaderManagerTest, PixelateEffectValue)
+{
+    static const QString effectName = "pixelate";
+    static const QString uniformName = "u_" + effectName;
+    static const ShaderManager::Effect effect = ShaderManager::Effect::Pixelate;
+
+    std::unordered_map<ShaderManager::Effect, float> values;
+
+    QOpenGLFunctions glF(&m_context);
+    glF.initializeOpenGLFunctions();
+    ShaderManager manager;
+
+    // In range
+    std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
+    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    program->bind();
+    manager.setUniforms(program, 0, QSize(), effects);
+    manager.getUniformValuesForEffects(effects, values);
+
+    GLfloat value = 0.0f;
+    glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
+    ASSERT_EQ(value, 5.85f);
+    ASSERT_EQ(values.at(effect), value);
+
+    effects[effect] = -20.8;
+    program->bind();
+    manager.setUniforms(program, 0, QSize(), effects);
+    manager.getUniformValuesForEffects(effects, values);
+
+    value = 0.0f;
+    glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
+    ASSERT_EQ(value, 2.08f);
+    ASSERT_EQ(values.at(effect), value);
+
+    program->release();
+}

@@ -393,6 +393,7 @@ TEST_F(PenLayerTest, Stamp)
         targets.back()->updateCostume(sprite->sprite()->currentCostume().get());
         targets.back()->setGraphicEffect(ShaderManager::Effect::Color, i * 25);
         targets.back()->setGraphicEffect(ShaderManager::Effect::Ghost, i * 5);
+        targets.back()->setGraphicEffect(ShaderManager::Effect::Pixelate, i * 25);
         sprite->setRenderedTarget(targets.back().get());
         i++;
     }

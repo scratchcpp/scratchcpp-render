@@ -26,6 +26,11 @@ uniform float u_fisheye;
 uniform float u_whirl;
 #endif // ENABLE_whirl
 
+#ifdef ENABLE_pixelate
+uniform float u_pixelate;
+uniform vec2 u_skinSize;
+#endif // ENABLE_pixelate
+
 varying vec2 v_texCoord;
 uniform sampler2D u_skin;
 
@@ -96,6 +101,14 @@ const vec2 kCenter = vec2(0.5, 0.5);
 void main()
 {
     vec2 texcoord0 = v_texCoord;
+
+    #ifdef ENABLE_pixelate
+    {
+        // TODO: clean up "pixel" edges
+        vec2 pixelTexelSize = u_skinSize / u_pixelate;
+        texcoord0 = (floor(texcoord0 * pixelTexelSize) + kCenter) / pixelTexelSize;
+    }
+    #endif // ENABLE_pixelate
 
     #ifdef ENABLE_whirl
     {
