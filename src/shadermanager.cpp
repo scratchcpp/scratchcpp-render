@@ -156,6 +156,12 @@ void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, 
         program->setUniformValue(EFFECT_UNIFORM_NAME.at(effect), value);
 }
 
+bool ShaderManager::effectShapeChanges(Effect effect)
+{
+    Q_ASSERT(EFFECT_SHAPE_CHANGES.find(effect) != EFFECT_SHAPE_CHANGES.cend());
+    return EFFECT_SHAPE_CHANGES.at(effect);
+}
+
 void ShaderManager::registerEffects()
 {
     // Register graphic effects in libscratchcpp

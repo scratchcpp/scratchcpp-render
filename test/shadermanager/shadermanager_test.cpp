@@ -447,3 +447,14 @@ TEST_F(ShaderManagerTest, MosaicEffectValue)
 
     program->release();
 }
+
+TEST_F(ShaderManagerTest, EffectShapeChanges)
+{
+    ASSERT_FALSE(ShaderManager::effectShapeChanges(ShaderManager::Effect::Color));
+    ASSERT_FALSE(ShaderManager::effectShapeChanges(ShaderManager::Effect::Brightness));
+    ASSERT_FALSE(ShaderManager::effectShapeChanges(ShaderManager::Effect::Ghost));
+    ASSERT_TRUE(ShaderManager::effectShapeChanges(ShaderManager::Effect::Fisheye));
+    ASSERT_TRUE(ShaderManager::effectShapeChanges(ShaderManager::Effect::Whirl));
+    ASSERT_TRUE(ShaderManager::effectShapeChanges(ShaderManager::Effect::Pixelate));
+    ASSERT_TRUE(ShaderManager::effectShapeChanges(ShaderManager::Effect::Mosaic));
+}
