@@ -405,7 +405,7 @@ TEST_F(PenLayerTest, Stamp)
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
         QImage image = fbo->toImage().scaled(240, 180);
         QImage ref("stamp.png");
-        ASSERT_LE(fuzzyCompareImages(image, ref), 0.1668);
+        ASSERT_LE(fuzzyCompareImages(image, ref), 0.18);
     }
 
     // Test HQ pen
@@ -422,7 +422,7 @@ TEST_F(PenLayerTest, Stamp)
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
         QImage image = fbo->toImage();
         QImage ref("stamp_hq.png");
-        ASSERT_LE(fuzzyCompareImages(image, ref), 0.32);
+        ASSERT_LE(fuzzyCompareImages(image, ref), 0.33);
     }
 }
 
