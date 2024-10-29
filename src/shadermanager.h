@@ -16,6 +16,7 @@ class ShaderManager : public QObject
     public:
         enum class Effect
         {
+            NoEffect = 0,
             Color = 1 << 0,
             Brightness = 1 << 1,
             Ghost = 1 << 2,
@@ -49,5 +50,50 @@ class ShaderManager : public QObject
         std::unordered_map<int, QOpenGLShaderProgram *> m_shaderPrograms;
         QByteArray m_fragmentShaderSource;
 };
+
+inline ShaderManager::Effect operator|(ShaderManager::Effect a, ShaderManager::Effect b)
+{
+    return static_cast<ShaderManager::Effect>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline ShaderManager::Effect operator|=(ShaderManager::Effect &a, ShaderManager::Effect b)
+{
+    return static_cast<ShaderManager::Effect>((int &)a |= static_cast<int>(b));
+}
+
+inline ShaderManager::Effect operator&(ShaderManager::Effect a, ShaderManager::Effect b)
+{
+    return static_cast<ShaderManager::Effect>(static_cast<int>(a) & static_cast<int>(b));
+}
+
+inline ShaderManager::Effect operator&=(ShaderManager::Effect &a, ShaderManager::Effect b)
+{
+    return static_cast<ShaderManager::Effect>((int &)a &= static_cast<int>(b));
+}
+
+inline ShaderManager::Effect operator~(ShaderManager::Effect a)
+{
+    return static_cast<ShaderManager::Effect>(~static_cast<int>(a));
+}
+
+inline bool operator==(ShaderManager::Effect a, int b)
+{
+    return static_cast<int>(a) == b;
+}
+
+inline bool operator==(int a, ShaderManager::Effect b)
+{
+    return a == static_cast<int>(b);
+}
+
+inline bool operator!=(ShaderManager::Effect a, int b)
+{
+    return static_cast<int>(a) != b;
+}
+
+inline bool operator!=(int a, ShaderManager::Effect b)
+{
+    return a != static_cast<int>(b);
+}
 
 } // namespace scratchcpprender
