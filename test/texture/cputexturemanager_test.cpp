@@ -145,26 +145,28 @@ TEST_F(CpuTextureManagerTest, GetPointColor)
 
     // Test
     CpuTextureManager manager;
-    ASSERT_EQ(manager.getPointColor(texture, 0, 0, {}), qRgba(0, 0, 0, 0));
-    ASSERT_EQ(manager.getPointColor(texture, 1, 0, {}), qRgba(0, 0, 0, 0));
-    ASSERT_EQ(manager.getPointColor(texture, 2, 0, {}), qRgba(0, 0, 0, 0));
-    ASSERT_EQ(manager.getPointColor(texture, 3, 0, {}), qRgba(0, 0, 0, 0));
+    auto mask = ShaderManager::Effect::NoEffect;
+    ASSERT_EQ(manager.getPointColor(texture, 0, 0, mask, {}), qRgba(0, 0, 0, 0));
+    ASSERT_EQ(manager.getPointColor(texture, 1, 0, mask, {}), qRgba(0, 0, 0, 0));
+    ASSERT_EQ(manager.getPointColor(texture, 2, 0, mask, {}), qRgba(0, 0, 0, 0));
+    ASSERT_EQ(manager.getPointColor(texture, 3, 0, mask, {}), qRgba(0, 0, 0, 0));
 
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 0, 1 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 1 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1.4, 1.25 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 2, 1 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 1 }, {}));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 0, 1 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 1 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1.4, 1.25 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 2, 1 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 1 }, mask, {}));
 
-    ASSERT_EQ(manager.getPointColor(texture, 0, 1, {}), qRgba(0, 0, 0, 0));
-    ASSERT_EQ(manager.getPointColor(texture, 1, 1, {}), qRgb(0, 0, 255));
-    ASSERT_EQ(manager.getPointColor(texture, 2, 1, {}), qRgb(255, 0, 255));
-    ASSERT_EQ(manager.getPointColor(texture, 3, 1, {}), qRgb(255, 128, 128));
+    ASSERT_EQ(manager.getPointColor(texture, 0, 1, mask, {}), qRgba(0, 0, 0, 0));
+    ASSERT_EQ(manager.getPointColor(texture, 1, 1, mask, {}), qRgb(0, 0, 255));
+    ASSERT_EQ(manager.getPointColor(texture, 2, 1, mask, {}), qRgb(255, 0, 255));
+    ASSERT_EQ(manager.getPointColor(texture, 3, 1, mask, {}), qRgb(255, 128, 128));
 
     std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Color, 50 } };
-    ASSERT_EQ(manager.getPointColor(texture, 1, 1, effects), qRgb(255, 0, 128));
-    ASSERT_EQ(manager.getPointColor(texture, 2, 1, effects), qRgb(255, 128, 0));
-    ASSERT_EQ(manager.getPointColor(texture, 3, 1, effects), qRgb(192, 255, 128));
+    mask = ShaderManager::Effect::Color;
+    ASSERT_EQ(manager.getPointColor(texture, 1, 1, mask, effects), qRgb(255, 0, 128));
+    ASSERT_EQ(manager.getPointColor(texture, 2, 1, mask, effects), qRgb(255, 128, 0));
+    ASSERT_EQ(manager.getPointColor(texture, 3, 1, mask, effects), qRgb(192, 255, 128));
 
     // TODO: Test point transform (graphic effects that change shape)
 
@@ -188,26 +190,27 @@ TEST_F(CpuTextureManagerTest, TextureContainsPoint)
 
     // Test
     CpuTextureManager manager;
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 0, 0 }, {}));
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 1, 0 }, {}));
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 2, 0 }, {}));
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 3, 0 }, {}));
+    auto mask = ShaderManager::Effect::NoEffect;
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 0, 0 }, mask, {}));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 1, 0 }, mask, {}));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 2, 0 }, mask, {}));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 3, 0 }, mask, {}));
 
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 0, 1 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 1 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1.4, 1.25 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 2, 1 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 1 }, {}));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 0, 1 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 1 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1.4, 1.25 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 2, 1 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 1 }, mask, {}));
 
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 2 }, {}));
-    ASSERT_FALSE(manager.textureContainsPoint(texture, { 2, 2 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 2 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3.5, 2.1 }, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 2 }, mask, {}));
+    ASSERT_FALSE(manager.textureContainsPoint(texture, { 2, 2 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 2 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3.5, 2.1 }, mask, {}));
 
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 3 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 2, 3 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 3 }, {}));
-    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3.3, 3.5 }, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 1, 3 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 2, 3 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3, 3 }, mask, {}));
+    ASSERT_TRUE(manager.textureContainsPoint(texture, { 3.3, 3.5 }, mask, {}));
 
     // TODO: Test point transform (graphic effects that change shape)
 

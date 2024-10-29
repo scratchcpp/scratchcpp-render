@@ -22,8 +22,8 @@ class CpuTextureManager
         GLubyte *getTextureData(const Texture &texture);
         const std::vector<QPoint> &getTextureConvexHullPoints(const Texture &texture);
 
-        QRgb getPointColor(const Texture &texture, int x, int y, const std::unordered_map<ShaderManager::Effect, double> &effects);
-        bool textureContainsPoint(const Texture &texture, const QPointF &localPoint, const std::unordered_map<ShaderManager::Effect, double> &effects);
+        QRgb getPointColor(const Texture &texture, int x, int y, ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effects);
+        bool textureContainsPoint(const Texture &texture, const QPointF &localPoint, ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effects);
 
         void removeTexture(const Texture &texture);
 

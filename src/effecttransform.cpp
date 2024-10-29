@@ -6,7 +6,7 @@
 
 using namespace scratchcpprender;
 
-QRgb EffectTransform::transformColor(const std::unordered_map<ShaderManager::Effect, double> &effectValues, QRgb color)
+QRgb EffectTransform::transformColor(ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effectValues, QRgb color)
 {
     // https://github.com/scratchfoundation/scratch-render/blob/e075e5f5ebc95dec4a2718551624ad587c56f0a6/src/EffectTransform.js#L40-L119
     // If the color is fully transparent, don't bother attempting any transformations.
@@ -18,8 +18,8 @@ QRgb EffectTransform::transformColor(const std::unordered_map<ShaderManager::Eff
     std::unordered_map<ShaderManager::Effect, float> uniforms;
     ShaderManager::getUniformValuesForEffects(effectValues, uniforms);
 
-    const bool enableColor = uniforms[ShaderManager::Effect::Color] != 0;
-    const bool enableBrightness = uniforms[ShaderManager::Effect::Brightness] != 0;
+    const bool enableColor = (effectMask & ShaderManager::Effect::Color) != 0;
+    const bool enableBrightness = (effectMask & ShaderManager::Effect::Brightness) != 0;
 
     if (enableColor || enableBrightness) {
         // gl_FragColor.rgb /= gl_FragColor.a + epsilon;
@@ -99,7 +99,7 @@ QRgb EffectTransform::transformColor(const std::unordered_map<ShaderManager::Eff
     return inOutColor.rgba();
 }
 
-void EffectTransform::transformPoint(const std::unordered_map<ShaderManager::Effect, double> &effectValues, const QVector2D &vec, QVector2D &dst)
+void EffectTransform::transformPoint(ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effectValues, const QVector2D &vec, QVector2D &dst)
 {
     // TODO: Implement remaining effects
     dst = vec;

@@ -52,16 +52,16 @@ const std::vector<QPoint> &CpuTextureManager::getTextureConvexHullPoints(const T
         return it->second;
 }
 
-QRgb CpuTextureManager::getPointColor(const Texture &texture, int x, int y, const std::unordered_map<ShaderManager::Effect, double> &effects)
+QRgb CpuTextureManager::getPointColor(const Texture &texture, int x, int y, ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effects)
 {
     const int width = texture.width();
     const int height = texture.height();
 
-    if (!effects.empty()) {
+    if (effectMask != 0) {
         // Get local position with effect transform
         QVector2D transformedCoords;
         const QVector2D localCoords(x / static_cast<float>(width), y / static_cast<float>(height));
-        EffectTransform::transformPoint(effects, localCoords, transformedCoords);
+        EffectTransform::transformPoint(effectMask, effects, localCoords, transformedCoords);
         x = transformedCoords.x() * width;
         y = transformedCoords.y() * height;
     }
@@ -72,13 +72,13 @@ QRgb CpuTextureManager::getPointColor(const Texture &texture, int x, int y, cons
     GLubyte *pixels = getTextureData(texture);
     QRgb color = qRgba(pixels[(y * width + x) * 4], pixels[(y * width + x) * 4 + 1], pixels[(y * width + x) * 4 + 2], pixels[(y * width + x) * 4 + 3]);
 
-    if (effects.empty())
+    if (effectMask == 0)
         return color;
     else
-        return EffectTransform::transformColor(effects, color);
+        return EffectTransform::transformColor(effectMask, effects, color);
 }
 
-bool CpuTextureManager::textureContainsPoint(const Texture &texture, const QPointF &localPoint, const std::unordered_map<ShaderManager::Effect, double> &effects)
+bool CpuTextureManager::textureContainsPoint(const Texture &texture, const QPointF &localPoint, ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effects)
 {
     // https://github.com/scratchfoundation/scratch-render/blob/7b823985bc6fe92f572cc3276a8915e550f7c5e6/src/Silhouette.js#L219-L226
     const int width = texture.width();
@@ -86,11 +86,11 @@ bool CpuTextureManager::textureContainsPoint(const Texture &texture, const QPoin
     int x = localPoint.x();
     int y = localPoint.y();
 
-    if (!effects.empty()) {
+    if (effectMask != 0) {
         // Get local position with effect transform
         QVector2D transformedCoords;
         const QVector2D localCoords(x / static_cast<float>(width), y / static_cast<float>(height));
-        EffectTransform::transformPoint(effects, localCoords, transformedCoords);
+        EffectTransform::transformPoint(effectMask, effects, localCoords, transformedCoords);
         x = transformedCoords.x() * width;
         y = transformedCoords.y() * height;
     }

@@ -540,18 +540,20 @@ const std::unordered_map<ShaderManager::Effect, double> &RenderedTarget::graphic
 void RenderedTarget::setGraphicEffect(ShaderManager::Effect effect, double value)
 {
     bool changed = false;
-    auto it = m_graphicEffects.find(effect);
 
     if (value == 0) {
-        if (it != m_graphicEffects.cend()) {
+        if ((m_graphicEffectMask & effect) != 0) {
             changed = true;
             m_graphicEffects.erase(effect);
+            m_graphicEffectMask &= ~effect;
         }
     } else {
-        if (it != m_graphicEffects.cend())
-            changed = it->second != value;
-        else
+        if ((m_graphicEffectMask & effect) != 0)
+            changed = m_graphicEffects[effect] != value;
+        else {
             changed = true;
+            m_graphicEffectMask |= effect;
+        }
 
         m_graphicEffects[effect] = value;
     }
@@ -569,6 +571,7 @@ void RenderedTarget::clearGraphicEffects()
 
     // TODO: Set m_convexHullDirty to true if any of the previous effects changed shape
     m_graphicEffects.clear();
+    m_graphicEffectMask = ShaderManager::Effect::NoEffect;
 }
 
 const std::vector<QPoint> &RenderedTarget::hullPoints() const
@@ -618,7 +621,7 @@ QRgb RenderedTarget::colorAtScratchPoint(double x, double y) const
     if ((x < 0 || x >= width) || (y < 0 || y >= height))
         return qRgba(0, 0, 0, 0);
 
-    return textureManager()->getPointColor(m_cpuTexture, x, y, m_graphicEffects);
+    return textureManager()->getPointColor(m_cpuTexture, x, y, m_graphicEffectMask, m_graphicEffects);
 }
 
 bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
@@ -806,7 +809,7 @@ const std::vector<QPointF> &RenderedTarget::transformedHullPoints() const
 
 bool RenderedTarget::containsLocalPoint(const QPointF &point) const
 {
-    return textureManager()->textureContainsPoint(m_cpuTexture, point, m_graphicEffects);
+    return textureManager()->textureContainsPoint(m_cpuTexture, point, m_graphicEffectMask, m_graphicEffects);
 }
 
 QPointF RenderedTarget::transformPoint(double scratchX, double scratchY, double originX, double originY, double rot) const
@@ -874,11 +877,10 @@ bool RenderedTarget::touchingColor(const libscratchcpp::Value &color, bool hasMa
 
     if (hasMask) {
         // Ignore ghost effect when checking mask
-        auto it = m_graphicEffects.find(ShaderManager::Effect::Ghost);
-
-        if (it != m_graphicEffects.cend()) {
-            ghostValue = it->second;
+        if ((m_graphicEffectMask & ShaderManager::Effect::Ghost) != 0) {
+            ghostValue = m_graphicEffects[ShaderManager::Effect::Ghost];
             m_graphicEffects.erase(ShaderManager::Effect::Ghost);
+            m_graphicEffectMask &= ~ShaderManager::Effect::Ghost;
         }
 
         mask3b = convertColor(mask);
@@ -910,8 +912,10 @@ bool RenderedTarget::touchingColor(const libscratchcpp::Value &color, bool hasMa
 
                 if (colorMatches(rgb, pixelColor)) {
                     // Restore ghost effect value
-                    if (hasMask && ghostValue != 0)
+                    if (hasMask && ghostValue != 0) {
                         m_graphicEffects[ShaderManager::Effect::Ghost] = ghostValue;
+                        m_graphicEffectMask |= ShaderManager::Effect::Ghost;
+                    }
 
                     return true;
                 }
@@ -920,8 +924,10 @@ bool RenderedTarget::touchingColor(const libscratchcpp::Value &color, bool hasMa
     }
 
     // Restore ghost effect value
-    if (hasMask && ghostValue != 0)
+    if (hasMask && ghostValue != 0) {
         m_graphicEffects[ShaderManager::Effect::Ghost] = ghostValue;
+        m_graphicEffectMask |= ShaderManager::Effect::Ghost;
+    }
 
     return false;
 }
