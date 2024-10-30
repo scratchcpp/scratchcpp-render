@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
 - [x] Touching color blocks
 - [x] Pen blocks
 - [x] Monitors
-- [ ] Graphics effects (color, brightness and ghost are implemented)
+- [x] Graphics effects
 - [x] Speech and thought bubbles
 - [x] Question text box ("ask and wait" block)
 
