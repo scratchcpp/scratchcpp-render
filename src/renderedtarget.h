@@ -174,7 +174,7 @@ class RenderedTarget : public IRenderedTarget
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();
         bool m_convexHullDirty = true;
         std::vector<QPoint> m_hullPoints;
-        bool m_transformedHullDirty = true;
+        mutable bool m_transformedHullDirty = true;
         mutable std::vector<QPointF> m_transformedHullPoints; // NOTE: Use transformedHullPoints();
         bool m_clicked = false;                               // left mouse button only!
         double m_dragX = 0;

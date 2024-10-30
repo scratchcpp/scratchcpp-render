@@ -228,6 +228,7 @@ void RenderedTarget::setEngine(IEngine *newEngine)
     m_cpuTexture = Texture();
     m_penLayer = PenLayer::getProjectPenLayer(m_engine);
     m_convexHullDirty = true;
+    m_transformedHullDirty = true;
     clearGraphicEffects();
     m_hullPoints.clear();
 
@@ -814,6 +815,7 @@ const std::vector<QPointF> &RenderedTarget::transformedHullPoints() const
         m_transformedHullPoints.push_back(QPointF(x, y));
     }
 
+    m_transformedHullDirty = false;
     return m_transformedHullPoints;
 }
 
