@@ -164,15 +164,27 @@ bool CpuTextureManager::readTexture(
     QOpenGLFunctions glF;
     glF.initializeOpenGLFunctions();
 
-    // Create a FBO for the texture
-    unsigned int fbo;
-    glF.glGenFramebuffers(1, &fbo);
-    glF.glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    // Create global FBO
+    if (m_fbo == 0) {
+        glF.glGenFramebuffers(1, &m_fbo);
+
+        QObject::connect(QOpenGLContext::currentContext(), &QOpenGLContext::aboutToBeDestroyed, []() {
+            if (QOpenGLContext::currentContext()) {
+                QOpenGLFunctions glF;
+                glF.initializeOpenGLFunctions();
+                glF.glDeleteFramebuffers(1, &m_fbo);
+                m_fbo = 0;
+            }
+        });
+    }
+
+    // Bind the texture to the global FBO
+    glF.glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     glF.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, handle, 0);
 
     if (glF.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         qWarning() << "error: framebuffer incomplete (CpuTextureManager)";
-        glF.glDeleteFramebuffers(1, &fbo);
+        glF.glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return false;
     }
 
@@ -310,7 +322,6 @@ bool CpuTextureManager::readTexture(
 
     // Cleanup
     glF.glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glF.glDeleteFramebuffers(1, &fbo);
 
     return true;
 }

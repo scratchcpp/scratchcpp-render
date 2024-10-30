@@ -42,6 +42,7 @@ class CpuTextureManager
             GLubyte **data,
             std::vector<QPoint> &points) const;
 
+        static inline GLuint m_fbo = 0;          // single FBO for all texture managers
         std::unordered_map<GLuint, GLubyte *> m_textureData;
         std::unordered_map<GLuint, std::vector<QPoint>> m_convexHullPoints;
 };

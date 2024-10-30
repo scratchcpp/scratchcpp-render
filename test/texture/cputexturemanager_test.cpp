@@ -130,6 +130,7 @@ TEST_F(CpuTextureManagerTest, TextureDataAndHullPoints)
     ASSERT_EQ(hullPoints, refHullPoints2);
 
     // Cleanup
+    emit context.aboutToBeDestroyed();
     context.doneCurrent();
 }
 
@@ -175,6 +176,7 @@ TEST_F(CpuTextureManagerTest, GetPointColor)
     // TODO: Test point transform (graphic effects that change shape)
 
     // Cleanup
+    emit context.aboutToBeDestroyed();
     context.doneCurrent();
 }
 
@@ -219,5 +221,6 @@ TEST_F(CpuTextureManagerTest, TextureContainsPoint)
     // TODO: Test point transform (graphic effects that change shape)
 
     // Cleanup
+    emit context.aboutToBeDestroyed();
     context.doneCurrent();
 }
