@@ -160,6 +160,7 @@ class RenderedTarget : public IRenderedTarget
         mutable std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
         std::unique_ptr<QOpenGLFunctions> m_glF;
         mutable std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
+        mutable ShaderManager::Effect m_graphicEffectMask = ShaderManager::Effect::NoEffect;
         double m_size = 1;
         double m_x = 0;
         double m_y = 0;
@@ -173,7 +174,7 @@ class RenderedTarget : public IRenderedTarget
         qreal m_maximumHeight = std::numeric_limits<double>::infinity();
         bool m_convexHullDirty = true;
         std::vector<QPoint> m_hullPoints;
-        bool m_transformedHullDirty = true;
+        mutable bool m_transformedHullDirty = true;
         mutable std::vector<QPointF> m_transformedHullPoints; // NOTE: Use transformedHullPoints();
         bool m_clicked = false;                               // left mouse button only!
         double m_dragX = 0;

@@ -12,6 +12,8 @@ using namespace scratchcpprender;
 
 using ConverterFunc = float (*)(float);
 
+static const double pi = std::acos(-1); // TODO: Use std::numbers::pi in C++20
+
 static float wrapClamp(float n, float min, float max)
 {
     // TODO: Move this to a separate class
@@ -31,21 +33,34 @@ static const QString SHADER_PREFIX = "#version 140\n";
 #endif
 
 static const char *TEXTURE_UNIT_UNIFORM = "u_skin";
+static const char *SKIN_SIZE_UNIFORM = "u_skinSize";
 
-static const std::unordered_map<ShaderManager::Effect, const char *>
-    EFFECT_TO_NAME = { { ShaderManager::Effect::Color, "color" }, { ShaderManager::Effect::Brightness, "brightness" }, { ShaderManager::Effect::Ghost, "ghost" } };
+static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_TO_NAME = {
+    { ShaderManager::Effect::Color, "color" }, { ShaderManager::Effect::Brightness, "brightness" }, { ShaderManager::Effect::Ghost, "ghost" },  { ShaderManager::Effect::Fisheye, "fisheye" },
+    { ShaderManager::Effect::Whirl, "whirl" }, { ShaderManager::Effect::Pixelate, "pixelate" },     { ShaderManager::Effect::Mosaic, "mosaic" }
+};
 
-static const std::unordered_map<ShaderManager::Effect, const char *>
-    EFFECT_UNIFORM_NAME = { { ShaderManager::Effect::Color, "u_color" }, { ShaderManager::Effect::Brightness, "u_brightness" }, { ShaderManager::Effect::Ghost, "u_ghost" } };
+static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_UNIFORM_NAME = {
+    { ShaderManager::Effect::Color, "u_color" }, { ShaderManager::Effect::Brightness, "u_brightness" }, { ShaderManager::Effect::Ghost, "u_ghost" },  { ShaderManager::Effect::Fisheye, "u_fisheye" },
+    { ShaderManager::Effect::Whirl, "u_whirl" }, { ShaderManager::Effect::Pixelate, "u_pixelate" },     { ShaderManager::Effect::Mosaic, "u_mosaic" }
+};
 
 static const std::unordered_map<ShaderManager::Effect, ConverterFunc> EFFECT_CONVERTER = {
     { ShaderManager::Effect::Color, [](float x) { return wrapClamp(x / 200.0f, 0.0f, 1.0f); } },
     { ShaderManager::Effect::Brightness, [](float x) { return std::clamp(x, -100.0f, 100.0f) / 100.0f; } },
-    { ShaderManager::Effect::Ghost, [](float x) { return 1 - std::clamp(x, 0.0f, 100.0f) / 100.0f; } }
+    { ShaderManager::Effect::Ghost, [](float x) { return 1 - std::clamp(x, 0.0f, 100.0f) / 100.0f; } },
+    { ShaderManager::Effect::Fisheye, [](float x) { return std::max(0.0f, (x + 100.0f) / 100.0f); } },
+    { ShaderManager::Effect::Whirl, [](float x) { return x * (float)pi / 180.0f; } },
+    { ShaderManager::Effect::Pixelate, [](float x) { return std::abs(x) / 10.0f; } },
+    { ShaderManager::Effect::Mosaic, [](float x) { return std::max(1.0f, std::min(std::round((std::abs(x) + 10.0f) / 10.0f), 512.0f)); } }
 };
 
-static const std::unordered_map<ShaderManager::Effect, bool>
-    EFFECT_SHAPE_CHANGES = { { ShaderManager::Effect::Color, false }, { ShaderManager::Effect::Brightness, false }, { ShaderManager::Effect::Ghost, false } };
+static const std::unordered_map<ShaderManager::Effect, bool> EFFECT_SHAPE_CHANGES = {
+    { ShaderManager::Effect::Color, false }, { ShaderManager::Effect::Brightness, false }, { ShaderManager::Effect::Ghost, false }, { ShaderManager::Effect::Fisheye, true },
+    { ShaderManager::Effect::Whirl, true },  { ShaderManager::Effect::Pixelate, true },    { ShaderManager::Effect::Mosaic, true }
+};
+
+std::unordered_set<ShaderManager::Effect> ShaderManager::m_effects; // populated by effects()
 
 Q_GLOBAL_STATIC(ShaderManager, globalInstance)
 
@@ -127,10 +142,13 @@ void ShaderManager::getUniformValuesForEffects(const std::unordered_map<Effect, 
     }
 }
 
-void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, const std::unordered_map<Effect, double> &effectValues)
+void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, const QSize skinSize, const std::unordered_map<Effect, double> &effectValues)
 {
     // Set the texture unit
     program->setUniformValue(TEXTURE_UNIT_UNIFORM, textureUnit);
+
+    // Set skin size
+    program->setUniformValue(SKIN_SIZE_UNIFORM, QVector2D(skinSize.width(), skinSize.height()));
 
     // Set uniform values
     std::unordered_map<Effect, float> values;
@@ -138,6 +156,22 @@ void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, 
 
     for (const auto &[effect, value] : values)
         program->setUniformValue(EFFECT_UNIFORM_NAME.at(effect), value);
+}
+
+const std::unordered_set<ShaderManager::Effect> &ShaderManager::effects()
+{
+    if (m_effects.empty()) {
+        for (const auto &[effect, name] : EFFECT_TO_NAME)
+            m_effects.insert(effect);
+    }
+
+    return m_effects;
+}
+
+bool ShaderManager::effectShapeChanges(Effect effect)
+{
+    Q_ASSERT(EFFECT_SHAPE_CHANGES.find(effect) != EFFECT_SHAPE_CHANGES.cend());
+    return EFFECT_SHAPE_CHANGES.at(effect);
 }
 
 void ShaderManager::registerEffects()

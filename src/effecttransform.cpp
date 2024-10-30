@@ -6,7 +6,17 @@
 
 using namespace scratchcpprender;
 
-QRgb EffectTransform::transformColor(const std::unordered_map<ShaderManager::Effect, double> &effectValues, QRgb color)
+// A texture coordinate is between 0 and 1, 0.5 is the center position
+static const float CENTER_X = 0.5f;
+static const float CENTER_Y = 0.5f;
+
+inline float fract(float x)
+{
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/fract.xhtml
+    return x - std::floor(x);
+}
+
+QRgb EffectTransform::transformColor(ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effectValues, QRgb color)
 {
     // https://github.com/scratchfoundation/scratch-render/blob/e075e5f5ebc95dec4a2718551624ad587c56f0a6/src/EffectTransform.js#L40-L119
     // If the color is fully transparent, don't bother attempting any transformations.
@@ -18,8 +28,8 @@ QRgb EffectTransform::transformColor(const std::unordered_map<ShaderManager::Eff
     std::unordered_map<ShaderManager::Effect, float> uniforms;
     ShaderManager::getUniformValuesForEffects(effectValues, uniforms);
 
-    const bool enableColor = uniforms[ShaderManager::Effect::Color] != 0;
-    const bool enableBrightness = uniforms[ShaderManager::Effect::Brightness] != 0;
+    const bool enableColor = (effectMask & ShaderManager::Effect::Color) != 0;
+    const bool enableBrightness = (effectMask & ShaderManager::Effect::Brightness) != 0;
 
     if (enableColor || enableBrightness) {
         // gl_FragColor.rgb /= gl_FragColor.a + epsilon;
@@ -99,8 +109,77 @@ QRgb EffectTransform::transformColor(const std::unordered_map<ShaderManager::Eff
     return inOutColor.rgba();
 }
 
-void EffectTransform::transformPoint(const std::unordered_map<ShaderManager::Effect, double> &effectValues, const QVector2D &vec, QVector2D &dst)
+void EffectTransform::transformPoint(ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effectValues, const QSize &size, const QVector2D &vec, QVector2D &dst)
 {
-    // TODO: Implement remaining effects
+    // https://github.com/scratchfoundation/scratch-render/blob/e075e5f5ebc95dec4a2718551624ad587c56f0a6/src/EffectTransform.js#L128-L194
     dst = vec;
+
+    std::unordered_map<ShaderManager::Effect, float> uniforms;
+    ShaderManager::getUniformValuesForEffects(effectValues, uniforms);
+
+    if ((effectMask & ShaderManager::Effect::Mosaic) != 0) {
+        // texcoord0 = fract(u_mosaic * texcoord0);
+        const float mosaic = uniforms[ShaderManager::Effect::Mosaic];
+        dst.setX(fract(mosaic * dst.x()));
+        dst.setY(fract(mosaic * dst.y()));
+    }
+
+    if ((effectMask & ShaderManager::Effect::Pixelate) != 0) {
+        // vec2 pixelTexelSize = u_skinSize / u_pixelate;
+        const float pixelate = uniforms[ShaderManager::Effect::Pixelate];
+        const float texelX = size.width() / pixelate;
+        const float texelY = size.height() / pixelate;
+        // texcoord0 = (floor(texcoord0 * pixelTexelSize) + kCenter) /
+        //   pixelTexelSize;
+        dst.setX((std::floor(dst.x() * texelX) + CENTER_X) / texelX);
+        dst.setY((std::floor(dst.y() * texelY) + CENTER_Y) / texelY);
+    }
+
+    if ((effectMask & ShaderManager::Effect::Whirl) != 0) {
+        const float whirl = uniforms[ShaderManager::Effect::Whirl];
+        // const float kRadius = 0.5;
+        const float RADIUS = 0.5f;
+        // vec2 offset = texcoord0 - kCenter;
+        const float offsetX = dst.x() - CENTER_X;
+        const float offsetY = dst.y() - CENTER_Y;
+        // float offsetMagnitude = length(offset);
+        const float offsetMagnitude = std::sqrt(std::pow(offsetX, 2.0f) + std::pow(offsetY, 2.0f));
+        // float whirlFactor = max(1.0 - (offsetMagnitude / kRadius), 0.0);
+        const float whirlFactor = std::max(1.0f - (offsetMagnitude / RADIUS), 0.0f);
+        // float whirlActual = u_whirl * whirlFactor * whirlFactor;
+        const float whirlActual = whirl * whirlFactor * whirlFactor;
+        // float sinWhirl = sin(whirlActual);
+        const float sinWhirl = std::sin(whirlActual);
+        // float cosWhirl = cos(whirlActual);
+        const float cosWhirl = std::cos(whirlActual);
+        // mat2 rotationMatrix = mat2(
+        //     cosWhirl, -sinWhirl,
+        //     sinWhirl, cosWhirl
+        // );
+        const float rot1 = cosWhirl;
+        const float rot2 = -sinWhirl;
+        const float rot3 = sinWhirl;
+        const float rot4 = cosWhirl;
+
+        // texcoord0 = rotationMatrix * offset + kCenter;
+        dst.setX((rot1 * offsetX) + (rot3 * offsetY) + CENTER_X);
+        dst.setY((rot2 * offsetX) + (rot4 * offsetY) + CENTER_Y);
+    }
+
+    if ((effectMask & ShaderManager::Effect::Fisheye) != 0) {
+        const float fisheye = uniforms[ShaderManager::Effect::Fisheye];
+        // vec2 vec = (texcoord0 - kCenter) / kCenter;
+        const float vX = (dst.x() - CENTER_X) / CENTER_X;
+        const float vY = (dst.y() - CENTER_Y) / CENTER_Y;
+        // float vecLength = length(vec);
+        const float vLength = std::sqrt((vX * vX) + (vY * vY));
+        // float r = pow(min(vecLength, 1.0), u_fisheye) * max(1.0, vecLength);
+        const float r = std::pow(std::min(vLength, 1.0f), fisheye) * std::max(1.0f, vLength);
+        // vec2 unit = vec / vecLength;
+        const float unitX = vX / vLength;
+        const float unitY = vY / vLength;
+        // texcoord0 = kCenter + r * unit * kCenter;
+        dst.setX(CENTER_X + (r * unitX * CENTER_X));
+        dst.setY(CENTER_Y + (r * unitY * CENTER_Y));
+    }
 }

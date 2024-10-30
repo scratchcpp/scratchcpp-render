@@ -18,6 +18,23 @@ uniform float u_brightness;
 uniform float u_ghost;
 #endif // ENABLE_ghost
 
+#ifdef ENABLE_fisheye
+uniform float u_fisheye;
+#endif // ENABLE_fisheye
+
+#ifdef ENABLE_whirl
+uniform float u_whirl;
+#endif // ENABLE_whirl
+
+#ifdef ENABLE_pixelate
+uniform float u_pixelate;
+uniform vec2 u_skinSize;
+#endif // ENABLE_pixelate
+
+#ifdef ENABLE_mosaic
+uniform float u_mosaic;
+#endif // ENABLE_mosaic
+
 varying vec2 v_texCoord;
 uniform sampler2D u_skin;
 
@@ -87,11 +104,59 @@ const vec2 kCenter = vec2(0.5, 0.5);
 
 void main()
 {
-    vec4 texColor = texture2D(u_skin, v_texCoord);
+    vec2 texcoord0 = v_texCoord;
+
+    #ifdef ENABLE_mosaic
+    texcoord0 = fract(u_mosaic * texcoord0);
+    #endif // ENABLE_mosaic
+
+    #ifdef ENABLE_pixelate
+    {
+        // TODO: clean up "pixel" edges
+        vec2 pixelTexelSize = u_skinSize / u_pixelate;
+        texcoord0 = (floor(texcoord0 * pixelTexelSize) + kCenter) / pixelTexelSize;
+    }
+    #endif // ENABLE_pixelate
+
+    #ifdef ENABLE_whirl
+    {
+        const float kRadius = 0.5;
+        vec2 offset = texcoord0 - kCenter;
+        float offsetMagnitude = length(offset);
+        float whirlFactor = max(1.0 - (offsetMagnitude / kRadius), 0.0);
+        float whirlActual = u_whirl * whirlFactor * whirlFactor;
+        float sinWhirl = sin(whirlActual);
+        float cosWhirl = cos(whirlActual);
+        mat2 rotationMatrix = mat2(
+            cosWhirl, -sinWhirl,
+            sinWhirl, cosWhirl
+        );
+
+        texcoord0 = rotationMatrix * offset + kCenter;
+    }
+    #endif // ENABLE_whirl
+
+    #ifdef ENABLE_fisheye
+    {
+        vec2 vec = (texcoord0 - kCenter) / kCenter;
+        float vecLength = length(vec);
+        float r = pow(min(vecLength, 1.0), u_fisheye) * max(1.0, vecLength);
+        vec2 unit = vec / vecLength;
+
+        texcoord0 = kCenter + r * unit * kCenter;
+    }
+    #endif // ENABLE_fisheye
+
+    gl_FragColor = texture2D(u_skin, texcoord0);
+
+    #if defined(ENABLE_color) || defined(ENABLE_brightness)
+    // Divide premultiplied alpha values for proper color processing
+    // Add epsilon to avoid dividing by 0 for fully transparent pixels
+    gl_FragColor.rgb = clamp(gl_FragColor.rgb / (gl_FragColor.a + epsilon), 0.0, 1.0);
 
     #ifdef ENABLE_color
     {
-        vec3 hsv = convertRGB2HSV(texColor.rgb);
+        vec3 hsv = convertRGB2HSV(gl_FragColor.rgb);
 
         // Force grayscale values to be slightly saturated
         const float minLightness = 0.11 / 2.0;
@@ -102,22 +167,20 @@ void main()
         hsv.x = mod(hsv.x + u_color, 1.0);
         if (hsv.x < 0.0) hsv.x += 1.0;
 
-        texColor.rgb = convertHSV2RGB(hsv);
+        gl_FragColor.rgb = convertHSV2RGB(hsv);
     }
     #endif // ENABLE_color
 
     #ifdef ENABLE_brightness
-    texColor.rgb = clamp(texColor.rgb + vec3(u_brightness), vec3(0), vec3(1));
+    gl_FragColor.rgb = clamp(gl_FragColor.rgb + vec3(u_brightness), vec3(0), vec3(1));
     #endif // ENABLE_brightness
 
-    #ifdef ENABLE_ghost
-    texColor *= u_ghost;
-    #endif // ENABLE_ghost
+    // Re-multiply color values
+    gl_FragColor.rgb *= gl_FragColor.a + epsilon;
 
-    // Set RGB components to zero if the color is fully transparent
-    // This is a workaround for rendering issues when alpha is zero
-    if(texColor.a == 0.0)
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-    else
-        gl_FragColor = texColor;
+    #endif // defined(ENABLE_color) || defined(ENABLE_brightness)
+
+    #ifdef ENABLE_ghost
+    gl_FragColor *= u_ghost;
+    #endif // ENABLE_ghost
 }

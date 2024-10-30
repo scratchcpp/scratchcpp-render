@@ -379,7 +379,7 @@ TEST_F(RenderedTargetTest, CpuRendering)
     // Test hull points
     target.setWidth(3);
     target.setHeight(3);
-    ASSERT_EQ(target.hullPoints(), std::vector<QPoint>({ { 1, 1 }, { 2, 1 }, { 3, 1 }, { 1, 2 }, { 3, 2 }, { 1, 3 }, { 2, 3 }, { 3, 3 } }));
+    ASSERT_EQ(target.hullPoints(), std::vector<QPoint>({ { 1, 1 }, { 1, 3 }, { 3, 3 }, { 3, 1 } }));
 
     // Test contains()
     ASSERT_FALSE(target.contains({ 0, 0 }));

@@ -81,6 +81,8 @@ TEST_F(TargetPainterTest, Paint)
     Texture texture(refFbo.texture(), refFbo.size());
     std::unordered_map<ShaderManager::Effect, double> effects;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
+    EXPECT_CALL(target, costumeWidth()).WillOnce(Return(texture.width()));
+    EXPECT_CALL(target, costumeHeight()).WillOnce(Return(texture.height()));
     EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
     targetPainter.paint(&painter);
     painter.endFrame();
@@ -95,18 +97,34 @@ TEST_F(TargetPainterTest, Paint)
     effects[ShaderManager::Effect::Brightness] = 20;
     effects[ShaderManager::Effect::Ghost] = 84;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
+    EXPECT_CALL(target, costumeWidth()).WillOnce(Return(texture.width()));
+    EXPECT_CALL(target, costumeHeight()).WillOnce(Return(texture.height()));
     EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
     targetPainter.paint(&painter);
     painter.endFrame();
     effects.clear();
 
     // Compare with reference image
-    QBuffer refBuffer1;
-    fbo.toImage().save(&refBuffer1, "png");
-    QFile ref1("color_effects.png");
-    ref1.open(QFile::ReadOnly);
-    refBuffer1.open(QBuffer::ReadOnly);
-    ASSERT_EQ(ref1.readAll(), refBuffer1.readAll());
+    ASSERT_LE(fuzzyCompareImages(fbo.toImage(), QImage("color_effects.png")), 0.04);
+
+    // Paint with shape changing effects
+    glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glF.glClear(GL_COLOR_BUFFER_BIT);
+    effects.clear();
+    effects[ShaderManager::Effect::Fisheye] = 46;
+    effects[ShaderManager::Effect::Whirl] = 50;
+    effects[ShaderManager::Effect::Pixelate] = 25;
+    effects[ShaderManager::Effect::Mosaic] = 30;
+    EXPECT_CALL(target, texture()).WillOnce(Return(texture));
+    EXPECT_CALL(target, costumeWidth()).WillOnce(Return(texture.width()));
+    EXPECT_CALL(target, costumeHeight()).WillOnce(Return(texture.height()));
+    EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
+    targetPainter.paint(&painter);
+    painter.endFrame();
+    effects.clear();
+
+    // Compare with reference image
+    ASSERT_LE(fuzzyCompareImages(fbo.toImage(), QImage("shape_changing_effects.png")), 0.04);
 
     // Release
     fbo.release();

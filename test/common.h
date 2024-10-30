@@ -28,7 +28,7 @@ double fuzzyCompareImages(const QImage &a, const QImage &b)
 
     for (y = 0; y < a.height(); y++) {
         for (x = 0; x < a.width(); x++) {
-            if (a.pixel(x, y) != b.pixel(x, y))
+            if (a.pixelColor(x, y).rgba() != b.pixelColor(x, y).rgba())
                 c++;
         }
     }
