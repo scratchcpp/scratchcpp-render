@@ -19,7 +19,6 @@ class BitmapSkin : public Skin
 {
     public:
         BitmapSkin(libscratchcpp::Costume *costume);
-        ~BitmapSkin();
 
         Texture getTexture(double scale) const override;
         double getTextureScale(const Texture &texture) const override;

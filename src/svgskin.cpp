@@ -29,12 +29,6 @@ SVGSkin::SVGSkin(libscratchcpp::Costume *costume) :
     m_maxIndex = std::min(i1, i2);
 }
 
-SVGSkin::~SVGSkin()
-{
-    for (const auto &[index, texture] : m_textures)
-        m_textureObjects[texture].release();
-}
-
 Texture SVGSkin::getTexture(double scale) const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/423bb700c36b8c1c0baae1e2413878a4f778849a/src/SVGSkin.js#L158-L176

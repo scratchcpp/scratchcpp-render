@@ -21,7 +21,6 @@ class SVGSkin : public Skin
 {
     public:
         SVGSkin(libscratchcpp::Costume *costume);
-        ~SVGSkin();
 
         Texture getTexture(double scale) const override;
         double getTextureScale(const Texture &texture) const override;

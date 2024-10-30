@@ -36,11 +36,6 @@ BitmapSkin::BitmapSkin(libscratchcpp::Costume *costume) :
         qWarning() << "invalid bitmap texture (costume name: " + costume->name() + ")";
 }
 
-BitmapSkin::~BitmapSkin()
-{
-    m_texture.release();
-}
-
 Texture BitmapSkin::getTexture(double scale) const
 {
     return m_texture;
