@@ -26,8 +26,8 @@ class Skin
         virtual void paint(QPainter *painter) = 0;
 
     private:
-        std::vector<std::shared_ptr<QOpenGLTexture>> m_textures;
-        QObject m_signalHandler; // for disconnecting signals after destroyed
+        static inline std::vector<std::shared_ptr<QOpenGLTexture>> m_textures;
+        static inline bool m_destroyConnected = false;
 };
 
 } // namespace scratchcpprender
