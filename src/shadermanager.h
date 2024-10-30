@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <memory>
+#include <unordered_set>
 
 class QOpenGLShaderProgram;
 class QOpenGLShader;
@@ -34,6 +35,7 @@ class ShaderManager : public QObject
         static void getUniformValuesForEffects(const std::unordered_map<Effect, double> &effectValues, std::unordered_map<Effect, float> &dst);
         void setUniforms(QOpenGLShaderProgram *program, int textureUnit, const QSize skinSize, const std::unordered_map<Effect, double> &effectValues);
 
+        static const std::unordered_set<Effect> &effects();
         static bool effectShapeChanges(Effect effect);
 
     private:
@@ -47,6 +49,7 @@ class ShaderManager : public QObject
         QOpenGLShaderProgram *createShaderProgram(const std::unordered_map<Effect, double> &effectValues);
 
         static Registrar m_registrar;
+        static std::unordered_set<Effect> m_effects;
 
         QOpenGLShader *m_vertexShader = nullptr;
         std::unordered_map<int, QOpenGLShaderProgram *> m_shaderPrograms;

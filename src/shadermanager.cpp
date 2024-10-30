@@ -60,6 +60,8 @@ static const std::unordered_map<ShaderManager::Effect, bool> EFFECT_SHAPE_CHANGE
     { ShaderManager::Effect::Whirl, true },  { ShaderManager::Effect::Pixelate, true },    { ShaderManager::Effect::Mosaic, true }
 };
 
+std::unordered_set<ShaderManager::Effect> ShaderManager::m_effects; // populated by effects()
+
 Q_GLOBAL_STATIC(ShaderManager, globalInstance)
 
 ShaderManager::Registrar ShaderManager::m_registrar;
@@ -154,6 +156,16 @@ void ShaderManager::setUniforms(QOpenGLShaderProgram *program, int textureUnit, 
 
     for (const auto &[effect, value] : values)
         program->setUniformValue(EFFECT_UNIFORM_NAME.at(effect), value);
+}
+
+const std::unordered_set<ShaderManager::Effect> &ShaderManager::effects()
+{
+    if (m_effects.empty()) {
+        for (const auto &[effect, name] : EFFECT_TO_NAME)
+            m_effects.insert(effect);
+    }
+
+    return m_effects;
 }
 
 bool ShaderManager::effectShapeChanges(Effect effect)

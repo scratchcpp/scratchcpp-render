@@ -448,6 +448,20 @@ TEST_F(ShaderManagerTest, MosaicEffectValue)
     program->release();
 }
 
+TEST_F(ShaderManagerTest, Effects)
+{
+    ASSERT_EQ(
+        ShaderManager::effects(),
+        std::unordered_set<ShaderManager::Effect>(
+            { ShaderManager::Effect::Color,
+              ShaderManager::Effect::Brightness,
+              ShaderManager::Effect::Ghost,
+              ShaderManager::Effect::Fisheye,
+              ShaderManager::Effect::Whirl,
+              ShaderManager::Effect::Pixelate,
+              ShaderManager::Effect::Mosaic }));
+}
+
 TEST_F(ShaderManagerTest, EffectShapeChanges)
 {
     ASSERT_FALSE(ShaderManager::effectShapeChanges(ShaderManager::Effect::Color));
