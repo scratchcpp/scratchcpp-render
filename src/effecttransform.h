@@ -15,7 +15,7 @@ class EffectTransform
         EffectTransform() = delete;
 
         static QRgb transformColor(ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effectValues, QRgb color);
-        static void transformPoint(ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effectValues, const QVector2D &vec, QVector2D &dst);
+        static void transformPoint(ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effectValues, const QSize &size, const QVector2D &vec, QVector2D &dst);
 };
 
 } // namespace scratchcpprender

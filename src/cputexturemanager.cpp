@@ -33,23 +33,40 @@ GLubyte *CpuTextureManager::getTextureData(const Texture &texture)
         return it->second;
 }
 
-const std::vector<QPoint> &CpuTextureManager::getTextureConvexHullPoints(const Texture &texture)
+void CpuTextureManager::getTextureConvexHullPoints(
+    const Texture &texture,
+    const QSize &skinSize,
+    ShaderManager::Effect effectMask,
+    const std::unordered_map<ShaderManager::Effect, double> &effects,
+    std::vector<QPoint> &dst)
 {
-    static const std::vector<QPoint> empty;
+    dst.clear();
 
     if (!texture.isValid())
-        return empty;
+        return;
 
-    const GLuint handle = texture.handle();
-    auto it = m_convexHullPoints.find(handle);
+    // Remove effects that don't change shape
+    if (effectMask != 0) {
+        const auto &allEffects = ShaderManager::effects();
 
-    if (it == m_convexHullPoints.cend()) {
-        if (addTexture(texture))
-            return m_convexHullPoints[handle];
-        else
-            return empty;
+        for (ShaderManager::Effect effect : allEffects) {
+            if ((effectMask & effect) != 0 && !ShaderManager::effectShapeChanges(effect))
+                effectMask &= ~effect;
+        }
+    }
+
+    // If there are no shape-changing effects, use cached hull points
+    if (effectMask == 0) {
+        const GLuint handle = texture.handle();
+        auto it = m_convexHullPoints.find(handle);
+
+        if (it == m_convexHullPoints.cend()) {
+            if (addTexture(texture))
+                dst = m_convexHullPoints[handle];
+        } else
+            dst = it->second;
     } else
-        return it->second;
+        readTexture(texture, skinSize, effectMask, effects, nullptr, dst);
 }
 
 QRgb CpuTextureManager::getPointColor(const Texture &texture, int x, int y, ShaderManager::Effect effectMask, const std::unordered_map<ShaderManager::Effect, double> &effects)
@@ -61,7 +78,7 @@ QRgb CpuTextureManager::getPointColor(const Texture &texture, int x, int y, Shad
         // Get local position with effect transform
         QVector2D transformedCoords;
         const QVector2D localCoords(x / static_cast<float>(width), y / static_cast<float>(height));
-        EffectTransform::transformPoint(effectMask, effects, localCoords, transformedCoords);
+        EffectTransform::transformPoint(effectMask, effects, texture.size(), localCoords, transformedCoords);
         x = transformedCoords.x() * width;
         y = transformedCoords.y() * height;
     }
@@ -90,7 +107,7 @@ bool CpuTextureManager::textureContainsPoint(const Texture &texture, const QPoin
         // Get local position with effect transform
         QVector2D transformedCoords;
         const QVector2D localCoords(x / static_cast<float>(width), y / static_cast<float>(height));
-        EffectTransform::transformPoint(effectMask, effects, localCoords, transformedCoords);
+        EffectTransform::transformPoint(effectMask, effects, texture.size(), localCoords, transformedCoords);
         x = transformedCoords.x() * width;
         y = transformedCoords.y() * height;
     }
@@ -118,7 +135,24 @@ void CpuTextureManager::removeTexture(const Texture &texture)
     }
 }
 
-bool CpuTextureManager::addTexture(const Texture &texture)
+bool CpuTextureManager::addTexture(const Texture &tex)
+{
+    if (!tex.isValid())
+        return false;
+
+    const GLuint handle = tex.handle();
+    m_textureData[handle] = nullptr;
+    m_convexHullPoints[handle] = {};
+    return readTexture(tex, QSize(), ShaderManager::Effect::NoEffect, {}, &m_textureData[handle], m_convexHullPoints[handle]);
+}
+
+bool CpuTextureManager::readTexture(
+    const Texture &texture,
+    const QSize &skinSize,
+    ShaderManager::Effect effectMask,
+    const std::unordered_map<ShaderManager::Effect, double> &effects,
+    GLubyte **data,
+    std::vector<QPoint> &points) const
 {
     if (!texture.isValid())
         return false;
@@ -146,36 +180,133 @@ bool CpuTextureManager::addTexture(const Texture &texture)
     GLubyte *pixels = new GLubyte[width * height * 4]; // 4 channels (RGBA)
     glF.glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-    // Flip vertically
-    int rowSize = width * 4;
-    GLubyte *tempRow = new GLubyte[rowSize];
+    std::vector<QPoint> leftHull;
+    std::vector<QPoint> rightHull;
+    leftHull.reserve(height);
+    rightHull.reserve(height);
 
-    for (size_t i = 0; i < height / 2; ++i) {
-        size_t topRowIndex = i * rowSize;
-        size_t bottomRowIndex = (height - 1 - i) * rowSize;
-
-        // Swap rows
-        memcpy(tempRow, &pixels[topRowIndex], rowSize);
-        memcpy(&pixels[topRowIndex], &pixels[bottomRowIndex], rowSize);
-        memcpy(&pixels[bottomRowIndex], tempRow, rowSize);
+    for (int x = 0; x < height; x++) {
+        leftHull.push_back(QPoint(-1, -1));
+        rightHull.push_back(QPoint(-1, -1));
     }
 
-    delete[] tempRow;
+    int leftEndPointIndex = -1;
+    int rightEndPointIndex = -1;
 
-    m_textureData[handle] = pixels;
-    m_convexHullPoints[handle] = {};
-    std::vector<QPoint> &hullPoints = m_convexHullPoints[handle];
+    auto determinant = [](const QPoint &A, const QPoint &B, const QPoint &C) { return (B.x() - A.x()) * (C.y() - A.y()) - (B.y() - A.y()) * (C.x() - A.x()); };
 
-    // Get convex hull points
+    // Get convex hull points (flipped vertically)
+    // https://github.com/scratchfoundation/scratch-render/blob/0f6663f3148b4f994d58e19590e14c152f1cc2f8/src/RenderWebGL.js#L1829-L1955
     for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int index = (y * width + x) * 4; // 4 channels (RGBA)
+        QPoint currentPoint;
+        int x;
+        const int flippedY = height - 1 - y;
 
-            // Check alpha channel
-            if (pixels[index + 3] > 0)
-                hullPoints.push_back(QPoint(x, y));
+        for (x = 0; x < width; x++) {
+            int transformedX = x;
+            int transformedY = flippedY;
+
+            if (effectMask != 0) {
+                // Get local position with effect transform
+                QVector2D transformedCoords;
+                const QVector2D localCoords(transformedX / static_cast<float>(width), transformedY / static_cast<float>(height));
+                EffectTransform::transformPoint(effectMask, effects, skinSize, localCoords, transformedCoords);
+                transformedX = transformedCoords.x() * width;
+                transformedY = transformedCoords.y() * height;
+            }
+
+            if ((transformedX >= 0 && transformedX < width) && (transformedY >= 0 && transformedY < height)) {
+                int index = (transformedY * width + transformedX) * 4;
+
+                if (pixels[index + 3] > 0) {
+                    currentPoint.setX(x);
+                    currentPoint.setY(y);
+                    break;
+                }
+            }
         }
+
+        if (x >= width)
+            continue;
+
+        while (leftEndPointIndex > 0) {
+            if (determinant(leftHull[leftEndPointIndex], leftHull[leftEndPointIndex - 1], currentPoint) > 0)
+                break;
+            else {
+                leftEndPointIndex--;
+            }
+        }
+
+        leftHull[++leftEndPointIndex] = currentPoint;
+
+        for (x = width - 1; x >= 0; x--) {
+            int transformedX = x;
+            int transformedY = flippedY;
+
+            if (effectMask != 0) {
+                // Get local position with effect transform
+                QVector2D transformedCoords;
+                const QVector2D localCoords(transformedX / static_cast<float>(width), transformedY / static_cast<float>(height));
+                EffectTransform::transformPoint(effectMask, effects, skinSize, localCoords, transformedCoords);
+                transformedX = transformedCoords.x() * width;
+                transformedY = transformedCoords.y() * height;
+            }
+
+            if ((transformedX >= 0 && transformedX < width) && (transformedY >= 0 && transformedY < height)) {
+                int index = (transformedY * width + transformedX) * 4;
+
+                if (pixels[index + 3] > 0) {
+                    currentPoint.setX(x);
+                    currentPoint.setY(y);
+                    break;
+                }
+            }
+        }
+
+        while (rightEndPointIndex > 0) {
+            if (determinant(rightHull[rightEndPointIndex], rightHull[rightEndPointIndex - 1], currentPoint) < 0)
+                break;
+            else
+                rightEndPointIndex--;
+        }
+
+        rightHull[++rightEndPointIndex] = currentPoint;
     }
+
+    points.clear();
+    points.reserve((leftEndPointIndex + 1) + (rightEndPointIndex + 1));
+
+    long i;
+
+    for (i = 0; i < leftHull.size(); i++) {
+        if (leftHull[i].x() >= 0)
+            points.push_back(leftHull[i]);
+    }
+
+    for (i = rightEndPointIndex; i >= 0; --i)
+        if (rightHull[i].x() >= 0)
+            points.push_back(rightHull[i]);
+
+    if (data) {
+        // Flip vertically
+        int rowSize = width * 4;
+        GLubyte *tempRow = new GLubyte[rowSize];
+
+        for (size_t i = 0; i < height / 2; ++i) {
+            size_t topRowIndex = i * rowSize;
+            size_t bottomRowIndex = (height - 1 - i) * rowSize;
+
+            // Swap rows
+            memcpy(tempRow, &pixels[topRowIndex], rowSize);
+            memcpy(&pixels[topRowIndex], &pixels[bottomRowIndex], rowSize);
+            memcpy(&pixels[bottomRowIndex], tempRow, rowSize);
+        }
+
+        delete[] tempRow;
+
+        *data = pixels;
+    } else
+        delete[] pixels;
 
     // Cleanup
     glF.glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -558,10 +558,14 @@ void RenderedTarget::setGraphicEffect(ShaderManager::Effect effect, double value
         m_graphicEffects[effect] = value;
     }
 
-    if (changed)
+    if (changed) {
         update();
 
-    // TODO: Set m_convexHullDirty to true if the effect changes shape
+        if (ShaderManager::effectShapeChanges(effect)) {
+            m_convexHullDirty = true;
+            m_transformedHullDirty = true;
+        }
+    }
 }
 
 void RenderedTarget::clearGraphicEffects()
@@ -569,7 +573,14 @@ void RenderedTarget::clearGraphicEffects()
     if (!m_graphicEffects.empty())
         update();
 
-    // TODO: Set m_convexHullDirty to true if any of the previous effects changed shape
+    for (const auto &[effect, value] : m_graphicEffects) {
+        if (ShaderManager::effectShapeChanges(effect)) {
+            m_convexHullDirty = true;
+            m_transformedHullDirty = true;
+            break;
+        }
+    }
+
     m_graphicEffects.clear();
     m_graphicEffectMask = ShaderManager::Effect::NoEffect;
 }
@@ -767,8 +778,7 @@ void RenderedTarget::updateHullPoints()
         return;
     }
 
-    m_hullPoints = textureManager()->getTextureConvexHullPoints(m_cpuTexture);
-    // TODO: Apply graphic effects (#117)
+    textureManager()->getTextureConvexHullPoints(m_cpuTexture, m_skin->getTexture(1).size(), m_graphicEffectMask, m_graphicEffects, m_hullPoints);
 }
 
 const std::vector<QPointF> &RenderedTarget::transformedHullPoints() const

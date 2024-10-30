@@ -412,7 +412,8 @@ const libscratchcpp::Rect &PenLayer::getBounds() const
         double bottom = std::numeric_limits<double>::infinity();
         const double width = m_texture.width();
         const double height = m_texture.height();
-        const std::vector<QPoint> &points = m_textureManager.getTextureConvexHullPoints(m_texture);
+        std::vector<QPoint> points;
+        m_textureManager.getTextureConvexHullPoints(m_texture, QSize(), ShaderManager::Effect::NoEffect, {}, points);
 
         if (points.empty()) {
             m_bounds = libscratchcpp::Rect();
