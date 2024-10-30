@@ -54,5 +54,31 @@ TEST(GraphicsEffectTest, Clamp)
         ASSERT_EQ(effect.clamp(125), 100);
     }
 
-    // TODO: Test remaining effects
+    {
+        GraphicsEffect effect(ShaderManager::Effect::Fisheye, "fisheye");
+        ASSERT_EQ(effect.clamp(-5000), -5000);
+        ASSERT_EQ(effect.clamp(0), 0);
+        ASSERT_EQ(effect.clamp(5000), 5000);
+    }
+
+    {
+        GraphicsEffect effect(ShaderManager::Effect::Whirl, "whirl");
+        ASSERT_EQ(effect.clamp(-5000), -5000);
+        ASSERT_EQ(effect.clamp(0), 0);
+        ASSERT_EQ(effect.clamp(5000), 5000);
+    }
+
+    {
+        GraphicsEffect effect(ShaderManager::Effect::Pixelate, "pixelate");
+        ASSERT_EQ(effect.clamp(-5000), -5000);
+        ASSERT_EQ(effect.clamp(0), 0);
+        ASSERT_EQ(effect.clamp(5000), 5000);
+    }
+
+    {
+        GraphicsEffect effect(ShaderManager::Effect::Mosaic, "mosaic");
+        ASSERT_EQ(effect.clamp(-5000), -5000);
+        ASSERT_EQ(effect.clamp(0), 0);
+        ASSERT_EQ(effect.clamp(5000), 5000);
+    }
 }

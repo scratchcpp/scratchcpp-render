@@ -471,7 +471,12 @@ TEST_F(RenderedTargetTest, CpuRendering)
     ASSERT_EQ(target.colorAtScratchPoint(-224.7, 161.5), 4278222912); // [3.3, 3.5]
     target.setGraphicEffect(ShaderManager::Effect::Color, 0);
 
-    // TODO: Test point transform (graphic effects that change shape)
+    target.setGraphicEffect(ShaderManager::Effect::Whirl, 100);
+    ASSERT_EQ(target.colorAtScratchPoint(-227, 162), 4286578816); // [1, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-226, 162), 4286611711); // [2, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-225, 162), 0);          // [3, 3]
+    ASSERT_EQ(target.colorAtScratchPoint(-224.7, 161.5), 0);      // [3.3, 3.5]
+    target.setGraphicEffect(ShaderManager::Effect::Whirl, 100);
 }
 
 TEST_F(RenderedTargetTest, SpriteDragging)
