@@ -27,7 +27,7 @@ class Skin
 
     private:
         static inline std::vector<std::shared_ptr<QOpenGLTexture>> m_textures;
-        static inline bool m_destroyConnected = false;
+        static inline QOpenGLContext *m_connectedCtx = nullptr;
 };
 
 } // namespace scratchcpprender

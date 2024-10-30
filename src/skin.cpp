@@ -12,13 +12,13 @@ Skin::Skin()
     QOpenGLContext *context = QOpenGLContext::currentContext();
     Q_ASSERT(context);
 
-    if (!m_destroyConnected && context) {
+    if (!m_connectedCtx || (context && context != m_connectedCtx)) {
         QObject::connect(context, &QOpenGLContext::aboutToBeDestroyed, []() {
             // Destroy textures
             m_textures.clear();
         });
 
-        m_destroyConnected = true;
+        m_connectedCtx = context;
     }
 }
 

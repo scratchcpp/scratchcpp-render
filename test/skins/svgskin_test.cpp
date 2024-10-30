@@ -28,6 +28,7 @@ class SVGSkinTest : public testing::Test
         void TearDown() override
         {
             ASSERT_EQ(m_context.surface(), &m_surface);
+            emit m_context.aboutToBeDestroyed();
             m_skin.reset();
             m_context.doneCurrent();
         }

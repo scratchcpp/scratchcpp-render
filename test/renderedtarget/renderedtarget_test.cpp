@@ -29,6 +29,18 @@ using ::testing::_;
 class RenderedTargetTest : public testing::Test
 {
     public:
+        void SetUp() override
+        {
+            // Create OpenGL context
+            createContextAndSurface(&m_context, &m_surface);
+        }
+
+        void TearDown() override
+        {
+            emit m_context.aboutToBeDestroyed();
+            m_context.doneCurrent();
+        }
+
         void createContextAndSurface(QOpenGLContext *context, QOffscreenSurface *surface)
         {
             QSurfaceFormat surfaceFormat;
@@ -46,6 +58,9 @@ class RenderedTargetTest : public testing::Test
             context->makeCurrent(surface);
             ASSERT_EQ(QOpenGLContext::currentContext(), context);
         }
+
+        QOpenGLContext m_context;
+        QOffscreenSurface m_surface;
 };
 
 TEST_F(RenderedTargetTest, Constructors)
@@ -58,9 +73,6 @@ TEST_F(RenderedTargetTest, Constructors)
 
 TEST_F(RenderedTargetTest, UpdateMethods)
 {
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
     RenderedTarget parent; // a parent item is needed for setVisible() to work
     RenderedTarget target(&parent);
     EngineMock engine;
@@ -325,8 +337,6 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     ASSERT_TRUE(texture.isValid());
     ASSERT_EQ(texture.width(), 13);
     ASSERT_EQ(texture.height(), 13);
-
-    context.doneCurrent();
 }
 
 TEST_F(RenderedTargetTest, DeinitClone)
@@ -357,11 +367,6 @@ TEST_F(RenderedTargetTest, CpuRendering)
     RenderedTarget target(&parent);
     target.setEngine(&engine);
     target.setSpriteModel(&model);
-
-    // Create OpenGL context
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
 
     // Load costume
     EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
@@ -467,9 +472,6 @@ TEST_F(RenderedTargetTest, CpuRendering)
     target.setGraphicEffect(ShaderManager::Effect::Color, 0);
 
     // TODO: Test point transform (graphic effects that change shape)
-
-    // Cleanup
-    context.doneCurrent();
 }
 
 TEST_F(RenderedTargetTest, SpriteDragging)
@@ -738,9 +740,6 @@ TEST_F(RenderedTargetTest, GraphicEffects)
 
 TEST_F(RenderedTargetTest, GetBounds)
 {
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
     RenderedTarget target;
 
     Sprite sprite;
@@ -826,16 +825,11 @@ TEST_F(RenderedTargetTest, GetBounds)
     ASSERT_EQ(std::round(bubbleBounds.top() * 100) / 100, 1294.13);
     ASSERT_EQ(std::round(bubbleBounds.right() * 100) / 100, -405.87);
     ASSERT_EQ(std::round(bubbleBounds.bottom() * 100) / 100, 1286.13);
-
-    context.doneCurrent();
 }
 
 TEST_F(RenderedTargetTest, GetFastBounds)
 {
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
-    QOpenGLExtraFunctions glF(&context);
+    QOpenGLExtraFunctions glF(&m_context);
     glF.initializeOpenGLFunctions();
     RenderedTarget target;
 
@@ -898,8 +892,6 @@ TEST_F(RenderedTargetTest, GetFastBounds)
     ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1324.22);
     ASSERT_EQ(std::round(bounds.right() * 100) / 100, -375.77);
     ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, 1143.65);
-
-    context.doneCurrent();
 }
 
 TEST_F(RenderedTargetTest, TouchingClones)
@@ -922,11 +914,6 @@ TEST_F(RenderedTargetTest, TouchingClones)
     RenderedTargetMock target1, target2;
     model1.setRenderedTarget(&target1);
     model2.setRenderedTarget(&target2);
-
-    // Create OpenGL context
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
 
     // Load costume
     EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
@@ -1074,9 +1061,6 @@ TEST_F(RenderedTargetTest, TouchingClones)
     EXPECT_CALL(target1, containsScratchPoint).Times(0);
     EXPECT_CALL(target2, containsScratchPoint).Times(0);
     ASSERT_FALSE(target.touchingClones({ &clone1, &clone2 }));
-
-    // Cleanup
-    context.doneCurrent();
 }
 
 TEST_F(RenderedTargetTest, TouchingColor)
@@ -1145,11 +1129,6 @@ TEST_F(RenderedTargetTest, TouchingColor)
     stageModel.setRenderedTarget(&stageTarget);
     model1.setRenderedTarget(&target1);
     model2.setRenderedTarget(&target2);
-
-    // Create OpenGL context
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    createContextAndSurface(&context, &surface);
 
     // Load costume
     EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
@@ -1330,7 +1309,4 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(penLayer, colorAtScratchPoint).Times(0);
     EXPECT_CALL(stageTarget, colorAtScratchPoint).Times(0);
     ASSERT_FALSE(target.touchingColor(color1));
-
-    // Cleanup
-    context.doneCurrent();
 }
