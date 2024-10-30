@@ -81,7 +81,8 @@ TEST_F(TargetPainterTest, Paint)
     Texture texture(refFbo.texture(), refFbo.size());
     std::unordered_map<ShaderManager::Effect, double> effects;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
-    EXPECT_CALL(target, cpuTexture()).WillOnce(ReturnRef(texture));
+    EXPECT_CALL(target, costumeWidth()).WillOnce(Return(texture.width()));
+    EXPECT_CALL(target, costumeHeight()).WillOnce(Return(texture.height()));
     EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
     targetPainter.paint(&painter);
     painter.endFrame();
@@ -96,7 +97,8 @@ TEST_F(TargetPainterTest, Paint)
     effects[ShaderManager::Effect::Brightness] = 20;
     effects[ShaderManager::Effect::Ghost] = 84;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
-    EXPECT_CALL(target, cpuTexture()).WillOnce(ReturnRef(texture));
+    EXPECT_CALL(target, costumeWidth()).WillOnce(Return(texture.width()));
+    EXPECT_CALL(target, costumeHeight()).WillOnce(Return(texture.height()));
     EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
     targetPainter.paint(&painter);
     painter.endFrame();
@@ -114,7 +116,8 @@ TEST_F(TargetPainterTest, Paint)
     effects[ShaderManager::Effect::Pixelate] = 25;
     effects[ShaderManager::Effect::Mosaic] = 30;
     EXPECT_CALL(target, texture()).WillOnce(Return(texture));
-    EXPECT_CALL(target, cpuTexture()).WillOnce(ReturnRef(texture));
+    EXPECT_CALL(target, costumeWidth()).WillOnce(Return(texture.width()));
+    EXPECT_CALL(target, costumeHeight()).WillOnce(Return(texture.height()));
     EXPECT_CALL(target, graphicEffects()).WillOnce(ReturnRef(effects));
     targetPainter.paint(&painter);
     painter.endFrame();
