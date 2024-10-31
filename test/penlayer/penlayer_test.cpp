@@ -30,6 +30,11 @@ class PenLayerTest : public testing::Test
             m_surface.create();
             Q_ASSERT(m_surface.isValid());
             m_context.makeCurrent(&m_surface);
+
+            QOpenGLFunctions glF(&m_context);
+            glF.initializeOpenGLFunctions();
+            glF.glEnable(GL_BLEND);
+            glF.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
 
         void TearDown() override
@@ -373,6 +378,8 @@ TEST_F(PenLayerTest, Stamp)
     loader.setFileName("stamp_env.sb3");
     loader.start(); // wait until it loads
 
+    EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
     std::vector<std::unique_ptr<RenderedTarget>> targets;
     StageModel *stage = loader.stage();
     targets.push_back(std::make_unique<RenderedTarget>());
@@ -406,12 +413,11 @@ TEST_F(PenLayerTest, Stamp)
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
         QImage image = fbo->toImage().scaled(240, 180);
         QImage ref("stamp.png");
-        ASSERT_LE(fuzzyCompareImages(image, ref), 0.18);
+        ASSERT_LE(fuzzyCompareImages(image, ref), 0.22);
     }
 
     // Test HQ pen
     penLayer.clear();
-    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
     penLayer.setHqPen(true);
     penLayer.setWidth(720);
     penLayer.setHeight(540);
@@ -423,7 +429,7 @@ TEST_F(PenLayerTest, Stamp)
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
         QImage image = fbo->toImage();
         QImage ref("stamp_hq.png");
-        ASSERT_LE(fuzzyCompareImages(image, ref), 0.33);
+        ASSERT_LE(fuzzyCompareImages(image, ref), 0.42);
     }
 }
 

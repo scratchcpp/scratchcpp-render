@@ -683,55 +683,51 @@ void RenderedTarget::calculatePos()
     if (!m_skin || !m_costume || !m_engine)
         return;
 
-    if (isVisible() || m_stageModel) {
-        double stageWidth = m_engine->stageWidth();
-        double stageHeight = m_engine->stageHeight();
-        setX(m_stageScale * (stageWidth / 2 + m_x - m_costume->rotationCenterX() * m_size / scale() / m_costume->bitmapResolution() * (m_mirrorHorizontally ? -1 : 1)));
-        setY(m_stageScale * (stageHeight / 2 - m_y - m_costume->rotationCenterY() * m_size / scale() / m_costume->bitmapResolution()));
-        qreal originX = m_costume->rotationCenterX() * m_stageScale * m_size / scale() / m_costume->bitmapResolution();
-        qreal originY = m_costume->rotationCenterY() * m_stageScale * m_size / scale() / m_costume->bitmapResolution();
-        setTransformOriginPoint(QPointF(originX, originY));
+    double stageWidth = m_engine->stageWidth();
+    double stageHeight = m_engine->stageHeight();
+    setX(m_stageScale * (stageWidth / 2 + m_x - m_costume->rotationCenterX() * m_size / scale() / m_costume->bitmapResolution() * (m_mirrorHorizontally ? -1 : 1)));
+    setY(m_stageScale * (stageHeight / 2 - m_y - m_costume->rotationCenterY() * m_size / scale() / m_costume->bitmapResolution()));
+    qreal originX = m_costume->rotationCenterX() * m_stageScale * m_size / scale() / m_costume->bitmapResolution();
+    qreal originY = m_costume->rotationCenterY() * m_stageScale * m_size / scale() / m_costume->bitmapResolution();
+    setTransformOriginPoint(QPointF(originX, originY));
 
-        // Qt ignores the transform origin point if it's (0, 0),
-        // so set the transform origin to top left in this case.
-        if (originX == 0 && originY == 0)
-            setTransformOrigin(QQuickItem::TopLeft);
-        else
-            setTransformOrigin(QQuickItem::Center);
-    }
+    // Qt ignores the transform origin point if it's (0, 0),
+    // so set the transform origin to top left in this case.
+    if (originX == 0 && originY == 0)
+        setTransformOrigin(QQuickItem::TopLeft);
+    else
+        setTransformOrigin(QQuickItem::Center);
 
     m_transformedHullDirty = true;
 }
 
 void RenderedTarget::calculateRotation()
 {
-    if (isVisible()) {
-        // Direction
-        bool oldMirrorHorizontally = m_mirrorHorizontally;
+    // Direction
+    bool oldMirrorHorizontally = m_mirrorHorizontally;
 
-        switch (m_rotationStyle) {
-            case Sprite::RotationStyle::AllAround:
-                setRotation(m_direction - 90);
-                m_mirrorHorizontally = (false);
+    switch (m_rotationStyle) {
+        case Sprite::RotationStyle::AllAround:
+            setRotation(m_direction - 90);
+            m_mirrorHorizontally = (false);
 
-                break;
+            break;
 
-            case Sprite::RotationStyle::LeftRight: {
-                setRotation(0);
-                m_mirrorHorizontally = (m_direction < 0);
+        case Sprite::RotationStyle::LeftRight: {
+            setRotation(0);
+            m_mirrorHorizontally = (m_direction < 0);
 
-                break;
-            }
-
-            case Sprite::RotationStyle::DoNotRotate:
-                setRotation(0);
-                m_mirrorHorizontally = false;
-                break;
+            break;
         }
 
-        if (m_mirrorHorizontally != oldMirrorHorizontally)
-            emit mirrorHorizontallyChanged();
+        case Sprite::RotationStyle::DoNotRotate:
+            setRotation(0);
+            m_mirrorHorizontally = false;
+            break;
     }
+
+    if (m_mirrorHorizontally != oldMirrorHorizontally)
+        emit mirrorHorizontallyChanged();
 
     m_transformedHullDirty = true;
 }

@@ -11,7 +11,16 @@
 
 using namespace scratchcpprender;
 
+static const double pi = std::acos(-1); // TODO: Use std::numbers::pi in C++20
+
 std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> PenLayer::m_projectPenLayers;
+
+// TODO: Move this to a separate class
+template<typename T>
+short sgn(T x)
+{
+    return (T(0) < x) - (x < T(0));
+}
 
 PenLayer::PenLayer(QNanoQuickItem *parent) :
     IPenLayer(parent)
@@ -24,10 +33,13 @@ PenLayer::~PenLayer()
     if (m_engine)
         m_projectPenLayers.erase(m_engine);
 
-    if (m_blitter.isCreated()) {
+    if (m_vao != 0) {
         // Delete vertex array and buffer
         m_glF->glDeleteVertexArrays(1, &m_vao);
         m_glF->glDeleteBuffers(1, &m_vbo);
+
+        // Delete stamp FBO
+        m_glF->glDeleteFramebuffers(1, &m_stampFbo);
     }
 }
 
@@ -68,13 +80,9 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
             m_glF->initializeOpenGLFunctions();
         }
 
-        if (!m_blitter.isCreated()) {
-            m_blitter.create();
-
+        if (m_vao == 0) {
             // Set up VBO and VAO
-            float vertices[] = {
-                -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-            };
+            float vertices[] = { -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f };
 
             m_glF->glGenVertexArrays(1, &m_vao);
             m_glF->glGenBuffers(1, &m_vbo);
@@ -94,6 +102,9 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 
             m_glF->glBindVertexArray(0);
             m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            // Create stamp FBO
+            m_glF->glGenFramebuffers(1, &m_stampFbo);
         }
 
         clear();
@@ -195,97 +206,80 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
     update();
 }
 
-/*
- * A brief description of how stamping is implemented:
- * 1. Get rotation, size and coordinates and translate them.
- * 2. Draw the texture onto a temporary texture using shaders.
- * 3. Blit the resulting texture to a FBO with a square texture (required for rotation).
- * 4. Blit the resulting texture to the pen layer using QOpenGLTextureBlitter with transform.
- *
- * If you think this is too complicated, contributions are welcome!
- */
 void PenLayer::stamp(IRenderedTarget *target)
 {
-    if (!target || !m_fbo || !m_texture.isValid() || !m_blitter.isCreated())
+    if (!target || !m_fbo || !m_texture.isValid() || m_vao == 0 || m_vbo == 0)
         return;
 
-    double x = 0;
-    double y = 0;
-    double angle = 0;
-    double scale = 1;
-    bool mirror = false;
-    std::shared_ptr<libscratchcpp::Costume> costume;
+    const float stageWidth = m_engine->stageWidth() * m_scale;
+    const float stageHeight = m_engine->stageHeight() * m_scale;
+    float x = 0;
+    float y = 0;
+    float angle = 180;
+    float scaleX = 1;
+    float scaleY = 1;
 
     SpriteModel *spriteModel = target->spriteModel();
 
     if (spriteModel) {
         libscratchcpp::Sprite *sprite = spriteModel->sprite();
-        x = sprite->x();
-        y = sprite->y();
 
         switch (sprite->rotationStyle()) {
             case libscratchcpp::Sprite::RotationStyle::AllAround:
-                angle = 90 - sprite->direction();
+                angle = 270 - sprite->direction();
                 break;
 
             case libscratchcpp::Sprite::RotationStyle::LeftRight:
-                mirror = (sprite->direction() < 0);
+                scaleX = sgn(sprite->direction());
                 break;
 
             default:
                 break;
         }
 
-        scale = sprite->size() / 100;
-        costume = sprite->currentCostume();
-    } else
-        costume = target->stageModel()->stage()->currentCostume();
+        scaleY = sprite->size() / 100;
+        scaleX *= scaleY;
+    }
 
-    // Apply scale (HQ pen)
-    scale *= m_scale;
+    scaleX *= m_scale;
+    scaleY *= m_scale;
 
-    const double bitmapRes = costume->bitmapResolution();
-    const double centerX = costume->rotationCenterX() / bitmapRes;
-    const double centerY = costume->rotationCenterY() / bitmapRes;
-
+    libscratchcpp::Rect bounds = target->getFastBounds();
     const Texture &texture = target->cpuTexture();
 
     if (!texture.isValid())
         return;
 
-    const double textureScale = texture.width() / static_cast<double>(target->costumeWidth());
+    const float textureScale = texture.width() / static_cast<float>(target->costumeWidth());
+    const float skinWidth = texture.width();
+    const float skinHeight = texture.height();
 
-    // Apply scale (HQ pen)
-    x *= m_scale;
-    y *= m_scale;
+    // Projection matrix
+    QMatrix4x4 projectionMatrix;
+    const float aspectRatio = skinHeight / skinWidth;
+    projectionMatrix.ortho(1.0f, -1.0f, aspectRatio, -aspectRatio, 0.1f, 0.0f);
+    projectionMatrix.scale(skinWidth / bounds.width() / m_scale, skinHeight / bounds.height() / m_scale);
 
-    // Translate the coordinates
-    x = std::floor(x + m_texture.width() / 2.0);
-    y = std::floor(-y + m_texture.height() / 2.0);
-
+    // Model matrix
+    // TODO: This should be calculated and cached by targets
+    QMatrix4x4 modelMatrix;
+    modelMatrix.rotate(angle, 0, 0, 1);
+    modelMatrix.scale(scaleX / textureScale, aspectRatio * scaleY / textureScale);
     m_glF->glDisable(GL_SCISSOR_TEST);
-
-    // For some reason nothing is rendered without this
-    // TODO: Find out why this is happening
-    m_painter->beginFrame(m_fbo->width(), m_fbo->height());
-    m_painter->stroke();
-    m_painter->endFrame();
-
-    // Create a temporary FBO for graphic effects
-    QOpenGLFramebufferObject tmpFbo(texture.size());
-    m_painter->beginFrame(tmpFbo.width(), tmpFbo.height());
+    m_glF->glDisable(GL_DEPTH_TEST);
 
     // Create a FBO for the current texture
-    unsigned int fbo;
-    m_glF->glGenFramebuffers(1, &fbo);
-    m_glF->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    m_glF->glBindFramebuffer(GL_FRAMEBUFFER, m_stampFbo);
     m_glF->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.handle(), 0);
 
     if (m_glF->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         qWarning() << "error: framebuffer incomplete (stamp " + target->scratchTarget()->name() + ")";
-        m_glF->glDeleteFramebuffers(1, &fbo);
+        m_glF->glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return;
     }
+
+    // Set viewport
+    m_glF->glViewport((stageWidth / 2) + bounds.left() * m_scale, (stageHeight / 2) + bounds.bottom() * m_scale, bounds.width() * m_scale, bounds.height() * m_scale);
 
     // Get the shader program for the current set of effects
     ShaderManager *shaderManager = ShaderManager::instance();
@@ -298,62 +292,24 @@ void PenLayer::stamp(IRenderedTarget *target)
     m_glF->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
     // Render to the target framebuffer
-    m_glF->glBindFramebuffer(GL_FRAMEBUFFER, tmpFbo.handle());
+    m_glF->glBindFramebuffer(GL_FRAMEBUFFER, m_fbo->handle());
     shaderProgram->bind();
     m_glF->glBindVertexArray(m_vao);
     m_glF->glActiveTexture(GL_TEXTURE0);
     m_glF->glBindTexture(GL_TEXTURE_2D, texture.handle());
     shaderManager->setUniforms(shaderProgram, 0, texture.size(), effects); // set texture and effect uniforms
-    m_glF->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    m_painter->endFrame();
-
-    // Resize to square (for rotation)
-    const double dim = std::max(tmpFbo.width(), tmpFbo.height());
-    QOpenGLFramebufferObject resizeFbo(dim, dim);
-    resizeFbo.bind();
-    m_painter->beginFrame(dim, dim);
-
-    const QRect resizeRect(QPoint(0, 0), tmpFbo.size());
-    const QMatrix4x4 matrix = QOpenGLTextureBlitter::targetTransform(resizeRect, QRect(QPoint(0, 0), resizeFbo.size()));
-    m_glF->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    m_glF->glClear(GL_COLOR_BUFFER_BIT);
-    m_blitter.bind();
-    m_blitter.blit(tmpFbo.texture(), matrix, QOpenGLTextureBlitter::OriginBottomLeft);
-    m_blitter.release();
-
-    m_painter->endFrame();
-    resizeFbo.release();
+    shaderProgram->setUniformValue("u_projectionMatrix", projectionMatrix);
+    shaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
+    m_glF->glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Cleanup
     shaderProgram->release();
     m_glF->glBindVertexArray(0);
     m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
     m_glF->glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    m_glF->glDeleteFramebuffers(1, &fbo);
-
-    // Transform
-    const double width = resizeFbo.width() / textureScale;
-    const double height = resizeFbo.height() / textureScale;
-    QRectF targetRect(QPoint(x, y), QSizeF(width, height));
-    QTransform transform = QOpenGLTextureBlitter::targetTransform(targetRect, QRect(QPoint(centerX, centerY), m_fbo->size())).toTransform();
-    const double dx = 2 * (centerX - width / 2.0) / width;
-    const double dy = -2 * (centerY - height / 2.0) / height;
-    transform.translate(dx, dy);
-    transform.rotate(angle);
-    transform.scale(scale * (mirror ? -1 : 1), scale);
-    transform.translate(-dx, -dy);
-
-    // Blit
-    m_fbo->bind();
-    m_painter->beginFrame(m_fbo->width(), m_fbo->height());
-    m_blitter.bind();
-    m_blitter.blit(resizeFbo.texture(), transform, QOpenGLTextureBlitter::OriginBottomLeft);
-    m_blitter.release();
-    m_painter->endFrame();
-    m_fbo->release();
 
     m_glF->glEnable(GL_SCISSOR_TEST);
+    m_glF->glEnable(GL_DEPTH_TEST);
 
     m_textureDirty = true;
     m_boundsDirty = true;

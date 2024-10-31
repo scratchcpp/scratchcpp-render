@@ -60,6 +60,7 @@ class PenLayer : public IPenLayer
         void updateTexture();
 
         static std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> m_projectPenLayers;
+        static inline GLuint m_stampFbo = 0;
         bool m_antialiasingEnabled = true;
         libscratchcpp::IEngine *m_engine = nullptr;
         bool m_hqPen = false;
@@ -72,7 +73,6 @@ class PenLayer : public IPenLayer
         mutable CpuTextureManager m_textureManager;
         mutable bool m_boundsDirty = true;
         mutable libscratchcpp::Rect m_bounds;
-        QOpenGLTextureBlitter m_blitter;
         GLuint m_vbo = 0;
         GLuint m_vao = 0;
 };
