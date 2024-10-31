@@ -60,6 +60,7 @@ class PenLayer : public IPenLayer
         void updateTexture();
 
         static std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> m_projectPenLayers;
+        static inline GLuint m_stampFbo = 0;
         bool m_antialiasingEnabled = true;
         libscratchcpp::IEngine *m_engine = nullptr;
         bool m_hqPen = false;
