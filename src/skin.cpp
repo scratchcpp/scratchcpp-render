@@ -60,6 +60,10 @@ Texture Skin::createAndPaintTexture(int width, int height)
     m_textures.push_back(texture);
     texture->setMinificationFilter(QOpenGLTexture::Nearest);
     texture->setMagnificationFilter(QOpenGLTexture::Nearest);
+    texture->bind();
+    glF.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glF.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    texture->release();
 
     return Texture(texture->textureId(), width, height);
 }
