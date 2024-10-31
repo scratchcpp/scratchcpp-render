@@ -67,9 +67,7 @@ void TargetPainter::paint(QNanoPainter *painter)
     Q_ASSERT(shaderProgram->isLinked());
 
     // Set up vertex data and buffers for a quad
-    float vertices[] = {
-        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-    };
+    float vertices[] = { -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f };
 
     GLuint VBO, VAO;
     glF.glGenVertexArrays(1, &VAO);
@@ -95,7 +93,7 @@ void TargetPainter::paint(QNanoPainter *painter)
     glF.glActiveTexture(GL_TEXTURE0);
     glF.glBindTexture(GL_TEXTURE_2D, texture.handle());
     shaderManager->setUniforms(shaderProgram, 0, QSize(m_target->costumeWidth(), m_target->costumeHeight()), effects); // set texture and effect uniforms
-    glF.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glF.glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Process the resulting texture
     // NOTE: This must happen now, not later, because the alpha channel can be used here
