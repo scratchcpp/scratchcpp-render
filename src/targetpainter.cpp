@@ -93,6 +93,8 @@ void TargetPainter::paint(QNanoPainter *painter)
     glF.glActiveTexture(GL_TEXTURE0);
     glF.glBindTexture(GL_TEXTURE_2D, texture.handle());
     shaderManager->setUniforms(shaderProgram, 0, QSize(m_target->costumeWidth(), m_target->costumeHeight()), effects); // set texture and effect uniforms
+    shaderProgram->setUniformValue("u_projectionMatrix", QMatrix4x4());
+    shaderProgram->setUniformValue("u_modelMatrix", QMatrix4x4());
     glF.glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Process the resulting texture
