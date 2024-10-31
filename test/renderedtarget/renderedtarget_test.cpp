@@ -138,8 +138,8 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     SpriteModel spriteModel;
     sprite.setInterface(&spriteModel);
 
-    EXPECT_CALL(engine, stageWidth()).Times(2).WillRepeatedly(Return(480));
-    EXPECT_CALL(engine, stageHeight()).Times(2).WillRepeatedly(Return(360));
+    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).Times(3).WillRepeatedly(Return(360));
     target.setSpriteModel(&spriteModel);
     target.loadCostumes();
     target.beforeRedraw();
