@@ -58,8 +58,8 @@ Texture Skin::createAndPaintTexture(int width, int height)
     // Create final texture from the image
     auto texture = std::make_shared<QOpenGLTexture>(image);
     m_textures.push_back(texture);
-    texture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
-    texture->setMagnificationFilter(QOpenGLTexture::Linear);
+    texture->setMinificationFilter(QOpenGLTexture::Nearest);
+    texture->setMagnificationFilter(QOpenGLTexture::Nearest);
 
     return Texture(texture->textureId(), width, height);
 }
