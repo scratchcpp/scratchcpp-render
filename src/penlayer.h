@@ -72,7 +72,6 @@ class PenLayer : public IPenLayer
         mutable CpuTextureManager m_textureManager;
         mutable bool m_boundsDirty = true;
         mutable libscratchcpp::Rect m_bounds;
-        QOpenGLTextureBlitter m_blitter;
         GLuint m_vbo = 0;
         GLuint m_vao = 0;
 };
