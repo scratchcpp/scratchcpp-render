@@ -266,12 +266,7 @@ void PenLayer::stamp(IRenderedTarget *target)
     modelMatrix.rotate(angle, 0, 0, 1);
     modelMatrix.scale(scaleX / textureScale, aspectRatio * scaleY / textureScale);
     m_glF->glDisable(GL_SCISSOR_TEST);
-
-    // For some reason nothing is rendered without this
-    // TODO: Find out why this is happening
-    m_painter->beginFrame(m_fbo->width(), m_fbo->height());
-    m_painter->stroke();
-    m_painter->endFrame();
+    m_glF->glDisable(GL_DEPTH_TEST);
 
     // Create a FBO for the current texture
     m_glF->glBindFramebuffer(GL_FRAMEBUFFER, m_stampFbo);
@@ -314,6 +309,7 @@ void PenLayer::stamp(IRenderedTarget *target)
     m_glF->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     m_glF->glEnable(GL_SCISSOR_TEST);
+    m_glF->glEnable(GL_DEPTH_TEST);
 
     m_textureDirty = true;
     m_boundsDirty = true;
