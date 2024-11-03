@@ -19,7 +19,9 @@ void StageModel::init(libscratchcpp::Stage *stage)
     m_stage = stage;
 
     if (m_stage) {
-        m_stage->bubble()->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
+        libscratchcpp::TextBubble *bubble = m_stage->bubble();
+
+        bubble->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
             if (type == libscratchcpp::TextBubble::Type::Say) {
                 if (m_bubbleType == TextBubbleShape::Type::Say)
                     return;
@@ -35,7 +37,7 @@ void StageModel::init(libscratchcpp::Stage *stage)
             emit bubbleTypeChanged();
         });
 
-        m_stage->bubble()->textChanged().connect([this](const std::string &text) {
+        bubble->textChanged().connect([this](const std::string &text) {
             QString newText = QString::fromStdString(text);
 
             if (m_bubbleText != newText) {
@@ -43,6 +45,8 @@ void StageModel::init(libscratchcpp::Stage *stage)
                 emit bubbleTextChanged();
             }
         });
+
+        bubble->layerOrderChanged().connect([this](int) { emit bubbleLayerChanged(); });
     }
 }
 

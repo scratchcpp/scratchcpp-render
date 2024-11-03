@@ -23,7 +23,9 @@ void SpriteModel::init(libscratchcpp::Sprite *sprite)
     m_sprite = sprite;
 
     if (m_sprite) {
-        m_sprite->bubble()->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
+        libscratchcpp::TextBubble *bubble = m_sprite->bubble();
+
+        bubble->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
             if (type == libscratchcpp::TextBubble::Type::Say) {
                 if (m_bubbleType == TextBubbleShape::Type::Say)
                     return;
@@ -39,7 +41,7 @@ void SpriteModel::init(libscratchcpp::Sprite *sprite)
             emit bubbleTypeChanged();
         });
 
-        m_sprite->bubble()->textChanged().connect([this](const std::string &text) {
+        bubble->textChanged().connect([this](const std::string &text) {
             QString newText = QString::fromStdString(text);
 
             if (m_bubbleText != newText) {
@@ -47,6 +49,8 @@ void SpriteModel::init(libscratchcpp::Sprite *sprite)
                 emit bubbleTextChanged();
             }
         });
+
+        bubble->layerOrderChanged().connect([this](int) { emit bubbleLayerChanged(); });
     }
 }
 

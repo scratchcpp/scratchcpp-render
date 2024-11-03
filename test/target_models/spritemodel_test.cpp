@@ -476,5 +476,5 @@ TEST(SpriteModelTest, BubbleLayer)
 
     sprite.bubble()->setLayerOrder(5);
     ASSERT_EQ(model.bubbleLayer(), 5);
-    // TODO: Use spy here
+    ASSERT_EQ(spy.count(), 1);
 }
