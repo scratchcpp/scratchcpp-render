@@ -154,7 +154,7 @@ ProjectScene {
 
         Loader {
             readonly property alias modelData: stageTarget.stageModel
-            active: model ? model.bubbleText !== "" : false
+            active: modelData ? modelData.bubbleText !== "" : false
             sourceComponent: renderedTextBubble
         }
 
