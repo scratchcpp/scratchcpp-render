@@ -245,6 +245,7 @@ void PenLayer::stamp(IRenderedTarget *target)
     scaleY *= m_scale;
 
     libscratchcpp::Rect bounds = target->getFastBounds();
+    bounds.snapToInt();
     const Texture &texture = target->cpuTexture();
 
     if (!texture.isValid())
