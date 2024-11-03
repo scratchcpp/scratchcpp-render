@@ -116,8 +116,13 @@ bool CpuTextureManager::textureContainsPoint(const Texture &texture, const QPoin
         return false;
 
     GLubyte *pixels = getTextureData(texture);
-    QRgb color = qRgba(pixels[(y * width + x) * 4], pixels[(y * width + x) * 4 + 1], pixels[(y * width + x) * 4 + 2], pixels[(y * width + x) * 4 + 3]);
-    return qAlpha(color) > 0;
+
+    if (pixels) {
+        QRgb color = qRgba(pixels[(y * width + x) * 4], pixels[(y * width + x) * 4 + 1], pixels[(y * width + x) * 4 + 2], pixels[(y * width + x) * 4 + 3]);
+        return qAlpha(color) > 0;
+    }
+
+    return false;
 }
 
 void CpuTextureManager::removeTexture(const Texture &texture)
