@@ -213,6 +213,13 @@ void PenLayer::stamp(IRenderedTarget *target)
 
     const float stageWidth = m_engine->stageWidth() * m_scale;
     const float stageHeight = m_engine->stageHeight() * m_scale;
+
+    libscratchcpp::Rect bounds = target->getFastBounds();
+    bounds.snapToInt();
+
+    if (!bounds.intersects(libscratchcpp::Rect(-stageWidth / 2, stageHeight / 2, stageWidth / 2, -stageHeight / 2)))
+        return;
+
     float x = 0;
     float y = 0;
     float angle = 180;
@@ -244,8 +251,6 @@ void PenLayer::stamp(IRenderedTarget *target)
     scaleX *= m_scale;
     scaleY *= m_scale;
 
-    libscratchcpp::Rect bounds = target->getFastBounds();
-    bounds.snapToInt();
     const Texture &texture = target->cpuTexture();
 
     if (!texture.isValid())
