@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(scratchcpp-render VERSION 0.8.0 LANGUAGES CXX)
+project(scratchcpp-render VERSION 0.9.0 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
