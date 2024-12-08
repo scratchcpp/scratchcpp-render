@@ -30,11 +30,6 @@ class PenLayerTest : public testing::Test
             m_surface.create();
             Q_ASSERT(m_surface.isValid());
             m_context.makeCurrent(&m_surface);
-
-            QOpenGLFunctions glF(&m_context);
-            glF.initializeOpenGLFunctions();
-            glF.glEnable(GL_BLEND);
-            glF.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
 
         void TearDown() override

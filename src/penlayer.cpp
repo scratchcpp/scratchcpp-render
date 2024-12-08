@@ -273,6 +273,8 @@ void PenLayer::stamp(IRenderedTarget *target)
     modelMatrix.scale(scaleX / textureScale, aspectRatio * scaleY / textureScale);
     m_glF->glDisable(GL_SCISSOR_TEST);
     m_glF->glDisable(GL_DEPTH_TEST);
+    m_glF->glEnable(GL_BLEND);
+    m_glF->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Create a FBO for the current texture
     m_glF->glBindFramebuffer(GL_FRAMEBUFFER, m_stampFbo);
