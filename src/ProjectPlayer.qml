@@ -27,6 +27,7 @@ ProjectScene {
     readonly property Rectangle stageRect: contentRect
     signal loaded()
     signal failedToLoad()
+    signal loadingAborted()
 
     id: root
     engine: loader.engine
@@ -38,6 +39,11 @@ ProjectScene {
         priv.loading = true;
 		loader.fileName = fileName;
 	}
+
+    function stopLoading() {
+        if (priv.loading)
+            loader.stopLoading();
+    }
 
     QtObject {
         id: priv
@@ -54,10 +60,27 @@ ProjectScene {
         onLoadingFinished: {
             priv.loading = false;
 
-            if(loadStatus)
-                loaded();
-            else
-                failedToLoad();
+            switch (loadStatus) {
+                case ProjectLoader.Loaded:
+                    loaded();
+                    break;
+
+                case ProjectLoader.Failed:
+                    failedToLoad();
+                    break;
+
+                case ProjectLoader.Aborted:
+                    loadingAborted();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        onLoadStatusChanged: {
+            if (loadStatus === ProjectLoader.Loading)
+                priv.loading = true;
         }
 
         onStageChanged: stage.loadCostume();
