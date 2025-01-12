@@ -45,10 +45,7 @@ ProjectLoader::ProjectLoader(QObject *parent) :
 
 ProjectLoader::~ProjectLoader()
 {
-    m_stopLoading = true;
-
-    if (m_loadThread.isRunning())
-        m_loadThread.waitForFinished();
+    stopLoading();
 
     for (SpriteModel *sprite : m_sprites)
         sprite->deleteLater();
@@ -61,8 +58,11 @@ const QString &ProjectLoader::fileName() const
 
 void ProjectLoader::setFileName(const QString &newFileName)
 {
-    if (m_loadThread.isRunning())
+    if (m_loadThread.isRunning()) {
+        stopLoading();
         m_loadThread.waitForFinished();
+        QCoreApplication::processEvents();
+    }
 
     if (newFileName.isEmpty())
         return;
@@ -72,7 +72,7 @@ void ProjectLoader::setFileName(const QString &newFileName)
     clear();
 
     m_project.setFileName(m_fileName.toStdString());
-    m_loadStatus = false;
+    m_loadStatus = LoadStatus::Loading;
 
     // TODO: Do not set these to 0 after libscratchcpp starts doing it itself
     m_downloadedAssets = 0;
@@ -87,12 +87,21 @@ void ProjectLoader::setFileName(const QString &newFileName)
     m_loadThread = QtConcurrent::run(&callLoad, this);
 }
 
-bool ProjectLoader::loadStatus() const
+ProjectLoader::LoadStatus ProjectLoader::loadStatus() const
 {
     if (m_loadThread.isRunning())
-        return false;
+        return LoadStatus::Loading;
 
     return m_loadStatus;
+}
+
+void ProjectLoader::stopLoading()
+{
+    if (m_loadThread.isRunning()) {
+        m_project.stopLoading();
+        m_stopLoading = true;
+        m_loadThread.waitForFinished();
+    }
 }
 
 bool ProjectLoader::running() const
@@ -122,15 +131,17 @@ void ProjectLoader::setEngine(libscratchcpp::IEngine *engine)
 StageModel *ProjectLoader::stage()
 {
     if (m_loadThread.isRunning())
-        m_loadThread.waitForFinished();
+        return nullptr;
 
     return &m_stage;
 }
 
 QQmlListProperty<SpriteModel> ProjectLoader::sprites()
 {
-    if (m_loadThread.isRunning())
-        m_loadThread.waitForFinished();
+    if (m_loadThread.isRunning()) {
+        m_emptySpriteList.clear();
+        return QQmlListProperty<SpriteModel>(this, &m_emptySpriteList);
+    }
 
     return QQmlListProperty<SpriteModel>(this, &m_sprites);
 }
@@ -168,9 +179,9 @@ const QStringList &ProjectLoader::unsupportedBlocks() const
 void ProjectLoader::start()
 {
     if (m_loadThread.isRunning())
-        m_loadThread.waitForFinished();
+        return;
 
-    if (m_loadStatus) {
+    if (m_loadStatus == LoadStatus::Loaded) {
         Q_ASSERT(m_engine);
         m_engine->start();
     }
@@ -179,9 +190,9 @@ void ProjectLoader::start()
 void ProjectLoader::stop()
 {
     if (m_loadThread.isRunning())
-        m_loadThread.waitForFinished();
+        return;
 
-    if (m_loadStatus) {
+    if (m_loadStatus == LoadStatus::Loaded) {
         Q_ASSERT(m_engine);
         m_engine->stop();
     }
@@ -276,12 +287,16 @@ void ProjectLoader::clear()
 void ProjectLoader::load()
 {
     m_unpositionedMonitors.clear();
-    m_loadStatus = m_project.load();
+    m_loadStatus = m_project.load() ? LoadStatus::Loaded : LoadStatus::Failed;
     m_engineMutex.lock();
     m_engine = m_project.engine().get();
 
     if (!m_engine || m_stopLoading) {
         m_engineMutex.unlock();
+
+        if (m_stopLoading)
+            m_loadStatus = LoadStatus::Aborted;
+
         emit fileNameChanged();
         emit loadStatusChanged();
         emit loadingFinished();
@@ -330,6 +345,7 @@ void ProjectLoader::load()
 
     if (m_stopLoading) {
         m_engineMutex.unlock();
+        m_loadStatus = LoadStatus::Aborted;
         emit fileNameChanged();
         emit loadStatusChanged();
         emit loadingFinished();
@@ -364,7 +380,7 @@ void ProjectLoader::initTimer()
 void ProjectLoader::redraw()
 {
     if (m_loadThread.isRunning())
-        m_loadThread.waitForFinished();
+        return;
 
     auto stage = m_stage.renderedTarget();
 

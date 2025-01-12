@@ -46,9 +46,9 @@ class ProjectLoaderTest : public testing::Test
             ASSERT_EQ(monitorsSpy.count(), 1);
             ASSERT_TRUE(monitorAddedSpy.empty());
             ASSERT_EQ(loader->fileName(), fileName);
-            ASSERT_FALSE(loader->loadStatus());
+            ASSERT_EQ(loader->loadStatus(), ProjectLoader::LoadStatus::Loading);
 
-            while (!loader->loadStatus())
+            while (loader->loadStatus() != ProjectLoader::LoadStatus::Loaded)
                 ASSERT_LE(std::chrono::steady_clock::now(), startTime + timeout);
 
             ASSERT_EQ(loader->fileName(), fileName);
@@ -84,7 +84,7 @@ TEST_F(ProjectLoaderTest, Load)
 {
     ProjectLoader loader;
     ASSERT_TRUE(loader.fileName().isEmpty());
-    ASSERT_FALSE(loader.loadStatus());
+    ASSERT_EQ(loader.loadStatus(), ProjectLoader::LoadStatus::Idle);
     ASSERT_TRUE(loader.stage());
 
     load(&loader, "load_test.sb3");
@@ -111,13 +111,18 @@ TEST_F(ProjectLoaderTest, Load)
 
 TEST_F(ProjectLoaderTest, UnsupportedBlocks)
 {
+    static const std::chrono::milliseconds timeout(5000);
+    auto startTime = std::chrono::steady_clock::now();
+
     ProjectLoader loader;
     ASSERT_TRUE(loader.fileName().isEmpty());
-    ASSERT_FALSE(loader.loadStatus());
+    ASSERT_EQ(loader.loadStatus(), ProjectLoader::LoadStatus::Idle);
     ASSERT_TRUE(loader.stage());
 
     loader.setFileName("unsupported_blocks.sb3");
-    loader.start(); // wait until it loads
+
+    while (loader.loadStatus() != ProjectLoader::LoadStatus::Loaded)
+        ASSERT_LE(std::chrono::steady_clock::now(), startTime + timeout);
 
     auto engine = loader.engine();
     const auto &blocks = loader.unsupportedBlocks();

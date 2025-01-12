@@ -23,7 +23,7 @@ class ProjectLoader : public QObject
         Q_OBJECT
         QML_ELEMENT
         Q_PROPERTY(QString fileName READ fileName WRITE setFileName NOTIFY fileNameChanged)
-        Q_PROPERTY(bool loadStatus READ loadStatus NOTIFY loadStatusChanged)
+        Q_PROPERTY(LoadStatus loadStatus READ loadStatus NOTIFY loadStatusChanged)
         Q_PROPERTY(bool running READ running NOTIFY runningChanged)
         Q_PROPERTY(int renderFps READ renderFps NOTIFY renderFpsChanged FINAL)
         Q_PROPERTY(libscratchcpp::IEngine *engine READ engine NOTIFY engineChanged)
@@ -43,13 +43,25 @@ class ProjectLoader : public QObject
         Q_PROPERTY(unsigned int assetCount READ assetCount NOTIFY assetCountChanged)
 
     public:
+        enum class LoadStatus
+        {
+            Idle,
+            Loading,
+            Loaded,
+            Failed,
+            Aborted
+        };
+
+        Q_ENUM(LoadStatus)
+
         explicit ProjectLoader(QObject *parent = nullptr);
         ~ProjectLoader();
 
         const QString &fileName() const;
         void setFileName(const QString &newFileName);
 
-        bool loadStatus() const;
+        LoadStatus loadStatus() const;
+        Q_INVOKABLE void stopLoading();
 
         bool running() const;
 
@@ -155,10 +167,11 @@ class ProjectLoader : public QObject
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::IEngine *m_oldEngine = nullptr;
         QMutex m_engineMutex;
-        bool m_loadStatus = false;
+        LoadStatus m_loadStatus = LoadStatus::Idle;
         StageModel m_stage;
         QList<SpriteModel *> m_sprites;
         QList<SpriteModel *> m_clones;
+        QList<SpriteModel *> m_emptySpriteList;
         QList<MonitorModel *> m_monitors;
         std::vector<libscratchcpp::Monitor *> m_unpositionedMonitors;
         QStringList m_unsupportedBlocks;
