@@ -362,6 +362,9 @@ TEST_F(PenLayerTest, DrawLine)
 
 TEST_F(PenLayerTest, Stamp)
 {
+    static const std::chrono::milliseconds timeout(5000);
+    auto startTime = std::chrono::steady_clock::now();
+
     PenLayer penLayer;
     penLayer.setWidth(480);
     penLayer.setHeight(360);
@@ -371,7 +374,9 @@ TEST_F(PenLayerTest, Stamp)
 
     ProjectLoader loader;
     loader.setFileName("stamp_env.sb3");
-    loader.start(); // wait until it loads
+
+    while (loader.loadStatus() != ProjectLoader::LoadStatus::Loaded)
+        ASSERT_LE(std::chrono::steady_clock::now(), startTime + timeout);
 
     EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
     EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
