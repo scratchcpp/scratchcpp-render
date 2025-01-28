@@ -101,8 +101,8 @@ class RenderedTarget : public IRenderedTarget
         QRgb colorAtScratchPoint(double x, double y) const override;
 
         bool touchingClones(const std::vector<libscratchcpp::Sprite *> &) const override;
-        bool touchingColor(const libscratchcpp::Value &color) const override;
-        bool touchingColor(const libscratchcpp::Value &color, const libscratchcpp::Value &mask) const override;
+        bool touchingColor(libscratchcpp::Rgb color) const override;
+        bool touchingColor(libscratchcpp::Rgb color, libscratchcpp::Rgb mask) const override;
 
     signals:
         void engineChanged();
@@ -132,14 +132,13 @@ class RenderedTarget : public IRenderedTarget
         QPointF mapFromStageWithOriginPoint(const QPointF &scenePoint) const;
         QPointF mapFromScratchToLocal(const QPointF &point) const;
         CpuTextureManager *textureManager() const;
-        bool touchingColor(const libscratchcpp::Value &color, bool hasMask, const libscratchcpp::Value &mask) const;
+        bool touchingColor(libscratchcpp::Rgb color, bool hasMask, libscratchcpp::Rgb mask) const;
         QRectF touchingBounds() const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Target *> &candidates, std::vector<IRenderedTarget *> &dst) const;
         QRectF candidatesBounds(const QRectF &targetRect, const std::vector<libscratchcpp::Sprite *> &candidates, std::vector<IRenderedTarget *> &dst) const;
         static QRectF candidateIntersection(const QRectF &targetRect, IRenderedTarget *target);
         static QRectF rectIntersection(const QRectF &targetRect, const libscratchcpp::Rect &candidateRect);
         static void clampRect(libscratchcpp::Rect &rect, double left, double right, double bottom, double top);
-        static QRgb convertColor(const libscratchcpp::Value &color);
         static bool colorMatches(QRgb a, QRgb b);
         static bool maskMatches(QRgb a, QRgb b);
         QRgb sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const;

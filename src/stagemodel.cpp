@@ -112,12 +112,12 @@ bool StageModel::touchingPoint(double x, double y) const
     return m_renderedTarget->containsScratchPoint(x, y);
 }
 
-bool StageModel::touchingColor(const libscratchcpp::Value &color) const
+bool StageModel::touchingColor(libscratchcpp::Rgb color) const
 {
     return m_renderedTarget->touchingColor(color);
 }
 
-bool StageModel::touchingColor(const libscratchcpp::Value &color, const libscratchcpp::Value &mask) const
+bool StageModel::touchingColor(libscratchcpp::Rgb color, libscratchcpp::Rgb mask) const
 {
     return m_renderedTarget->touchingColor(color, mask);
 }

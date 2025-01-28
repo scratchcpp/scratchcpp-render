@@ -186,7 +186,7 @@ TEST(StageModelTest, TouchingColor)
     RenderedTargetMock renderedTarget;
     model.setRenderedTarget(&renderedTarget);
 
-    Value color1 = 123, color2 = 456;
+    Rgb color1 = 123, color2 = 456;
     EXPECT_CALL(renderedTarget, touchingColor(color1)).WillOnce(Return(false));
     ASSERT_FALSE(model.touchingColor(color1));
 

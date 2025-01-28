@@ -60,8 +60,8 @@ class SpriteModel
 
         bool touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const override;
         bool touchingPoint(double x, double y) const override;
-        bool touchingColor(const libscratchcpp::Value &color) const override;
-        bool touchingColor(const libscratchcpp::Value &color, const libscratchcpp::Value &mask) const override;
+        bool touchingColor(libscratchcpp::Rgb color) const override;
+        bool touchingColor(libscratchcpp::Rgb color, libscratchcpp::Rgb mask) const override;
 
         libscratchcpp::Sprite *sprite() const;
 

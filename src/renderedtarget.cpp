@@ -668,12 +668,12 @@ bool RenderedTarget::touchingClones(const std::vector<libscratchcpp::Sprite *> &
     return false;
 }
 
-bool RenderedTarget::touchingColor(const Value &color) const
+bool RenderedTarget::touchingColor(Rgb color) const
 {
-    return touchingColor(color, false, Value());
+    return touchingColor(color, false, 0);
 }
 
-bool RenderedTarget::touchingColor(const Value &color, const Value &mask) const
+bool RenderedTarget::touchingColor(Rgb color, Rgb mask) const
 {
     return touchingColor(color, true, mask);
 }
@@ -873,13 +873,13 @@ CpuTextureManager *RenderedTarget::textureManager() const
     return m_textureManager.get();
 }
 
-bool RenderedTarget::touchingColor(const libscratchcpp::Value &color, bool hasMask, const libscratchcpp::Value &mask) const
+bool RenderedTarget::touchingColor(Rgb color, bool hasMask, Rgb mask) const
 {
     // https://github.com/scratchfoundation/scratch-render/blob/0a04c2fb165f5c20406ec34ab2ea5682ae45d6e0/src/RenderWebGL.js#L775-L841
     if (!m_engine)
         return false;
 
-    QRgb rgb = convertColor(color);
+    QRgb rgb = qRgb(qRed(color), qGreen(color), qBlue(color)); // ignore alpha
     QRgb mask3b;
     double ghostValue = 0;
 
@@ -891,7 +891,7 @@ bool RenderedTarget::touchingColor(const libscratchcpp::Value &color, bool hasMa
             m_graphicEffectMask &= ~ShaderManager::Effect::Ghost;
         }
 
-        mask3b = convertColor(mask);
+        mask3b = qRgb(qRed(mask), qGreen(mask), qBlue(mask)); // ignore alpha
     }
 
     std::vector<Target *> targets;
@@ -1063,33 +1063,6 @@ void RenderedTarget::clampRect(Rect &rect, double left, double right, double bot
     rect.setRight(std::max(rect.right(), left));
     rect.setBottom(std::min(rect.bottom(), top));
     rect.setTop(std::max(rect.top(), bottom));
-}
-
-QRgb RenderedTarget::convertColor(const libscratchcpp::Value &color)
-{
-    // TODO: Remove this after libscratchcpp starts converting colors (it still needs to be converted to RGB here)
-    std::string stringValue;
-
-    if (color.isString())
-        stringValue = color.toString();
-
-    if (!stringValue.empty() && stringValue[0] == '#') {
-        bool valid = false;
-        QColor color;
-
-        if (stringValue.size() <= 7) // #RRGGBB
-        {
-            color = QColor::fromString(stringValue);
-            valid = color.isValid();
-        }
-
-        if (!valid)
-            color = Qt::black;
-
-        return color.rgb();
-
-    } else
-        return QColor::fromRgba(static_cast<QRgb>(color.toLong())).rgb();
 }
 
 bool RenderedTarget::colorMatches(QRgb a, QRgb b)

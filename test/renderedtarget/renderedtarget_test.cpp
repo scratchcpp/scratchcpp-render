@@ -1152,24 +1152,23 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(target2, stageModel()).WillRepeatedly(Return(nullptr));
     EXPECT_CALL(penLayer, getBounds()).WillRepeatedly(ReturnRef(penBounds));
 
-    static const QRgb color1 = 4286611711; // "purple"
-    static const QRgb color2 = 596083443;  // close to color1 and transparent
-    static const Value color3 = "#808000"; // "olive" (4286611456)
-    static const QRgb color3Int = 4286611456;
+    static const Rgb color1 = 4286611711;  // "purple"
+    static const Rgb color2 = 596083443;   // close to color1 and transparent
+    static const Rgb color3 = 4286611456;  // "olive"
     static const QRgb color4 = 2505545047; // transparent "hippie green"
     static const QRgb color5 = 4287417025; // color1 + color4
 
     EXPECT_CALL(stageTarget, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
     EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -1, 1, -8)));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -2)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -2)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -1)).WillOnce(Return(color3Int));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -2)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -2)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -1)).WillOnce(Return(color3));
     EXPECT_CALL(target2, colorAtScratchPoint(2, -1)).WillOnce(Return(color4));
-    EXPECT_CALL(target1, colorAtScratchPoint(2, -1)).WillOnce(Return(color3Int));
+    EXPECT_CALL(target1, colorAtScratchPoint(2, -1)).WillOnce(Return(color3));
     EXPECT_CALL(target2, colorAtScratchPoint(3, -1)).WillOnce(Return(color4));
     EXPECT_CALL(target1, colorAtScratchPoint(3, -1)).WillOnce(Return(color4));
     EXPECT_CALL(penLayer, colorAtScratchPoint(3, -1)).WillOnce(Return(color4));
@@ -1179,47 +1178,47 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(stageTarget, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
     EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -1, 1, -8)));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3Int));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3));
     EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color1));
     ASSERT_TRUE(target.touchingColor(color1));
 
     EXPECT_CALL(stageTarget, getFastBounds()).WillOnce(Return(Rect(5, 1, 6, -5)));
     EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(5, 1, 6, -5)));
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -1, 2, -8)));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -2)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -2)).WillOnce(Return(color3Int));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -2)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -2)).WillOnce(Return(color3));
     EXPECT_CALL(target2, colorAtScratchPoint(1, -1)).WillOnce(Return(color4));
-    EXPECT_CALL(target1, colorAtScratchPoint(1, -1)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(2, -1)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -1)).WillOnce(Return(color3Int));
+    EXPECT_CALL(target1, colorAtScratchPoint(1, -1)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(2, -1)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -1)).WillOnce(Return(color3));
     ASSERT_FALSE(target.touchingColor(color1));
 
     EXPECT_CALL(stageTarget, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
     EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6, 2, -8)));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -2)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -2)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -1)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(2, -1)).WillOnce(Return(color3Int));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -2)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -2)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -1)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(2, -1)).WillOnce(Return(color3));
     EXPECT_CALL(target2, colorAtScratchPoint(3, -1)).WillOnce(Return(color1));
     ASSERT_TRUE(target.touchingColor(color2));
 
     EXPECT_CALL(stageTarget, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
     EXPECT_CALL(target1, getFastBounds()).WillOnce(Return(Rect(2, 1, 6, -5)));
     EXPECT_CALL(target2, getFastBounds()).WillOnce(Return(Rect(-5, -6.5, 1.8, -8)));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -2)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(3, -2)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(1, -1)).WillOnce(Return(color3Int));
-    EXPECT_CALL(target2, colorAtScratchPoint(2, -1)).WillOnce(Return(color3Int));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(2, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -3)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -2)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(3, -2)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(1, -1)).WillOnce(Return(color3));
+    EXPECT_CALL(target2, colorAtScratchPoint(2, -1)).WillOnce(Return(color3));
     EXPECT_CALL(target2, colorAtScratchPoint(3, -1)).WillOnce(Return(color4));
     EXPECT_CALL(target1, colorAtScratchPoint(3, -1)).WillOnce(Return(color1));
     ASSERT_FALSE(target.touchingColor(color1));
