@@ -26,6 +26,7 @@ class PenBlocks : public libscratchcpp::IExtension
 
         std::string name() const override;
         std::string description() const override;
+        libscratchcpp::Rgb color() const override;
 
         void registerBlocks(libscratchcpp::IEngine *engine) override;
 
