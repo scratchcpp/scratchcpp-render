@@ -200,10 +200,21 @@ TEST(StageModelTest, TouchingColor)
     ASSERT_TRUE(model.touchingColor(color1, color2));
 }
 
-TEST(StageModelTest, RenderedTarget)
+TEST(StageModelTest, BubbleLayer)
 {
     StageModel model;
-    ASSERT_EQ(model.renderedTarget(), nullptr);
+    Stage stage;
+    model.init(&stage);
+    QSignalSpy spy(&model, &StageModel::bubbleLayerChanged);
+
+    stage.bubble()->setLayerOrder(5);
+    ASSERT_EQ(model.bubbleLayer(), 5);
+    ASSERT_EQ(spy.count(), 1);
+}
+
+TEST(StageModelTest, LoadCostume)
+{
+    StageModel model;
     Stage stage;
     model.init(&stage);
 
@@ -216,7 +227,7 @@ TEST(StageModelTest, RenderedTarget)
     stage.setCostumeIndex(1);
 
     RenderedTargetMock renderedTarget;
-    QSignalSpy spy(&model, &StageModel::renderedTargetChanged);
+    QSignalSpy spy(&model, &TargetModel::renderedTargetChanged);
     model.setRenderedTarget(&renderedTarget);
     ASSERT_EQ(spy.count(), 1);
     ASSERT_EQ(model.renderedTarget(), &renderedTarget);
@@ -224,16 +235,4 @@ TEST(StageModelTest, RenderedTarget)
     EXPECT_CALL(renderedTarget, updateCostume(c3.get()));
     stage.setCostumeIndex(2);
     model.loadCostume();
-}
-
-TEST(StageModelTest, BubbleLayer)
-{
-    StageModel model;
-    Stage stage;
-    model.init(&stage);
-    QSignalSpy spy(&model, &StageModel::bubbleLayerChanged);
-
-    stage.bubble()->setLayerOrder(5);
-    ASSERT_EQ(model.bubbleLayer(), 5);
-    ASSERT_EQ(spy.count(), 1);
 }

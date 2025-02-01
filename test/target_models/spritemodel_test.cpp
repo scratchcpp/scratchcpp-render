@@ -407,30 +407,6 @@ TEST(SpriteModelTest, TouchingColor)
     ASSERT_TRUE(model.touchingColor(color1, color2));
 }
 
-TEST(SpriteModelTest, RenderedTarget)
-{
-    SpriteModel model;
-    ASSERT_EQ(model.renderedTarget(), nullptr);
-
-    RenderedTargetMock renderedTarget;
-    QSignalSpy spy(&model, &SpriteModel::renderedTargetChanged);
-    model.setRenderedTarget(&renderedTarget);
-    ASSERT_EQ(spy.count(), 1);
-    ASSERT_EQ(model.renderedTarget(), &renderedTarget);
-}
-
-TEST(SpriteModelTest, PenLayer)
-{
-    SpriteModel model;
-    ASSERT_EQ(model.penLayer(), nullptr);
-
-    PenLayerMock penLayer;
-    QSignalSpy spy(&model, &SpriteModel::penLayerChanged);
-    model.setPenLayer(&penLayer);
-    ASSERT_EQ(spy.count(), 1);
-    ASSERT_EQ(model.penLayer(), &penLayer);
-}
-
 TEST(SpriteModelTest, PenDown)
 {
     SpriteModel model;
@@ -477,4 +453,29 @@ TEST(SpriteModelTest, BubbleLayer)
     sprite.bubble()->setLayerOrder(5);
     ASSERT_EQ(model.bubbleLayer(), 5);
     ASSERT_EQ(spy.count(), 1);
+}
+
+TEST(SpriteModelTest, LoadCostume)
+{
+    SpriteModel model;
+    Sprite sprite;
+    model.init(&sprite);
+
+    auto c1 = std::make_shared<Costume>("", "", "");
+    auto c2 = std::make_shared<Costume>("", "", "");
+    auto c3 = std::make_shared<Costume>("", "", "");
+    sprite.addCostume(c1);
+    sprite.addCostume(c2);
+    sprite.addCostume(c3);
+    sprite.setCostumeIndex(1);
+
+    RenderedTargetMock renderedTarget;
+    QSignalSpy spy(&model, &TargetModel::renderedTargetChanged);
+    model.setRenderedTarget(&renderedTarget);
+    ASSERT_EQ(spy.count(), 1);
+    ASSERT_EQ(model.renderedTarget(), &renderedTarget);
+
+    EXPECT_CALL(renderedTarget, updateCostume(c3.get()));
+    sprite.setCostumeIndex(2);
+    model.loadCostume();
 }

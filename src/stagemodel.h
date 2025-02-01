@@ -2,27 +2,18 @@
 
 #pragma once
 
-#include <QObject>
 #include <scratchcpp/istagehandler.h>
 
-#include "textbubbleshape.h"
-
-Q_MOC_INCLUDE("renderedtarget.h");
+#include "targetmodel.h"
 
 namespace scratchcpprender
 {
 
-class IRenderedTarget;
-
 class StageModel
-    : public QObject
+    : public TargetModel
     , public libscratchcpp::IStageHandler
 {
         Q_OBJECT
-        Q_PROPERTY(IRenderedTarget *renderedTarget READ renderedTarget WRITE setRenderedTarget NOTIFY renderedTargetChanged)
-        Q_PROPERTY(TextBubbleShape::Type bubbleType READ bubbleType NOTIFY bubbleTypeChanged)
-        Q_PROPERTY(QString bubbleText READ bubbleText NOTIFY bubbleTextChanged)
-        Q_PROPERTY(int bubbleLayer READ bubbleLayer NOTIFY bubbleLayerChanged)
 
     public:
         explicit StageModel(QObject *parent = nullptr);
@@ -49,30 +40,17 @@ class StageModel
         bool touchingColor(libscratchcpp::Rgb color) const override;
         bool touchingColor(libscratchcpp::Rgb color, libscratchcpp::Rgb mask) const override;
 
-        Q_INVOKABLE void loadCostume();
-
         libscratchcpp::Stage *stage() const;
 
-        IRenderedTarget *renderedTarget() const;
-        void setRenderedTarget(IRenderedTarget *newRenderedTarget);
+        int bubbleLayer() const override;
 
-        const TextBubbleShape::Type &bubbleType() const;
+        Q_INVOKABLE void loadCostume() override;
 
-        const QString &bubbleText() const;
-
-        int bubbleLayer() const;
-
-    signals:
-        void renderedTargetChanged();
-        void bubbleTypeChanged();
-        void bubbleTextChanged();
-        void bubbleLayerChanged();
+    protected:
+        void drawPenPoint(IPenLayer *penLayer, const PenAttributes &penAttributes) override;
 
     private:
         libscratchcpp::Stage *m_stage = nullptr;
-        IRenderedTarget *m_renderedTarget = nullptr;
-        TextBubbleShape::Type m_bubbleType = TextBubbleShape::Type::Say;
-        QString m_bubbleText;
 };
 
 } // namespace scratchcpprender

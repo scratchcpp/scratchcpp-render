@@ -2,33 +2,19 @@
 
 #pragma once
 
-#include <QObject>
-#include <QQmlEngine>
 #include <scratchcpp/ispritehandler.h>
 
-#include "penstate.h"
-#include "textbubbleshape.h"
-
-Q_MOC_INCLUDE("renderedtarget.h");
-Q_MOC_INCLUDE("ipenlayer.h");
+#include "targetmodel.h"
 
 namespace scratchcpprender
 {
 
-class IRenderedTarget;
-class IPenLayer;
-
 class SpriteModel
-    : public QObject
+    : public TargetModel
     , public libscratchcpp::ISpriteHandler
 {
         Q_OBJECT
         QML_ELEMENT
-        Q_PROPERTY(IRenderedTarget *renderedTarget READ renderedTarget WRITE setRenderedTarget NOTIFY renderedTargetChanged)
-        Q_PROPERTY(IPenLayer *penLayer READ penLayer WRITE setPenLayer NOTIFY penLayerChanged)
-        Q_PROPERTY(TextBubbleShape::Type bubbleType READ bubbleType NOTIFY bubbleTypeChanged)
-        Q_PROPERTY(QString bubbleText READ bubbleText NOTIFY bubbleTextChanged)
-        Q_PROPERTY(int bubbleLayer READ bubbleLayer NOTIFY bubbleLayerChanged)
 
     public:
         SpriteModel(QObject *parent = nullptr);
@@ -65,43 +51,23 @@ class SpriteModel
 
         libscratchcpp::Sprite *sprite() const;
 
-        IRenderedTarget *renderedTarget() const;
-        void setRenderedTarget(IRenderedTarget *newRenderedTarget);
-
-        IPenLayer *penLayer() const;
-        void setPenLayer(IPenLayer *newPenLayer);
-
-        PenState &penState();
-        PenAttributes &penAttributes();
-
-        bool penDown() const;
-        void setPenDown(bool newPenDown);
+        int bubbleLayer() const override;
 
         SpriteModel *cloneRoot() const;
 
-        const TextBubbleShape::Type &bubbleType() const;
-
-        const QString &bubbleText() const;
-
-        int bubbleLayer() const;
+        Q_INVOKABLE void loadCostume() override;
 
     signals:
-        void renderedTargetChanged();
-        void penLayerChanged();
-        void bubbleTypeChanged();
-        void bubbleTextChanged();
         void cloned(SpriteModel *cloneModel);
         void cloneDeleted(SpriteModel *clone);
-        void bubbleLayerChanged();
+
+    protected:
+        void drawPenPoint(IPenLayer *penLayer, const PenAttributes &penAttributes) override;
+        void drawPenLine(IPenLayer *penLayer, const PenAttributes &penAttributes, double x0, double y0, double x1, double y1) override;
 
     private:
         libscratchcpp::Sprite *m_sprite = nullptr;
-        IRenderedTarget *m_renderedTarget = nullptr;
-        IPenLayer *m_penLayer = nullptr;
-        PenState m_penState;
         SpriteModel *m_cloneRoot = nullptr;
-        TextBubbleShape::Type m_bubbleType = TextBubbleShape::Type::Say;
-        QString m_bubbleText;
 };
 
 } // namespace scratchcpprender
