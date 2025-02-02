@@ -8,7 +8,7 @@
 namespace scratchcpprender
 {
 
-class SpriteModel;
+class TargetModel;
 class PenState;
 
 class PenBlocks : public libscratchcpp::IExtension
@@ -78,7 +78,7 @@ class PenBlocks : public libscratchcpp::IExtension
             TRANSPARENCY
         };
 
-        static SpriteModel *getSpriteModel(libscratchcpp::VirtualMachine *vm);
+        static TargetModel *getTargetModel(libscratchcpp::VirtualMachine *vm);
         static void setOrChangeColorParam(ColorParam param, double value, PenState &penState, bool change);
         static void setPenShade(int shade, PenState &penState);
         static void legacyUpdatePenColor(PenState &penState);
