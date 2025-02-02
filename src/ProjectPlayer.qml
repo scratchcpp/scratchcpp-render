@@ -173,6 +173,7 @@ ProjectScene {
             mouseArea: sceneMouseArea
             stageScale: root.stageScale
             onStageModelChanged: stageModel.renderedTarget = this
+            Component.onCompleted: stageModel.penLayer = projectPenLayer
         }
 
         Loader {

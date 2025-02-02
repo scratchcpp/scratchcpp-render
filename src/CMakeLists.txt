@@ -24,6 +24,8 @@ qt_add_qml_module(scratchcpp-render
 	projectloader.h
     projectscene.cpp
     projectscene.h
+    targetmodel.cpp
+    targetmodel.h
 	stagemodel.cpp
 	stagemodel.h
 	spritemodel.cpp

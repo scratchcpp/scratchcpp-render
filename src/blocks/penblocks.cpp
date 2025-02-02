@@ -220,7 +220,7 @@ unsigned int PenBlocks::stamp(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::penDown(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         model->setPenDown(true);
@@ -230,7 +230,7 @@ unsigned int PenBlocks::penDown(VirtualMachine *vm)
 
 unsigned int PenBlocks::penUp(libscratchcpp::VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         model->setPenDown(false);
@@ -240,7 +240,7 @@ unsigned int PenBlocks::penUp(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::changePenSizeBy(libscratchcpp::VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         model->penAttributes().diameter = std::clamp(model->penAttributes().diameter + vm->getInput(0, 1)->toDouble(), PEN_SIZE_MIN, PEN_SIZE_MAX);
@@ -250,7 +250,7 @@ unsigned int PenBlocks::changePenSizeBy(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenSizeTo(libscratchcpp::VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         model->penAttributes().diameter = std::clamp(vm->getInput(0, 1)->toDouble(), PEN_SIZE_MIN, PEN_SIZE_MAX);
@@ -260,7 +260,7 @@ unsigned int PenBlocks::setPenSizeTo(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::changePenShadeBy(libscratchcpp::VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model) {
         PenState &penState = model->penState();
@@ -272,7 +272,7 @@ unsigned int PenBlocks::changePenShadeBy(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenShadeToNumber(libscratchcpp::VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setPenShade(vm->getInput(0, 1)->toInt(), model->penState());
@@ -282,7 +282,7 @@ unsigned int PenBlocks::setPenShadeToNumber(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::changePenHueBy(libscratchcpp::VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model) {
         PenState &penState = model->penState();
@@ -296,7 +296,7 @@ unsigned int PenBlocks::changePenHueBy(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenHueToNumber(libscratchcpp::VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model) {
         PenState &penState = model->penState();
@@ -311,7 +311,7 @@ unsigned int PenBlocks::setPenHueToNumber(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenColorToColor(libscratchcpp::VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model) {
         const Value *value = vm->getInput(0, 1);
@@ -358,7 +358,7 @@ unsigned int PenBlocks::setPenColorToColor(libscratchcpp::VirtualMachine *vm)
 
 unsigned int PenBlocks::changePenColorParamBy(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model) {
         const auto it = COLOR_PARAM_MAP.find(vm->getInput(0, 2)->toString());
@@ -374,7 +374,7 @@ unsigned int PenBlocks::changePenColorParamBy(VirtualMachine *vm)
 
 unsigned int PenBlocks::changePenColorBy(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setOrChangeColorParam(ColorParam::COLOR, vm->getInput(0, 1)->toDouble(), model->penState(), true);
@@ -384,7 +384,7 @@ unsigned int PenBlocks::changePenColorBy(VirtualMachine *vm)
 
 unsigned int PenBlocks::changePenSaturationBy(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setOrChangeColorParam(ColorParam::SATURATION, vm->getInput(0, 1)->toDouble(), model->penState(), true);
@@ -394,7 +394,7 @@ unsigned int PenBlocks::changePenSaturationBy(VirtualMachine *vm)
 
 unsigned int PenBlocks::changePenBrightnessBy(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setOrChangeColorParam(ColorParam::BRIGHTNESS, vm->getInput(0, 1)->toDouble(), model->penState(), true);
@@ -404,7 +404,7 @@ unsigned int PenBlocks::changePenBrightnessBy(VirtualMachine *vm)
 
 unsigned int PenBlocks::changePenTransparencyBy(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setOrChangeColorParam(ColorParam::TRANSPARENCY, vm->getInput(0, 1)->toDouble(), model->penState(), true);
@@ -414,7 +414,7 @@ unsigned int PenBlocks::changePenTransparencyBy(VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenColorParamTo(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model) {
         const auto it = COLOR_PARAM_MAP.find(vm->getInput(0, 2)->toString());
@@ -430,7 +430,7 @@ unsigned int PenBlocks::setPenColorParamTo(VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenColorTo(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setOrChangeColorParam(ColorParam::COLOR, vm->getInput(0, 1)->toDouble(), model->penState(), false);
@@ -440,7 +440,7 @@ unsigned int PenBlocks::setPenColorTo(VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenSaturationTo(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setOrChangeColorParam(ColorParam::SATURATION, vm->getInput(0, 1)->toDouble(), model->penState(), false);
@@ -450,7 +450,7 @@ unsigned int PenBlocks::setPenSaturationTo(VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenBrightnessTo(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setOrChangeColorParam(ColorParam::BRIGHTNESS, vm->getInput(0, 1)->toDouble(), model->penState(), false);
@@ -460,7 +460,7 @@ unsigned int PenBlocks::setPenBrightnessTo(VirtualMachine *vm)
 
 unsigned int PenBlocks::setPenTransparencyTo(VirtualMachine *vm)
 {
-    SpriteModel *model = getSpriteModel(vm);
+    TargetModel *model = getTargetModel(vm);
 
     if (model)
         setOrChangeColorParam(ColorParam::TRANSPARENCY, vm->getInput(0, 1)->toDouble(), model->penState(), false);
@@ -468,16 +468,20 @@ unsigned int PenBlocks::setPenTransparencyTo(VirtualMachine *vm)
     return 1;
 }
 
-SpriteModel *PenBlocks::getSpriteModel(libscratchcpp::VirtualMachine *vm)
+TargetModel *PenBlocks::getTargetModel(libscratchcpp::VirtualMachine *vm)
 {
     Target *target = vm->target();
 
-    if (!target || target->isStage())
+    if (!target)
         return nullptr;
 
-    Sprite *sprite = static_cast<Sprite *>(target);
-    SpriteModel *model = static_cast<SpriteModel *>(sprite->getInterface());
-    return model;
+    if (target->isStage()) {
+        Stage *stage = static_cast<Stage *>(target);
+        return static_cast<StageModel *>(stage->getInterface());
+    } else {
+        Sprite *sprite = static_cast<Sprite *>(target);
+        return static_cast<SpriteModel *>(sprite->getInterface());
+    }
 }
 
 void PenBlocks::setOrChangeColorParam(ColorParam param, double value, PenState &penState, bool change)

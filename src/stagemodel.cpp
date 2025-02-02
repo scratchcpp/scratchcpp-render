@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include <scratchcpp/costume.h>
+#include <scratchcpp/iengine.h>
 #include <scratchcpp/textbubble.h>
 
 #include "stagemodel.h"
-#include "renderedtarget.h"
-#include "graphicseffect.h"
+#include "penlayer.h"
 
 using namespace scratchcpprender;
 
 StageModel::StageModel(QObject *parent) :
-    QObject(parent)
+    TargetModel(parent)
 {
 }
 
@@ -18,42 +18,13 @@ void StageModel::init(libscratchcpp::Stage *stage)
 {
     m_stage = stage;
 
-    if (m_stage) {
-        libscratchcpp::TextBubble *bubble = m_stage->bubble();
-
-        bubble->typeChanged().connect([this](libscratchcpp::TextBubble::Type type) {
-            if (type == libscratchcpp::TextBubble::Type::Say) {
-                if (m_bubbleType == TextBubbleShape::Type::Say)
-                    return;
-
-                m_bubbleType = TextBubbleShape::Type::Say;
-            } else {
-                if (m_bubbleType == TextBubbleShape::Type::Think)
-                    return;
-
-                m_bubbleType = TextBubbleShape::Type::Think;
-            }
-
-            emit bubbleTypeChanged();
-        });
-
-        bubble->textChanged().connect([this](const std::string &text) {
-            QString newText = QString::fromStdString(text);
-
-            if (m_bubbleText != newText) {
-                m_bubbleText = newText;
-                emit bubbleTextChanged();
-            }
-        });
-
-        bubble->layerOrderChanged().connect([this](int) { emit bubbleLayerChanged(); });
-    }
+    if (m_stage)
+        setupTextBubble(m_stage->bubble());
 }
 
 void StageModel::onCostumeChanged(libscratchcpp::Costume *costume)
 {
-    if (m_renderedTarget)
-        m_renderedTarget->updateCostume(costume);
+    updateCostume(costume);
 }
 
 void StageModel::onTempoChanged(int tempo)
@@ -70,62 +41,56 @@ void StageModel::onVideoTransparencyChanged(int videoTransparency)
 
 void StageModel::onGraphicsEffectChanged(libscratchcpp::IGraphicsEffect *effect, double value)
 {
-    GraphicsEffect *graphicsEffect = dynamic_cast<GraphicsEffect *>(effect);
-
-    if (graphicsEffect && m_renderedTarget)
-        m_renderedTarget->setGraphicEffect(graphicsEffect->effect(), value);
+    setGraphicEffect(effect, value);
 }
 
 void StageModel::onGraphicsEffectsCleared()
 {
-    if (m_renderedTarget)
-        m_renderedTarget->clearGraphicEffects();
+    clearGraphicEffects();
 }
 
 int StageModel::costumeWidth() const
 {
-    return m_renderedTarget->costumeWidth();
+    return TargetModel::costumeWidth();
 }
 
 int StageModel::costumeHeight() const
 {
-    return m_renderedTarget->costumeHeight();
+    return TargetModel::costumeHeight();
 }
 
 libscratchcpp::Rect StageModel::boundingRect() const
 {
-    return libscratchcpp::Rect();
+    libscratchcpp::Rect ret;
+    getBoundingRect(ret);
+    return ret;
 }
 
 libscratchcpp::Rect StageModel::fastBoundingRect() const
 {
-    return libscratchcpp::Rect();
+    libscratchcpp::Rect ret;
+    getFastBoundingRect(ret);
+    return ret;
 }
 
 bool StageModel::touchingClones(const std::vector<libscratchcpp::Sprite *> &clones) const
 {
-    return m_renderedTarget->touchingClones(clones);
+    return TargetModel::touchingClones(clones);
 }
 
 bool StageModel::touchingPoint(double x, double y) const
 {
-    return m_renderedTarget->containsScratchPoint(x, y);
+    return TargetModel::touchingPoint(x, y);
 }
 
 bool StageModel::touchingColor(libscratchcpp::Rgb color) const
 {
-    return m_renderedTarget->touchingColor(color);
+    return TargetModel::touchingColor(color);
 }
 
 bool StageModel::touchingColor(libscratchcpp::Rgb color, libscratchcpp::Rgb mask) const
 {
-    return m_renderedTarget->touchingColor(color, mask);
-}
-
-void StageModel::loadCostume()
-{
-    if (m_renderedTarget && m_stage)
-        m_renderedTarget->updateCostume(m_stage->currentCostume().get());
+    return TargetModel::touchingColor(color, mask);
 }
 
 libscratchcpp::Stage *StageModel::stage() const
@@ -133,32 +98,22 @@ libscratchcpp::Stage *StageModel::stage() const
     return m_stage;
 }
 
-IRenderedTarget *StageModel::renderedTarget() const
-{
-    return m_renderedTarget;
-}
-
-void StageModel::setRenderedTarget(IRenderedTarget *newRenderedTarget)
-{
-    if (m_renderedTarget == newRenderedTarget)
-        return;
-
-    m_renderedTarget = newRenderedTarget;
-
-    emit renderedTargetChanged();
-}
-
-const TextBubbleShape::Type &StageModel::bubbleType() const
-{
-    return m_bubbleType;
-}
-
-const QString &StageModel::bubbleText() const
-{
-    return m_bubbleText;
-}
-
 int StageModel::bubbleLayer() const
 {
     return m_stage ? m_stage->bubble()->layerOrder() : 0;
+}
+
+void StageModel::loadCostume()
+{
+    if (m_stage)
+        updateCostume(m_stage->currentCostume().get());
+}
+
+void StageModel::drawPenPoint(IPenLayer *penLayer, const PenAttributes &penAttributes)
+{
+    penLayer->drawLine(penAttributes, 0, 0, 0, 0);
+    libscratchcpp::IEngine *engine = m_stage->engine();
+
+    if (engine)
+        engine->requestRedraw();
 }
