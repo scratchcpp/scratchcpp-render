@@ -87,7 +87,9 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     target.setStageModel(&stageModel);
     auto costume = std::make_shared<Costume>("", "", "png");
     std::string costumeData = readFileStr("image.png");
-    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    char *data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+    memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+    costume->setData(costumeData.size(), static_cast<void *>(data));
     costume->setRotationCenterX(-23);
     costume->setRotationCenterY(72);
     costume->setBitmapResolution(2.5);
@@ -282,7 +284,9 @@ TEST_F(RenderedTargetTest, UpdateMethods)
     // SVG
     costume = std::make_shared<Costume>("", "", "svg");
     std::string svgCostumeData = readFileStr("image.svg");
-    costume->setData(svgCostumeData.size(), static_cast<void *>(svgCostumeData.data()));
+    char *svgData = (char *)malloc((svgCostumeData.size() + 1) * sizeof(char));
+    memcpy(svgData, svgCostumeData.c_str(), (svgCostumeData.size() + 1) * sizeof(char));
+    costume->setData(svgCostumeData.size(), static_cast<void *>(svgData));
     costume->setRotationCenterX(25);
     costume->setRotationCenterY(-8);
     sprite.addCostume(costume);
@@ -373,7 +377,9 @@ TEST_F(RenderedTargetTest, CpuRendering)
     EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
     auto costume = std::make_shared<Costume>("", "", "png");
     std::string costumeData = readFileStr("image.png");
-    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    char *data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+    memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+    costume->setData(costumeData.size(), static_cast<void *>(data));
     sprite.addCostume(costume);
     target.loadCostumes();
     target.updateCostume(costume.get());
@@ -759,7 +765,9 @@ TEST_F(RenderedTargetTest, GetBounds)
     target.setEngine(&engine);
     auto costume = std::make_shared<Costume>("", "", "png");
     std::string costumeData = readFileStr("image.png");
-    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    char *data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+    memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+    costume->setData(costumeData.size(), static_cast<void *>(data));
     costume->setRotationCenterX(-15);
     costume->setRotationCenterY(48);
     costume->setBitmapResolution(3.25);
@@ -850,7 +858,9 @@ TEST_F(RenderedTargetTest, GetFastBounds)
     target.setEngine(&engine);
     auto costume = std::make_shared<Costume>("", "", "png");
     std::string costumeData = readFileStr("image.png");
-    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    char *data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+    memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+    costume->setData(costumeData.size(), static_cast<void *>(data));
     costume->setRotationCenterX(-15);
     costume->setRotationCenterY(48);
     costume->setBitmapResolution(3.25);
@@ -925,7 +935,9 @@ TEST_F(RenderedTargetTest, TouchingClones)
     EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
     auto costume = std::make_shared<Costume>("", "", "png");
     std::string costumeData = readFileStr("image.png");
-    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    char *data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+    memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+    costume->setData(costumeData.size(), static_cast<void *>(data));
     sprite.addCostume(costume);
     target.loadCostumes();
     target.updateCostume(costume.get());
@@ -1140,7 +1152,9 @@ TEST_F(RenderedTargetTest, TouchingColor)
     EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
     auto costume = std::make_shared<Costume>("", "", "png");
     std::string costumeData = readFileStr("image.png");
-    costume->setData(costumeData.size(), static_cast<void *>(costumeData.data()));
+    char *data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+    memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+    costume->setData(costumeData.size(), static_cast<void *>(data));
     sprite->addCostume(costume);
     target.loadCostumes();
     target.updateCostume(costume.get());
