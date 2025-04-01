@@ -315,9 +315,11 @@ TEST_F(PenLayerTest, DrawLine)
         penLayer.drawLine(attr, 130, 77, 125, -22);
 
         attr.color = QNanoColor(0, 128, 0, 128);
-        attr.diameter = 10;
+        attr.diameter = 225;
 
-        penLayer.drawLine(attr, 152, -158, -228, 145);
+        penLayer.drawLine(attr, -225, 25, -175, -25);
+
+        attr.diameter = 10;
         penLayer.drawLine(attr, -100, 139, 20, 72);
 
         attr.color = QNanoColor(255, 50, 200, 185);
