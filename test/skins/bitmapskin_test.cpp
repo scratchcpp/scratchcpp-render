@@ -21,12 +21,16 @@ class BitmapSkinTest : public testing::Test
 
             Costume jpegCostume("", "", "");
             std::string costumeData = readFileStr("image.jpg");
-            jpegCostume.setData(costumeData.size(), costumeData.data());
+            char *data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+            memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+            jpegCostume.setData(costumeData.size(), data);
             m_jpegSkin = std::make_unique<BitmapSkin>(&jpegCostume);
 
             Costume pngCostume("", "", "");
             costumeData = readFileStr("image.png");
-            pngCostume.setData(costumeData.size(), costumeData.data());
+            data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+            memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+            pngCostume.setData(costumeData.size(), data);
             m_pngSkin = std::make_unique<BitmapSkin>(&pngCostume);
         }
 

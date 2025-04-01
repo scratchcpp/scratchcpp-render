@@ -21,7 +21,9 @@ class SVGSkinTest : public testing::Test
 
             Costume costume("", "", "");
             std::string costumeData = readFileStr("image.svg");
-            costume.setData(costumeData.size(), costumeData.data());
+            char *data = (char *)malloc((costumeData.size() + 1) * sizeof(char));
+            memcpy(data, costumeData.c_str(), (costumeData.size() + 1) * sizeof(char));
+            costume.setData(costumeData.size(), data);
             m_skin = std::make_unique<SVGSkin>(&costume);
         }
 
