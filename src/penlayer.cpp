@@ -68,9 +68,15 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 
     m_engine = newEngine;
 
-    if (m_engine && QOpenGLContext::currentContext()) {
+    if (!m_glCtx) {
+        m_glCtx = QOpenGLContext::currentContext();
+
+        if (m_glCtx)
+            m_surface = m_glCtx->surface();
+    }
+
+    if (m_engine && m_glCtx) {
         m_projectPenLayers[m_engine] = this;
-        createFbo();
 
         if (!m_painter)
             m_painter = std::make_unique<QNanoPainter>();
@@ -79,6 +85,8 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
             m_glF = std::make_unique<QOpenGLExtraFunctions>();
             m_glF->initializeOpenGLFunctions();
         }
+
+        createFbo();
 
         if (m_vao == 0) {
             // Set up VBO and VAO
@@ -124,8 +132,8 @@ void PenLayer::setHqPen(bool newHqPen)
         return;
 
     m_hqPen = newHqPen;
-    createFbo();
     emit hqPenChanged();
+    createFbo();
 }
 
 void scratchcpprender::PenLayer::clear()
@@ -427,6 +435,10 @@ void PenLayer::addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer)
 
 QNanoQuickItemPainter *PenLayer::createItemPainter() const
 {
+    m_glCtx = QOpenGLContext::currentContext();
+    Q_ASSERT(m_glCtx);
+    m_surface = m_glCtx->surface();
+    Q_ASSERT(m_surface);
     return new PenLayerPainter;
 }
 
@@ -440,8 +452,16 @@ void PenLayer::geometryChange(const QRectF &newGeometry, const QRectF &oldGeomet
 
 void PenLayer::createFbo()
 {
-    if (!QOpenGLContext::currentContext() || !m_engine)
+    if (!m_glCtx || !m_surface || !m_engine || !m_glF)
         return;
+
+    QOpenGLContext *oldCtx = QOpenGLContext::currentContext();
+    QSurface *oldSurface = oldCtx->surface();
+
+    if (oldCtx != m_glCtx) {
+        oldCtx->doneCurrent();
+        m_glCtx->makeCurrent(m_surface);
+    }
 
     QOpenGLFramebufferObjectFormat fboFormat;
     fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
@@ -455,6 +475,11 @@ void PenLayer::createFbo()
     m_fbo.reset(newFbo);
     m_texture = Texture(m_fbo->texture(), m_fbo->size());
     m_scale = width() / m_engine->stageWidth();
+
+    if (oldCtx != m_glCtx) {
+        m_glCtx->doneCurrent();
+        oldCtx->makeCurrent(oldSurface);
+    }
 }
 
 void PenLayer::updateTexture()

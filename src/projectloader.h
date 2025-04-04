@@ -12,6 +12,9 @@
 Q_MOC_INCLUDE("spritemodel.h");
 Q_MOC_INCLUDE("monitormodel.h");
 
+class QSurface;
+class QOpenGLContext;
+
 namespace scratchcpprender
 {
 
@@ -185,6 +188,8 @@ class ProjectLoader : public QObject
         std::atomic<unsigned int> m_downloadedAssets = 0;
         std::atomic<unsigned int> m_assetCount = 0;
         std::atomic<bool> m_stopLoading = false;
+        QOpenGLContext *m_glCtx = nullptr;
+        QSurface *m_surface = nullptr;
 };
 
 } // namespace scratchcpprender
