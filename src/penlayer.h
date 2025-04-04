@@ -65,6 +65,8 @@ class PenLayer : public IPenLayer
         libscratchcpp::IEngine *m_engine = nullptr;
         bool m_hqPen = false;
         std::unique_ptr<QOpenGLFramebufferObject> m_fbo;
+        mutable QOpenGLContext *m_glCtx = nullptr;
+        mutable QSurface *m_surface = nullptr;
         double m_scale = 1;
         std::unique_ptr<QNanoPainter> m_painter;
         std::unique_ptr<QOpenGLExtraFunctions> m_glF;
