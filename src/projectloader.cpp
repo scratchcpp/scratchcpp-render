@@ -210,6 +210,24 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
         return;
 
     if (m_engine) {
+        QOpenGLContext *oldCtx = QOpenGLContext::currentContext();
+        QSurface *oldSurface = nullptr;
+
+        if (!m_glCtx)
+            m_glCtx = oldCtx;
+
+        if (m_glCtx) {
+            if (!m_surface)
+                m_surface = m_glCtx->surface();
+
+            oldSurface = oldCtx->surface();
+
+            if (oldCtx != m_glCtx) {
+                oldCtx->doneCurrent();
+                m_glCtx->makeCurrent(m_surface);
+            }
+        }
+
         for (Monitor *monitor : m_unpositionedMonitors)
             monitor->autoPosition(m_engine->monitors());
 
@@ -230,6 +248,13 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
             m_renderTimer.restart();
         } else
             m_renderFpsCounter++;
+
+        if (m_glCtx) {
+            if (oldCtx != m_glCtx) {
+                m_glCtx->doneCurrent();
+                oldCtx->makeCurrent(oldSurface);
+            }
+        }
     }
 
     event->accept();
