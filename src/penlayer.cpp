@@ -70,7 +70,6 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 
     if (m_engine && QOpenGLContext::currentContext()) {
         m_projectPenLayers[m_engine] = this;
-        createFbo();
 
         if (!m_painter)
             m_painter = std::make_unique<QNanoPainter>();
@@ -79,6 +78,8 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
             m_glF = std::make_unique<QOpenGLExtraFunctions>();
             m_glF->initializeOpenGLFunctions();
         }
+
+        createFbo();
 
         if (m_vao == 0) {
             // Set up VBO and VAO
@@ -124,8 +125,8 @@ void PenLayer::setHqPen(bool newHqPen)
         return;
 
     m_hqPen = newHqPen;
-    createFbo();
     emit hqPenChanged();
+    createFbo();
 }
 
 void scratchcpprender::PenLayer::clear()
