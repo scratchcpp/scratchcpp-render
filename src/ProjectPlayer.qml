@@ -263,22 +263,25 @@ ProjectScene {
             }
         }
 
-        Repeater {
-            id: sprites
-            model: loader.sprites
-            delegate: renderedSprite
-        }
+        Item {
+            // Sprites are wrapped in Item to ensure monitors appear above them
+            Repeater {
+                id: sprites
+                model: loader.sprites
+                delegate: renderedSprite
+            }
 
-        Repeater {
-            id: clones
-            model: ListModel {}
-            delegate: renderedSprite
-        }
+            Repeater {
+                id: clones
+                model: ListModel {}
+                delegate: renderedSprite
+            }
 
-        Repeater {
-            id: textBubbles
-            model: loader.sprites
-            delegate: renderedTextBubble
+            Repeater {
+                id: textBubbles
+                model: loader.sprites
+                delegate: renderedTextBubble
+            }
         }
 
         SceneMouseArea {
