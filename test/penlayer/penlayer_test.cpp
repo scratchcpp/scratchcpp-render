@@ -148,6 +148,27 @@ TEST_F(PenLayerTest, FramebufferObject)
     ASSERT_EQ(fbo->format().samples(), 0);
 }
 
+TEST_F(PenLayerTest, Refresh)
+{
+    PenLayer penLayer;
+
+    EngineMock engine1, engine2, engine3;
+    penLayer.setWidth(480);
+    penLayer.setHeight(360);
+    EXPECT_CALL(engine1, stageWidth()).WillOnce(Return(480));
+    penLayer.setEngine(&engine1);
+
+    penLayer.setWidth(500);
+    penLayer.setHeight(400);
+
+    EXPECT_CALL(engine1, stageWidth()).WillOnce(Return(500));
+    penLayer.refresh();
+
+    QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
+    ASSERT_EQ(fbo->width(), 500);
+    ASSERT_EQ(fbo->height(), 400);
+}
+
 TEST_F(PenLayerTest, GetProjectPenLayer)
 {
     PenLayer penLayer;

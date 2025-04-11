@@ -39,6 +39,8 @@ class PenLayer : public IPenLayer
         void drawLine(const PenAttributes &penAttributes, double x0, double y0, double x1, double y1) override;
         void stamp(IRenderedTarget *target) override;
 
+        Q_INVOKABLE void refresh();
+
         QOpenGLFramebufferObject *framebufferObject() const override;
         QRgb colorAtScratchPoint(double x, double y) const override;
 
@@ -56,7 +58,6 @@ class PenLayer : public IPenLayer
         void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
     private:
-        void createFbo();
         void updateTexture();
 
         static std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> m_projectPenLayers;
