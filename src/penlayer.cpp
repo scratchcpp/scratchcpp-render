@@ -86,7 +86,7 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
             m_glF->initializeOpenGLFunctions();
         }
 
-        createFbo();
+        refresh();
 
         if (m_vao == 0) {
             // Set up VBO and VAO
@@ -133,7 +133,7 @@ void PenLayer::setHqPen(bool newHqPen)
 
     m_hqPen = newHqPen;
     emit hqPenChanged();
-    createFbo();
+    refresh();
 }
 
 void scratchcpprender::PenLayer::clear()
@@ -332,6 +332,38 @@ void PenLayer::stamp(IRenderedTarget *target)
     update();
 }
 
+void PenLayer::refresh()
+{
+    if (!m_glCtx || !m_surface || !m_engine || !m_glF)
+        return;
+
+    QOpenGLContext *oldCtx = QOpenGLContext::currentContext();
+    QSurface *oldSurface = oldCtx->surface();
+
+    if (oldCtx != m_glCtx) {
+        oldCtx->doneCurrent();
+        m_glCtx->makeCurrent(m_surface);
+    }
+
+    QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    QOpenGLFramebufferObject *newFbo = new QOpenGLFramebufferObject(width(), height(), fboFormat);
+    Q_ASSERT(newFbo->isValid());
+
+    if (m_fbo)
+        QOpenGLFramebufferObject::blitFramebuffer(newFbo, m_fbo.get());
+
+    m_fbo.reset(newFbo);
+    m_texture = Texture(m_fbo->texture(), m_fbo->size());
+    m_scale = width() / m_engine->stageWidth();
+
+    if (oldCtx != m_glCtx) {
+        m_glCtx->doneCurrent();
+        oldCtx->makeCurrent(oldSurface);
+    }
+}
+
 QOpenGLFramebufferObject *PenLayer::framebufferObject() const
 {
     return m_fbo.get();
@@ -445,41 +477,9 @@ QNanoQuickItemPainter *PenLayer::createItemPainter() const
 void PenLayer::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     if (m_hqPen && newGeometry != oldGeometry)
-        createFbo();
+        refresh();
 
     QNanoQuickItem::geometryChange(newGeometry, oldGeometry);
-}
-
-void PenLayer::createFbo()
-{
-    if (!m_glCtx || !m_surface || !m_engine || !m_glF)
-        return;
-
-    QOpenGLContext *oldCtx = QOpenGLContext::currentContext();
-    QSurface *oldSurface = oldCtx->surface();
-
-    if (oldCtx != m_glCtx) {
-        oldCtx->doneCurrent();
-        m_glCtx->makeCurrent(m_surface);
-    }
-
-    QOpenGLFramebufferObjectFormat fboFormat;
-    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-
-    QOpenGLFramebufferObject *newFbo = new QOpenGLFramebufferObject(width(), height(), fboFormat);
-    Q_ASSERT(newFbo->isValid());
-
-    if (m_fbo)
-        QOpenGLFramebufferObject::blitFramebuffer(newFbo, m_fbo.get());
-
-    m_fbo.reset(newFbo);
-    m_texture = Texture(m_fbo->texture(), m_fbo->size());
-    m_scale = width() / m_engine->stageWidth();
-
-    if (oldCtx != m_glCtx) {
-        m_glCtx->doneCurrent();
-        oldCtx->makeCurrent(oldSurface);
-    }
 }
 
 void PenLayer::updateTexture()
