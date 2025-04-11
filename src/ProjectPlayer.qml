@@ -192,6 +192,16 @@ ProjectScene {
             scale: hqPen ? 1 : stageScale
             transformOrigin: Item.TopLeft
             visible: !priv.loading
+
+            onWidthChanged: {
+                if (!hqPen)
+                    refresh();
+            }
+
+            onHeightChanged: {
+                if (!hqPen)
+                    refresh();
+            }
         }
 
         Component {
