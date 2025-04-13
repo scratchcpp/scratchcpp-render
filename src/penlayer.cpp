@@ -351,8 +351,11 @@ void PenLayer::refresh()
     QOpenGLFramebufferObject *newFbo = new QOpenGLFramebufferObject(width(), height(), fboFormat);
     Q_ASSERT(newFbo->isValid());
 
-    if (m_fbo)
+    if (m_fbo) {
+        m_glF->glDisable(GL_SCISSOR_TEST);
         QOpenGLFramebufferObject::blitFramebuffer(newFbo, m_fbo.get());
+        m_glF->glEnable(GL_SCISSOR_TEST);
+    }
 
     m_fbo.reset(newFbo);
     m_texture = Texture(m_fbo->texture(), m_fbo->size());
