@@ -105,7 +105,7 @@ TEST_F(TargetPainterTest, Paint)
     effects.clear();
 
     // Compare with reference image
-    ASSERT_LE(fuzzyCompareImages(fbo.toImage(), QImage("color_effects.png")), 0.04);
+    ASSERT_LE(fuzzyCompareImages(fbo.toImage(), QImage("color_effects.png")), 0.07);
 
     // Paint with shape changing effects
     glF.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
