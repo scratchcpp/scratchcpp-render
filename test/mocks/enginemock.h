@@ -8,7 +8,7 @@ using namespace libscratchcpp;
 namespace scratchcpprender
 {
 
-using ScriptMap = std::unordered_map<std::shared_ptr<Block>, std::shared_ptr<Script>>;
+using ScriptMap = std::unordered_map<Block *, std::shared_ptr<Script>>;
 
 class EngineMock : public IEngine
 {
@@ -18,7 +18,7 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(void, start, (), (override));
         MOCK_METHOD(void, stop, (), (override));
-        MOCK_METHOD(Thread *, startScript, (std::shared_ptr<Block>, Target *), (override));
+        MOCK_METHOD(Thread *, startScript, (Block *, Target *), (override));
         MOCK_METHOD(void, broadcast, (int, Thread *, bool), (override));
         MOCK_METHOD(void, broadcastByPtr, (Broadcast *, Thread *, bool), (override));
         MOCK_METHOD(void, startBackdropScripts, (Broadcast *, Thread *, bool), (override));
@@ -68,6 +68,8 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(void, clickTarget, (Target * target), (override));
 
+        MOCK_METHOD(const StringPtr *, answer, (), (const, override));
+
         MOCK_METHOD(unsigned int, stageWidth, (), (const, override));
         MOCK_METHOD(void, setStageWidth, (unsigned int), (override));
 
@@ -86,17 +88,11 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(ITimer *, timer, (), (const, override));
 
-        MOCK_METHOD(unsigned int, functionIndex, (BlockFunc), (override));
-        MOCK_METHOD(const std::vector<BlockFunc> &, blockFunctions, (), (const, override));
-
         MOCK_METHOD(void, addCompileFunction, (IExtension *, const std::string &, BlockComp), (override));
         MOCK_METHOD(void, addHatPredicateCompileFunction, (IExtension *, const std::string &, HatPredicateCompileFunc), (override));
         MOCK_METHOD(void, addMonitorNameFunction, (IExtension *, const std::string &, MonitorNameFunc), (override));
         MOCK_METHOD(void, addMonitorChangeFunction, (IExtension *, const std::string &, MonitorChangeFunc), (override));
         MOCK_METHOD(void, addHatBlock, (IExtension *, const std::string &), (override));
-        MOCK_METHOD(void, addInput, (IExtension *, const std::string &, int), (override));
-        MOCK_METHOD(void, addField, (IExtension *, const std::string &, int), (override));
-        MOCK_METHOD(void, addFieldValue, (IExtension *, const std::string &, int), (override));
 
         MOCK_METHOD(const std::vector<std::shared_ptr<Broadcast>> &, broadcasts, (), (const, override));
         MOCK_METHOD(void, setBroadcasts, (const std::vector<std::shared_ptr<Broadcast>> &), (override));
@@ -104,14 +100,14 @@ class EngineMock : public IEngine
         MOCK_METHOD(std::vector<int>, findBroadcasts, (const std::string &), (const, override));
         MOCK_METHOD(int, findBroadcastById, (const std::string &), (const, override));
 
-        MOCK_METHOD(void, addWhenTouchingObjectScript, (std::shared_ptr<Block>), (override));
-        MOCK_METHOD(void, addGreenFlagScript, (std::shared_ptr<Block>), (override));
-        MOCK_METHOD(void, addBroadcastScript, (std::shared_ptr<Block>, Field *, Broadcast *), (override));
-        MOCK_METHOD(void, addBackdropChangeScript, (std::shared_ptr<Block>, Field *), (override));
-        MOCK_METHOD(void, addCloneInitScript, (std::shared_ptr<Block>), (override));
-        MOCK_METHOD(void, addKeyPressScript, (std::shared_ptr<Block>, Field *), (override));
-        MOCK_METHOD(void, addTargetClickScript, (std::shared_ptr<Block>), (override));
-        MOCK_METHOD(void, addWhenGreaterThanScript, (std::shared_ptr<Block>), (override));
+        MOCK_METHOD(void, addWhenTouchingObjectScript, (Block *), (override));
+        MOCK_METHOD(void, addGreenFlagScript, (Block *), (override));
+        MOCK_METHOD(void, addBroadcastScript, (Block *, Field *, Broadcast *), (override));
+        MOCK_METHOD(void, addBackdropChangeScript, (Block *, Field *), (override));
+        MOCK_METHOD(void, addCloneInitScript, (Block *), (override));
+        MOCK_METHOD(void, addKeyPressScript, (Block *, Field *), (override));
+        MOCK_METHOD(void, addTargetClickScript, (Block *), (override));
+        MOCK_METHOD(void, addWhenGreaterThanScript, (Block *), (override));
 
         MOCK_METHOD(const std::vector<std::shared_ptr<Target>> &, targets, (), (const, override));
         MOCK_METHOD(void, setTargets, (const std::vector<std::shared_ptr<Target>> &), (override));
@@ -129,8 +125,8 @@ class EngineMock : public IEngine
 
         MOCK_METHOD(const std::vector<std::shared_ptr<Monitor>> &, monitors, (), (const, override));
         MOCK_METHOD(void, setMonitors, (const std::vector<std::shared_ptr<Monitor>> &), (override));
-        MOCK_METHOD(Monitor *, createVariableMonitor, (std::shared_ptr<Variable>, const std::string &, const std::string &, int, BlockComp), (override));
-        MOCK_METHOD(Monitor *, createListMonitor, (std::shared_ptr<List>, const std::string &, const std::string &, int, BlockComp), (override));
+        MOCK_METHOD(Monitor *, createVariableMonitor, (std::shared_ptr<Variable>, const std::string &, const std::string &), (override));
+        MOCK_METHOD(Monitor *, createListMonitor, (std::shared_ptr<List>, const std::string &, const std::string &), (override));
         MOCK_METHOD(sigslot::signal<Monitor *> &, monitorAdded, (), (override));
         MOCK_METHOD((sigslot::signal<Monitor *, IMonitorHandler *> &), monitorRemoved, (), (override));
 
