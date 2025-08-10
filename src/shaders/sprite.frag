@@ -6,34 +6,34 @@
 
 precision mediump float;
 
-#ifdef ENABLE_color
+#ifdef ENABLE_COLOR
 uniform float u_color;
-#endif // ENABLE_color
+#endif // ENABLE_COLOR
 
-#ifdef ENABLE_brightness
+#ifdef ENABLE_BRIGHTNESS
 uniform float u_brightness;
-#endif // ENABLE_brightness
+#endif // ENABLE_BRIGHTNESS
 
-#ifdef ENABLE_ghost
+#ifdef ENABLE_GHOST
 uniform float u_ghost;
-#endif // ENABLE_ghost
+#endif // ENABLE_GHOST
 
-#ifdef ENABLE_fisheye
+#ifdef ENABLE_FISHEYE
 uniform float u_fisheye;
-#endif // ENABLE_fisheye
+#endif // ENABLE_FISHEYE
 
-#ifdef ENABLE_whirl
+#ifdef ENABLE_WHIRL
 uniform float u_whirl;
-#endif // ENABLE_whirl
+#endif // ENABLE_WHIRL
 
-#ifdef ENABLE_pixelate
+#ifdef ENABLE_PIXELATE
 uniform float u_pixelate;
 uniform vec2 u_skinSize;
-#endif // ENABLE_pixelate
+#endif // ENABLE_PIXELATE
 
-#ifdef ENABLE_mosaic
+#ifdef ENABLE_MOSAIC
 uniform float u_mosaic;
-#endif // ENABLE_mosaic
+#endif // ENABLE_MOSAIC
 
 in vec2 v_texCoord;
 out vec4 fragColor;
@@ -43,7 +43,7 @@ uniform sampler2D u_skin;
 // Smaller values can cause problems on some mobile devices.
 const float epsilon = 1e-3;
 
-#if defined(ENABLE_color)
+#if defined(ENABLE_COLOR)
 // Branchless color conversions based on code from:
 // http://www.chilliant.com/rgb2hsv.html by Ian Taylor
 // Based in part on work by Sam Hocevar and Emil Persson
@@ -99,7 +99,7 @@ vec3 convertHSV2RGB(vec3 hsv)
 	float c = hsv.z * hsv.y;
 	return rgb * c + hsv.z - c;
 }
-#endif // ENABLE_color
+#endif // ENABLE_COLOR
 
 const vec2 kCenter = vec2(0.5, 0.5);
 
@@ -107,19 +107,19 @@ void main()
 {
     vec2 texcoord0 = v_texCoord;
 
-    #ifdef ENABLE_mosaic
+    #ifdef ENABLE_MOSAIC
     texcoord0 = fract(u_mosaic * texcoord0);
-    #endif // ENABLE_mosaic
+    #endif // ENABLE_MOSAIC
 
-    #ifdef ENABLE_pixelate
+    #ifdef ENABLE_PIXELATE
     {
         // TODO: clean up "pixel" edges
         vec2 pixelTexelSize = u_skinSize / u_pixelate;
         texcoord0 = (floor(texcoord0 * pixelTexelSize) + kCenter) / pixelTexelSize;
     }
-    #endif // ENABLE_pixelate
+    #endif // ENABLE_PIXELATE
 
-    #ifdef ENABLE_whirl
+    #ifdef ENABLE_WHIRL
     {
         const float kRadius = 0.5;
         vec2 offset = texcoord0 - kCenter;
@@ -135,9 +135,9 @@ void main()
 
         texcoord0 = rotationMatrix * offset + kCenter;
     }
-    #endif // ENABLE_whirl
+    #endif // ENABLE_WHIRL
 
-    #ifdef ENABLE_fisheye
+    #ifdef ENABLE_FISHEYE
     {
         vec2 vec = (texcoord0 - kCenter) / kCenter;
         float vecLength = length(vec);
@@ -146,16 +146,16 @@ void main()
 
         texcoord0 = kCenter + r * unit * kCenter;
     }
-    #endif // ENABLE_fisheye
+    #endif // ENABLE_FISHEYE
 
     fragColor = texture(u_skin, texcoord0);
 
-    #if defined(ENABLE_color) || defined(ENABLE_brightness)
+    #if defined(ENABLE_COLOR) || defined(ENABLE_BRIGHTNESS)
     // Divide premultiplied alpha values for proper color processing
     // Add epsilon to avoid dividing by 0 for fully transparent pixels
     fragColor.rgb = clamp(fragColor.rgb / (fragColor.a + epsilon), 0.0, 1.0);
 
-    #ifdef ENABLE_color
+    #ifdef ENABLE_COLOR
     {
         vec3 hsv = convertRGB2HSV(fragColor.rgb);
 
@@ -170,18 +170,18 @@ void main()
 
         fragColor.rgb = convertHSV2RGB(hsv);
     }
-    #endif // ENABLE_color
+    #endif // ENABLE_COLOR
 
-    #ifdef ENABLE_brightness
+    #ifdef ENABLE_BRIGHTNESS
     fragColor.rgb = clamp(fragColor.rgb + vec3(u_brightness), vec3(0), vec3(1));
-    #endif // ENABLE_brightness
+    #endif // ENABLE_BRIGHTNESS
 
     // Re-multiply color values
     fragColor.rgb *= fragColor.a + epsilon;
 
-    #endif // defined(ENABLE_color) || defined(ENABLE_brightness)
+    #endif // defined(ENABLE_COLOR) || defined(ENABLE_BRIGHTNESS)
 
-    #ifdef ENABLE_ghost
+    #ifdef ENABLE_GHOST
     fragColor *= u_ghost;
-    #endif // ENABLE_ghost
+    #endif // ENABLE_GHOST
 }
