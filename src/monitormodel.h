@@ -47,7 +47,7 @@ class MonitorModel
 
         void init(libscratchcpp::Monitor *monitor) override final;
 
-        virtual void onValueChanged(const libscratchcpp::VirtualMachine *vm) override { }
+        virtual void onValueChanged(const libscratchcpp::Value &value) override { }
         void onVisibleChanged(bool visible) override final;
         void onXChanged(int x) override final;
         void onYChanged(int y) override final;

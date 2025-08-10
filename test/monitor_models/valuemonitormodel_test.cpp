@@ -1,6 +1,5 @@
 #include <QtTest/QSignalSpy>
 #include <scratchcpp/monitor.h>
-#include <scratchcpp/virtualmachine.h>
 #include <scratchcpp/block.h>
 #include <scratchcpp/comment.h>
 #include <valuemonitormodel.h>
@@ -29,16 +28,12 @@ TEST(ValueMonitorModelTest, OnValueChanged)
 {
     ValueMonitorModel model;
     QSignalSpy spy(&model, &ValueMonitorModel::valueChanged);
-    VirtualMachine vm;
 
-    vm.addReturnValue(5.4);
-    model.onValueChanged(&vm);
+    model.onValueChanged(5.4);
     ASSERT_EQ(model.value(), "5.4");
     ASSERT_EQ(spy.count(), 1);
 
-    vm.reset();
-    vm.addReturnValue("test");
-    model.onValueChanged(&vm);
+    model.onValueChanged("test");
     ASSERT_EQ(model.value(), "test");
     ASSERT_EQ(spy.count(), 2);
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include <scratchcpp/virtualmachine.h>
+#include <scratchcpp/value.h>
 
 #include "listmonitormodel.h"
 #include "listmonitorlistmodel.h"
@@ -18,13 +18,10 @@ ListMonitorModel::ListMonitorModel(libscratchcpp::IExtension *extension, QObject
     m_listModel = new ListMonitorListModel(this);
 }
 
-void ListMonitorModel::onValueChanged(const libscratchcpp::VirtualMachine *vm)
+void ListMonitorModel::onValueChanged(const libscratchcpp::Value &value)
 {
-    if (vm->registerCount() == 1) {
-        long index = vm->getInput(0, 1)->toLong();
-        libscratchcpp::List *list = vm->lists()[index];
-        m_listModel->setList(list, m_minIndex, m_maxIndex);
-    }
+    libscratchcpp::List *list = (libscratchcpp::List *)value.toPointer();
+    m_listModel->setList(list, m_minIndex, m_maxIndex);
 }
 
 MonitorModel::Type ListMonitorModel::type() const

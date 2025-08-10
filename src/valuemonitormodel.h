@@ -30,7 +30,7 @@ class ValueMonitorModel : public MonitorModel
         ValueMonitorModel(QObject *parent = nullptr);
         ValueMonitorModel(libscratchcpp::IExtension *extension, QObject *parent = nullptr);
 
-        void onValueChanged(const libscratchcpp::VirtualMachine *vm) override;
+        void onValueChanged(const libscratchcpp::Value &value) override;
 
         Type type() const override;
 

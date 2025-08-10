@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include <scratchcpp/virtualmachine.h>
 #include <scratchcpp/monitor.h>
+#include <scratchcpp/value.h>
 
 #include "valuemonitormodel.h"
 
@@ -21,12 +21,10 @@ ValueMonitorModel::ValueMonitorModel(IExtension *extension, QObject *parent) :
 {
 }
 
-void ValueMonitorModel::onValueChanged(const VirtualMachine *vm)
+void ValueMonitorModel::onValueChanged(const libscratchcpp::Value &value)
 {
-    if (vm->registerCount() == 1) {
-        m_value = QString::fromStdString(vm->getInput(0, 1)->toString());
-        emit valueChanged();
-    }
+    m_value = QString::fromStdString(value.toString());
+    emit valueChanged();
 }
 
 MonitorModel::Type ValueMonitorModel::type() const
