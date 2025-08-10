@@ -78,13 +78,6 @@ qt_add_qml_module(scratchcpp-render
     effecttransform.h
 )
 
-if (NOT LIBSCRATCHCPP_USE_LLVM)
-    target_sources(scratchcpp-render
-      PRIVATE
-        blocks/penblocks.cpp
-        blocks/penblocks.h)
-endif()
-
 list(APPEND QML_IMPORT_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 list(REMOVE_DUPLICATES QML_IMPORT_PATH)
 set(QML_IMPORT_PATH ${QML_IMPORT_PATH} CACHE STRING "" FORCE)
