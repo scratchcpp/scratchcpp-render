@@ -34,8 +34,8 @@ static const char *TEXTURE_UNIT_UNIFORM = "u_skin";
 static const char *SKIN_SIZE_UNIFORM = "u_skinSize";
 
 static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_TO_NAME = {
-    { ShaderManager::Effect::Color, "COLOR" }, { ShaderManager::Effect::Brightness, "BRIGHTNESS" }, { ShaderManager::Effect::Ghost, "GHOST" },  { ShaderManager::Effect::Fisheye, "FISHEYE" },
-    { ShaderManager::Effect::Whirl, "WHIRL" }, { ShaderManager::Effect::Pixelate, "PIXELATE" },     { ShaderManager::Effect::Mosaic, "MOSAIC" }
+    { ShaderManager::Effect::Color, "color" }, { ShaderManager::Effect::Brightness, "brightness" }, { ShaderManager::Effect::Ghost, "ghost" },  { ShaderManager::Effect::Fisheye, "fisheye" },
+    { ShaderManager::Effect::Whirl, "whirl" }, { ShaderManager::Effect::Pixelate, "pixelate" },     { ShaderManager::Effect::Mosaic, "mosaic" }
 };
 
 static const std::unordered_map<ShaderManager::Effect, const char *> EFFECT_UNIFORM_NAME = {

@@ -39,17 +39,17 @@ class ShaderManagerTest : public testing::Test
 TEST_F(ShaderManagerTest, RegisteredEffects)
 {
     // Color
-    GraphicsEffect *effect = dynamic_cast<GraphicsEffect *>(ScratchConfiguration::getGraphicsEffect("COLOR"));
+    GraphicsEffect *effect = dynamic_cast<GraphicsEffect *>(ScratchConfiguration::getGraphicsEffect("color"));
     ASSERT_TRUE(effect);
     ASSERT_EQ(effect->effect(), ShaderManager::Effect::Color);
 
     // Brightness
-    effect = dynamic_cast<GraphicsEffect *>(ScratchConfiguration::getGraphicsEffect("BRIGHTNESS"));
+    effect = dynamic_cast<GraphicsEffect *>(ScratchConfiguration::getGraphicsEffect("brightness"));
     ASSERT_TRUE(effect);
     ASSERT_EQ(effect->effect(), ShaderManager::Effect::Brightness);
 
     // Ghost
-    effect = dynamic_cast<GraphicsEffect *>(ScratchConfiguration::getGraphicsEffect("GHOST"));
+    effect = dynamic_cast<GraphicsEffect *>(ScratchConfiguration::getGraphicsEffect("ghost"));
     ASSERT_TRUE(effect);
     ASSERT_EQ(effect->effect(), ShaderManager::Effect::Ghost);
 }
