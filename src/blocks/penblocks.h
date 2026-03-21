@@ -16,6 +16,7 @@ class PenBlocks : public libscratchcpp::IExtension
         static libscratchcpp::CompilerValue *compileClear(libscratchcpp::Compiler *compiler);
         static libscratchcpp::CompilerValue *compileStamp(libscratchcpp::Compiler *compiler);
         static libscratchcpp::CompilerValue *compilePenDown(libscratchcpp::Compiler *compiler);
+        static libscratchcpp::CompilerValue *compilePenUp(libscratchcpp::Compiler *compiler);
 };
 
 } // namespace scratchcpprender

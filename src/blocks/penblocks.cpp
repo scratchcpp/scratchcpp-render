@@ -4,6 +4,8 @@
 #include <scratchcpp/target.h>
 #include <scratchcpp/ispritehandler.h>
 #include <scratchcpp/istagehandler.h>
+#include <scratchcpp/value.h>
+#include <scratchcpp/compilerconstant.h>
 
 #include "penblocks.h"
 #include "penlayer.h"
@@ -33,6 +35,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_clear", &compileClear);
     engine->addCompileFunction(this, "pen_stamp", &compileStamp);
     engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
+    engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -49,7 +52,15 @@ CompilerValue *PenBlocks::compileStamp(Compiler *compiler)
 
 CompilerValue *PenBlocks::compilePenDown(Compiler *compiler)
 {
-    compiler->addTargetFunctionCall("pen_penDown");
+    CompilerValue *arg = compiler->addConstValue(true);
+    compiler->addTargetFunctionCall("pen_set_pen_down", Compiler::StaticType::Void, { Compiler::StaticType::Bool }, { arg });
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compilePenUp(Compiler *compiler)
+{
+    CompilerValue *arg = compiler->addConstValue(false);
+    compiler->addTargetFunctionCall("pen_set_pen_down", Compiler::StaticType::Void, { Compiler::StaticType::Bool }, { arg });
     return nullptr;
 }
 
@@ -96,7 +107,7 @@ BLOCK_EXPORT void pen_stamp(Target *target)
     }
 }
 
-BLOCK_EXPORT void pen_penDown(Target *target)
+BLOCK_EXPORT void pen_set_pen_down(Target *target, bool down)
 {
-    getTargetModel(target)->setPenDown(true);
+    getTargetModel(target)->setPenDown(down);
 }
