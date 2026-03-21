@@ -17,7 +17,7 @@ using namespace libscratchcpp;
 
 std::string PenBlocks::name() const
 {
-    return "Pen";
+    return "pen";
 }
 
 std::string PenBlocks::description() const
