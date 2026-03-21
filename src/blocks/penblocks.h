@@ -11,6 +11,9 @@ class PenBlocks : public libscratchcpp::IExtension
         libscratchcpp::Rgb color() const override;
 
         void registerBlocks(libscratchcpp::IEngine *engine) override;
+
+    private:
+        static libscratchcpp::CompilerValue *compileClear(libscratchcpp::Compiler *compiler);
 };
 
 } // namespace scratchcpprender

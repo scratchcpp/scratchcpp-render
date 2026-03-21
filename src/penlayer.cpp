@@ -468,6 +468,11 @@ void PenLayer::addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer)
     m_projectPenLayers[engine] = penLayer;
 }
 
+void PenLayer::removePenLayer(libscratchcpp::IEngine *engine)
+{
+    m_projectPenLayers.erase(engine);
+}
+
 QNanoQuickItemPainter *PenLayer::createItemPainter() const
 {
     m_glCtx = QOpenGLContext::currentContext();

@@ -47,7 +47,10 @@ class PenLayer : public IPenLayer
         const libscratchcpp::Rect &getBounds() const override;
 
         static IPenLayer *getProjectPenLayer(libscratchcpp::IEngine *engine);
-        static void addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer); // for tests
+
+        // For tests
+        static void addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer);
+        static void removePenLayer(libscratchcpp::IEngine *engine);
 
     signals:
         void engineChanged();
