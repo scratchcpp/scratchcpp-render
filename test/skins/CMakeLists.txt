@@ -7,6 +7,7 @@ add_executable(
 target_link_libraries(
   bitmapskin_test
   GTest::gtest_main
+  scratchcpp
   scratchcpp-render
   ${QT_LIBS}
 )
@@ -23,6 +24,7 @@ add_executable(
 target_link_libraries(
   svgskin_test
   GTest::gtest_main
+  scratchcpp
   scratchcpp-render
   ${QT_LIBS}
 )

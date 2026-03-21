@@ -8,8 +8,10 @@ target_link_libraries(
   pen_blocks_test
   GTest::gtest_main
   GTest::gmock_main
+  scratchcpp
   scratchcpp-render
   scratchcpprender_mocks
+  qnanopainter
   ${QT_LIBS}
 )
 

@@ -1,4 +1,4 @@
-qt_add_library(scratchcpp-render STATIC)
+qt_add_library(scratchcpp-render SHARED)
 
 set_target_properties(scratchcpp-render PROPERTIES AUTOMOC ON)
 
