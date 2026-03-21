@@ -32,6 +32,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
 {
     engine->addCompileFunction(this, "pen_clear", &compileClear);
     engine->addCompileFunction(this, "pen_stamp", &compileStamp);
+    engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -44,6 +45,23 @@ CompilerValue *PenBlocks::compileStamp(Compiler *compiler)
 {
     compiler->addTargetFunctionCall("pen_stamp");
     return nullptr;
+}
+
+CompilerValue *PenBlocks::compilePenDown(Compiler *compiler)
+{
+    compiler->addTargetFunctionCall("pen_penDown");
+    return nullptr;
+}
+
+static TargetModel *getTargetModel(Target *target)
+{
+    if (target->isStage()) {
+        Stage *stage = static_cast<Stage *>(target);
+        return static_cast<StageModel *>(stage->getInterface());
+    } else {
+        Sprite *sprite = static_cast<Sprite *>(target);
+        return static_cast<SpriteModel *>(sprite->getInterface());
+    }
 }
 
 BLOCK_EXPORT void pen_clear(ExecutionContext *ctx)
@@ -76,4 +94,9 @@ BLOCK_EXPORT void pen_stamp(Target *target)
         penLayer->stamp(renderedTarget);
         engine->requestRedraw();
     }
+}
+
+BLOCK_EXPORT void pen_penDown(Target *target)
+{
+    getTargetModel(target)->setPenDown(true);
 }

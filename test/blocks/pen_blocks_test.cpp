@@ -116,3 +116,55 @@ TEST_F(PenBlocksTest, Stamp_Stage)
     EXPECT_CALL(m_engineMock, requestRedraw());
     thread->run();
 }
+
+TEST_F(PenBlocksTest, PenDown_Sprite)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_penDown");
+
+    auto thread = buildScript(builder, sprite.get());
+
+    model.setPenDown(false);
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+    ASSERT_TRUE(model.penDown());
+
+    thread->run();
+    ASSERT_TRUE(model.penDown());
+}
+
+TEST_F(PenBlocksTest, PenDown_Stage)
+{
+    auto stage = std::make_shared<Stage>();
+    stage->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    StageModel model;
+    model.init(stage.get());
+    model.setRenderedTarget(&renderedTarget);
+    stage->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, stage);
+    builder.addBlock("pen_penDown");
+
+    auto thread = buildScript(builder, stage.get());
+
+    model.setPenDown(false);
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+    ASSERT_TRUE(model.penDown());
+
+    thread->run();
+    ASSERT_TRUE(model.penDown());
+}
