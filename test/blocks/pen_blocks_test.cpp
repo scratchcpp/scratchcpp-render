@@ -1,5 +1,6 @@
 #include <scratchcpp/project.h>
 #include <scratchcpp/sprite.h>
+#include <scratchcpp/stage.h>
 #include <scratchcpp/compiler.h>
 #include <scratchcpp/script.h>
 #include <scratchcpp/thread.h>
@@ -9,6 +10,9 @@
 #include <gtest/gtest.h>
 
 #include "penlayer.h"
+#include "spritemodel.h"
+#include "stagemodel.h"
+#include "renderedtarget.h"
 #include "blocks/penblocks.h"
 
 using namespace scratchcpprender;
@@ -67,6 +71,48 @@ TEST_F(PenBlocksTest, Clear)
     auto thread = buildScript(builder, sprite.get());
 
     EXPECT_CALL(m_penLayer, clear());
+    EXPECT_CALL(m_engineMock, requestRedraw());
+    thread->run();
+}
+
+TEST_F(PenBlocksTest, Stamp_Sprite)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_stamp");
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_penLayer, stamp(&renderedTarget));
+    EXPECT_CALL(m_engineMock, requestRedraw());
+    thread->run();
+}
+
+TEST_F(PenBlocksTest, Stamp_Stage)
+{
+    auto stage = std::make_shared<Stage>();
+    stage->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    StageModel model;
+    model.init(stage.get());
+    model.setRenderedTarget(&renderedTarget);
+    stage->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, stage);
+    builder.addBlock("pen_stamp");
+
+    auto thread = buildScript(builder, stage.get());
+
+    EXPECT_CALL(m_penLayer, stamp(&renderedTarget));
     EXPECT_CALL(m_engineMock, requestRedraw());
     thread->run();
 }
