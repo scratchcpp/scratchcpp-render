@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.16)
 project(qnanopainter VERSION 0.1.0)
 
 option(QNANO_DEBUG_COLLECT "Enable this to get the drawing debug information" OFF)
