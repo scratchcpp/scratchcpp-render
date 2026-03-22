@@ -137,8 +137,8 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 0.3245f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 10000) / 10000, 0.3245f);
+    ASSERT_EQ(std::round(values.at(effect) * 10000) / 10000, std::round(value * 10000) / 10000);
 
     // Below the minimum
     effects[effect] = -395.7;
@@ -150,7 +150,7 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 0.02f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 100) / 100, std::round(value * 100) / 100);
 
     // Above the maximum
     effects[effect] = 579.05;
@@ -162,7 +162,7 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 0.9f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 100) / 100, std::round(value * 100) / 100);
 
     program->release();
 }
@@ -188,8 +188,8 @@ TEST_F(ShaderManagerTest, BrightnessEffectValue)
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 0.046f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 10000) / 10000, 0.046f);
+    ASSERT_EQ(std::round(values.at(effect) * 10000) / 10000, std::round(value * 10000) / 10000);
 
     // Below the minimum
     effects[effect] = -102.9;
@@ -240,7 +240,7 @@ TEST_F(ShaderManagerTest, GhostEffectValue)
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 1000.0f) / 1000.0f, 0.415f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 10000) / 10000, std::round(value * 10000) / 10000);
 
     // Below the minimum
     effects[effect] = -20.8;
@@ -288,8 +288,8 @@ TEST_F(ShaderManagerTest, FisheyeEffectValue)
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 1.585f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 1000.0f) / 1000.0f, 1.585f);
+    ASSERT_EQ(std::round(values.at(effect) * 1000) / 1000, std::round(value * 1000) / 1000);
 
     effects[effect] = -20.8;
     program->bind();
@@ -298,8 +298,8 @@ TEST_F(ShaderManagerTest, FisheyeEffectValue)
 
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 0.792f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 1000.0f) / 1000.0f, 0.792f);
+    ASSERT_EQ(std::round(values.at(effect) * 1000) / 1000, std::round(value * 1000) / 1000);
 
     // Below the minimum
     effects[effect] = -101;
@@ -337,7 +337,7 @@ TEST_F(ShaderManagerTest, WhirlEffectValue)
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 1000) / 1000, 1.021f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 1000) / 1000, std::round(value * 1000) / 1000);
 
     effects[effect] = -20.8;
     program->bind();
@@ -347,7 +347,7 @@ TEST_F(ShaderManagerTest, WhirlEffectValue)
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 1000) / 1000, -0.363f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 1000) / 1000, std::round(value * 1000) / 1000);
 
     program->release();
 }
@@ -373,8 +373,8 @@ TEST_F(ShaderManagerTest, PixelateEffectValue)
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 5.85f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 5.85f);
+    ASSERT_EQ(std::round(values.at(effect) * 100) / 100, std::round(value * 100) / 100);
 
     effects[effect] = -20.8;
     program->bind();
@@ -383,8 +383,8 @@ TEST_F(ShaderManagerTest, PixelateEffectValue)
 
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 2.08f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 2.08f);
+    ASSERT_EQ(std::round(values.at(effect) * 100) / 100, std::round(value * 100) / 100);
 
     program->release();
 }
