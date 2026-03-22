@@ -23,6 +23,13 @@ using namespace libscratchcpp;
 static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions are multiplied by this
 static const double pi = std::acos(-1);    // TODO: Use std::numbers::pi in C++20
 
+// TODO: Move this to a separate class
+template<typename T>
+short sgn(T x)
+{
+    return (T(0) < x) - (x < T(0));
+}
+
 RenderedTarget::RenderedTarget(QQuickItem *parent) :
     IRenderedTarget(parent)
 {
@@ -505,6 +512,88 @@ void RenderedTarget::mouseMoveEvent(QMouseEvent *event)
         m_dragDeltaY = m_engine->mouseY() - sprite->y();
         m_mouseArea->setDraggedSprite(this);
     }
+}
+
+void RenderedTarget::render(double scale) const
+{
+    if (!m_glF) {
+        m_glF = std::make_unique<QOpenGLFunctions>();
+        m_glF->initializeOpenGLFunctions();
+    }
+
+    const float stageWidth = m_engine->stageWidth() * scale;
+    const float stageHeight = m_engine->stageHeight() * scale;
+
+    libscratchcpp::Rect bounds = getFastBounds();
+    bounds.snapToInt();
+
+    if (!bounds.intersects(libscratchcpp::Rect(-stageWidth / 2, stageHeight / 2, stageWidth / 2, -stageHeight / 2)))
+        return;
+
+    float angle = 180;
+    float scaleX = 1;
+    float scaleY = 1;
+
+    if (m_spriteModel) {
+        libscratchcpp::Sprite *sprite = m_spriteModel->sprite();
+
+        switch (sprite->rotationStyle()) {
+            case libscratchcpp::Sprite::RotationStyle::AllAround:
+                angle = 270 - sprite->direction();
+                break;
+
+            case libscratchcpp::Sprite::RotationStyle::LeftRight:
+                scaleX = sgn(sprite->direction());
+                break;
+
+            default:
+                break;
+        }
+
+        scaleY = sprite->size() / 100;
+        scaleX *= scaleY;
+    }
+
+    scaleX *= scale;
+    scaleY *= scale;
+
+    const Texture &texture = cpuTexture();
+
+    if (!texture.isValid())
+        return;
+
+    const float textureScale = texture.width() / static_cast<float>(costumeWidth());
+    const float skinWidth = texture.width();
+    const float skinHeight = texture.height();
+
+    QMatrix4x4 projectionMatrix;
+    const float aspectRatio = skinHeight / skinWidth;
+    projectionMatrix.ortho(1.0f, -1.0f, aspectRatio, -aspectRatio, 0.1f, 0.0f);
+    projectionMatrix.scale(skinWidth / bounds.width() / scale, skinHeight / bounds.height() / scale);
+
+    QMatrix4x4 modelMatrix;
+    modelMatrix.rotate(angle, 0, 0, 1);
+    modelMatrix.scale(scaleX / textureScale, aspectRatio * scaleY / textureScale);
+
+    m_glF->glEnable(GL_BLEND);
+    m_glF->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    m_glF->glViewport((stageWidth / 2) + bounds.left() * scale, (stageHeight / 2) + bounds.bottom() * scale, bounds.width() * scale, bounds.height() * scale);
+
+    ShaderManager *shaderManager = ShaderManager::instance();
+    QOpenGLShaderProgram *shaderProgram = shaderManager->getShaderProgram(m_graphicEffects);
+    Q_ASSERT(shaderProgram);
+    Q_ASSERT(shaderProgram->isLinked());
+
+    shaderProgram->bind();
+    m_glF->glActiveTexture(GL_TEXTURE0);
+    m_glF->glBindTexture(GL_TEXTURE_2D, texture.handle());
+    shaderManager->setUniforms(shaderProgram, 0, texture.size(), m_graphicEffects);
+    shaderProgram->setUniformValue("u_projectionMatrix", projectionMatrix);
+    shaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
+    m_glF->glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    shaderProgram->release();
 }
 
 Texture RenderedTarget::texture() const

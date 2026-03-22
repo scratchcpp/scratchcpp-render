@@ -85,6 +85,8 @@ class RenderedTarget : public IRenderedTarget
 
         bool mirrorHorizontally() const override;
 
+        void render(double scale) const override;
+
         Texture texture() const override;
         const Texture &cpuTexture() const override;
         int costumeWidth() const override;
@@ -157,7 +159,7 @@ class RenderedTarget : public IRenderedTarget
         Texture m_oldTexture;
         Texture m_cpuTexture;                                        // without stage scale
         mutable std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
-        std::unique_ptr<QOpenGLFunctions> m_glF;
+        mutable std::unique_ptr<QOpenGLFunctions> m_glF;
         mutable std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
         mutable ShaderManager::Effect m_graphicEffectMask = ShaderManager::Effect::NoEffect;
         double m_size = 1;

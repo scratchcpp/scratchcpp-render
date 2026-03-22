@@ -15,13 +15,6 @@ static const double pi = std::acos(-1); // TODO: Use std::numbers::pi in C++20
 
 std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> PenLayer::m_projectPenLayers;
 
-// TODO: Move this to a separate class
-template<typename T>
-short sgn(T x)
-{
-    return (T(0) < x) - (x < T(0));
-}
-
 PenLayer::PenLayer(QNanoQuickItem *parent) :
     IPenLayer(parent)
 {
@@ -219,100 +212,16 @@ void PenLayer::stamp(IRenderedTarget *target)
 
     Q_ASSERT(m_fbo->isBound());
 
-    const float stageWidth = m_engine->stageWidth() * m_scale;
-    const float stageHeight = m_engine->stageHeight() * m_scale;
-
-    libscratchcpp::Rect bounds = target->getFastBounds();
-    bounds.snapToInt();
-
-    if (!bounds.intersects(libscratchcpp::Rect(-stageWidth / 2, stageHeight / 2, stageWidth / 2, -stageHeight / 2)))
-        return;
-
-    float angle = 180;
-    float scaleX = 1;
-    float scaleY = 1;
-
-    SpriteModel *spriteModel = target->spriteModel();
-
-    if (spriteModel) {
-        libscratchcpp::Sprite *sprite = spriteModel->sprite();
-
-        switch (sprite->rotationStyle()) {
-            case libscratchcpp::Sprite::RotationStyle::AllAround:
-                angle = 270 - sprite->direction();
-                break;
-
-            case libscratchcpp::Sprite::RotationStyle::LeftRight:
-                scaleX = sgn(sprite->direction());
-                break;
-
-            default:
-                break;
-        }
-
-        scaleY = sprite->size() / 100;
-        scaleX *= scaleY;
-    }
-
-    scaleX *= m_scale;
-    scaleY *= m_scale;
-
-    const Texture &texture = target->cpuTexture();
-
-    if (!texture.isValid())
-        return;
-
-    const float textureScale = texture.width() / static_cast<float>(target->costumeWidth());
-    const float skinWidth = texture.width();
-    const float skinHeight = texture.height();
-
-    // Projection matrix
-    QMatrix4x4 projectionMatrix;
-    const float aspectRatio = skinHeight / skinWidth;
-    projectionMatrix.ortho(1.0f, -1.0f, aspectRatio, -aspectRatio, 0.1f, 0.0f);
-    projectionMatrix.scale(skinWidth / bounds.width() / m_scale, skinHeight / bounds.height() / m_scale);
-
-    // Model matrix
-    // TODO: This should be calculated and cached by targets
-    QMatrix4x4 modelMatrix;
-    modelMatrix.rotate(angle, 0, 0, 1);
-    modelMatrix.scale(scaleX / textureScale, aspectRatio * scaleY / textureScale);
     m_glF->glDisable(GL_SCISSOR_TEST);
     m_glF->glDisable(GL_DEPTH_TEST);
-    m_glF->glEnable(GL_BLEND);
-    m_glF->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Set viewport
-    m_glF->glViewport((stageWidth / 2) + bounds.left() * m_scale, (stageHeight / 2) + bounds.bottom() * m_scale, bounds.width() * m_scale, bounds.height() * m_scale);
-
-    // Get the shader program for the current set of effects
-    ShaderManager *shaderManager = ShaderManager::instance();
-
-    const auto &effects = target->graphicEffects();
-    QOpenGLShaderProgram *shaderProgram = shaderManager->getShaderProgram(effects);
-    Q_ASSERT(shaderProgram);
-    Q_ASSERT(shaderProgram->isLinked());
 
     m_glF->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-
-    // Render to the target framebuffer
-    m_glF->glBindFramebuffer(GL_FRAMEBUFFER, m_fbo->handle());
-    shaderProgram->bind();
     m_glF->glBindVertexArray(m_vao);
-    m_glF->glActiveTexture(GL_TEXTURE0);
-    m_glF->glBindTexture(GL_TEXTURE_2D, texture.handle());
-    shaderManager->setUniforms(shaderProgram, 0, texture.size(), effects); // set texture and effect uniforms
-    shaderProgram->setUniformValue("u_projectionMatrix", projectionMatrix);
-    shaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
-    m_glF->glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    // Cleanup
-    shaderProgram->release();
+    target->render(m_scale);
+
     m_glF->glBindVertexArray(0);
     m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // The FBO should remain bound until the frame ends
-    // m_glF->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     m_glF->glEnable(GL_SCISSOR_TEST);
     m_glF->glEnable(GL_DEPTH_TEST);

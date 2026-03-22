@@ -61,6 +61,8 @@ class RenderedTargetMock : public IRenderedTarget
 
         MOCK_METHOD(bool, mirrorHorizontally, (), (const, override));
 
+        MOCK_METHOD(void, render, (double), (const, override));
+
         MOCK_METHOD(Texture, texture, (), (const, override));
         MOCK_METHOD(const Texture &, cpuTexture, (), (const, override));
         MOCK_METHOD(int, costumeWidth, (), (const, override));
