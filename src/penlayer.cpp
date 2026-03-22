@@ -37,9 +37,6 @@ PenLayer::~PenLayer()
         // Delete vertex array and buffer
         m_glF->glDeleteVertexArrays(1, &m_vao);
         m_glF->glDeleteBuffers(1, &m_vbo);
-
-        // Delete stamp FBO
-        m_glF->glDeleteFramebuffers(1, &m_stampFbo);
     }
 }
 
@@ -110,9 +107,6 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 
             m_glF->glBindVertexArray(0);
             m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-            // Create stamp FBO
-            m_glF->glGenFramebuffers(1, &m_stampFbo);
         }
 
         clear();
@@ -287,16 +281,6 @@ void PenLayer::stamp(IRenderedTarget *target)
     m_glF->glDisable(GL_DEPTH_TEST);
     m_glF->glEnable(GL_BLEND);
     m_glF->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Create a FBO for the current texture
-    m_glF->glBindFramebuffer(GL_FRAMEBUFFER, m_stampFbo);
-    m_glF->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.handle(), 0);
-
-    if (m_glF->glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        qWarning() << "error: framebuffer incomplete (stamp " + target->scratchTarget()->name() + ")";
-        m_glF->glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        return;
-    }
 
     // Set viewport
     m_glF->glViewport((stageWidth / 2) + bounds.left() * m_scale, (stageHeight / 2) + bounds.bottom() * m_scale, bounds.width() * m_scale, bounds.height() * m_scale);
