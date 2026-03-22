@@ -164,6 +164,7 @@ class RenderedTarget : public IRenderedTarget
         mutable std::unique_ptr<QOpenGLFunctions> m_glF;
         mutable std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
         mutable ShaderManager::Effect m_graphicEffectMask = ShaderManager::Effect::NoEffect;
+        mutable QOpenGLShaderProgram *m_shaderProgram = nullptr;
         double m_size = 1;
         double m_x = 0;
         double m_y = 0;

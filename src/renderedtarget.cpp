@@ -544,19 +544,30 @@ void RenderedTarget::render(double scale) const
     m_glF->glViewport((stageWidth / 2) + bounds.left() * scale, (stageHeight / 2) + bounds.bottom() * scale, bounds.width() * scale, bounds.height() * scale);
 
     ShaderManager *shaderManager = ShaderManager::instance();
-    QOpenGLShaderProgram *shaderProgram = shaderManager->getShaderProgram(m_graphicEffects);
-    Q_ASSERT(shaderProgram);
-    Q_ASSERT(shaderProgram->isLinked());
 
-    shaderProgram->bind();
+    if (!m_shaderProgram) {
+        m_shaderProgram = shaderManager->getShaderProgram(m_graphicEffects);
+        Q_ASSERT(m_shaderProgram);
+        Q_ASSERT(m_shaderProgram->isLinked());
+
+        m_shaderProgram->bind();
+        ShaderManager::setUniforms(m_shaderProgram, 0, m_cpuTexture.size(), m_graphicEffects);
+    }
+
+    GLint currentProgram = 0;
+    m_glF->glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+
+    if (static_cast<GLuint>(currentProgram) != m_shaderProgram->programId())
+        m_shaderProgram->bind();
+
     m_glF->glActiveTexture(GL_TEXTURE0);
     m_glF->glBindTexture(GL_TEXTURE_2D, m_cpuTexture.handle());
-    shaderManager->setUniforms(shaderProgram, 0, m_cpuTexture.size(), m_graphicEffects);
-    shaderProgram->setUniformValue("u_projectionMatrix", projectionMatrix);
-    shaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
+
+    m_shaderProgram->setUniformValue("u_projectionMatrix", projectionMatrix);
+    m_shaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
     m_glF->glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    shaderProgram->release();
+    // NOTE: Keep the shader program bound for future use
 }
 
 Texture RenderedTarget::texture() const
@@ -613,6 +624,7 @@ void RenderedTarget::setGraphicEffect(ShaderManager::Effect effect, double value
 
     if (changed) {
         update();
+        m_shaderProgram = nullptr;
 
         if (ShaderManager::effectShapeChanges(effect)) {
             m_convexHullDirty = true;
@@ -636,6 +648,7 @@ void RenderedTarget::clearGraphicEffects()
 
     m_graphicEffects.clear();
     m_graphicEffectMask = ShaderManager::Effect::NoEffect;
+    m_shaderProgram = nullptr;
 }
 
 const std::vector<QPoint> &RenderedTarget::hullPoints() const
@@ -804,6 +817,7 @@ void RenderedTarget::calculateSize()
 
         m_transformedHullDirty = true;
         m_matricesDirty = true;
+        m_shaderProgram = nullptr;
     }
 }
 
