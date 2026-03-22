@@ -521,6 +521,9 @@ void RenderedTarget::render(double scale) const
         m_glF->initializeOpenGLFunctions();
     }
 
+    if (!m_cpuTexture.isValid())
+        return;
+
     const float stageWidth = m_engine->stageWidth() * scale;
     const float stageHeight = m_engine->stageHeight() * scale;
 
@@ -530,50 +533,10 @@ void RenderedTarget::render(double scale) const
     if (!bounds.intersects(libscratchcpp::Rect(-stageWidth / 2, stageHeight / 2, stageWidth / 2, -stageHeight / 2)))
         return;
 
-    float angle = 180;
-    float scaleX = 1;
-    float scaleY = 1;
-
-    if (m_spriteModel) {
-        libscratchcpp::Sprite *sprite = m_spriteModel->sprite();
-
-        switch (sprite->rotationStyle()) {
-            case libscratchcpp::Sprite::RotationStyle::AllAround:
-                angle = 270 - sprite->direction();
-                break;
-
-            case libscratchcpp::Sprite::RotationStyle::LeftRight:
-                scaleX = sgn(sprite->direction());
-                break;
-
-            default:
-                break;
-        }
-
-        scaleY = sprite->size() / 100;
-        scaleX *= scaleY;
-    }
-
-    scaleX *= scale;
-    scaleY *= scale;
-
-    const Texture &texture = cpuTexture();
-
-    if (!texture.isValid())
-        return;
-
-    const float textureScale = texture.width() / static_cast<float>(costumeWidth());
-    const float skinWidth = texture.width();
-    const float skinHeight = texture.height();
-
-    QMatrix4x4 projectionMatrix;
-    const float aspectRatio = skinHeight / skinWidth;
-    projectionMatrix.ortho(1.0f, -1.0f, aspectRatio, -aspectRatio, 0.1f, 0.0f);
-    projectionMatrix.scale(skinWidth / bounds.width() / scale, skinHeight / bounds.height() / scale);
-
-    QMatrix4x4 modelMatrix;
-    modelMatrix.rotate(angle, 0, 0, 1);
-    modelMatrix.scale(scaleX / textureScale, aspectRatio * scaleY / textureScale);
+    QMatrix4x4 modelMatrix, projectionMatrix;
+    getMatrices(modelMatrix, projectionMatrix);
+    modelMatrix.scale(scale);
+    projectionMatrix.scale(1.0f / scale);
 
     m_glF->glEnable(GL_BLEND);
     m_glF->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -587,8 +550,8 @@ void RenderedTarget::render(double scale) const
 
     shaderProgram->bind();
     m_glF->glActiveTexture(GL_TEXTURE0);
-    m_glF->glBindTexture(GL_TEXTURE_2D, texture.handle());
-    shaderManager->setUniforms(shaderProgram, 0, texture.size(), m_graphicEffects);
+    m_glF->glBindTexture(GL_TEXTURE_2D, m_cpuTexture.handle());
+    shaderManager->setUniforms(shaderProgram, 0, m_cpuTexture.size(), m_graphicEffects);
     shaderProgram->setUniformValue("u_projectionMatrix", projectionMatrix);
     shaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
     m_glF->glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -788,16 +751,19 @@ void RenderedTarget::calculatePos()
         setTransformOrigin(QQuickItem::Center);
 
     m_transformedHullDirty = true;
+    m_matricesDirty = true;
 }
 
 void RenderedTarget::calculateRotation()
 {
     // Direction
     bool oldMirrorHorizontally = m_mirrorHorizontally;
+    m_renderAngle = 180.0f;
 
     switch (m_rotationStyle) {
         case Sprite::RotationStyle::AllAround:
             setRotation(m_direction - 90);
+            m_renderAngle = 270.0f - m_direction;
             m_mirrorHorizontally = (false);
 
             break;
@@ -819,6 +785,7 @@ void RenderedTarget::calculateRotation()
         emit mirrorHorizontallyChanged();
 
     m_transformedHullDirty = true;
+    m_matricesDirty = true;
 }
 
 void RenderedTarget::calculateSize()
@@ -836,6 +803,7 @@ void RenderedTarget::calculateSize()
             m_convexHullDirty = true;
 
         m_transformedHullDirty = true;
+        m_matricesDirty = true;
     }
 }
 
@@ -1202,6 +1170,35 @@ QRgb RenderedTarget::sampleColor3b(double x, double y, const std::vector<IRender
     g += blendAlpha * 255;
     b += blendAlpha * 255;
     return qRgb(r, g, b);
+}
+
+void RenderedTarget::getMatrices(QMatrix4x4 &modelMatrix, QMatrix4x4 &projectionMatrix) const
+{
+    if (m_matricesDirty) {
+        float scaleY = m_size;
+        float scaleX = scaleY * (m_mirrorHorizontally * (-2) + 1);
+
+        float width = m_cpuTexture.width();
+        float height = m_cpuTexture.height();
+        const float textureScale = width / static_cast<float>(costumeWidth());
+        const float aspectRatio = height / width;
+
+        libscratchcpp::Rect bounds = getFastBounds();
+        bounds.snapToInt();
+
+        m_projectionMatrix = QMatrix4x4();
+        m_projectionMatrix.ortho(1.0f, -1.0f, aspectRatio, -aspectRatio, 0.1f, 0.0f);
+        m_projectionMatrix.scale(width / bounds.width(), height / bounds.height());
+
+        m_modelMatrix = QMatrix4x4();
+        m_modelMatrix.rotate(m_renderAngle, 0, 0, 1);
+        m_modelMatrix.scale(scaleX / textureScale, aspectRatio * scaleY / textureScale);
+
+        m_matricesDirty = false;
+    }
+
+    modelMatrix = m_modelMatrix;
+    projectionMatrix = m_projectionMatrix;
 }
 
 bool RenderedTarget::mirrorHorizontally() const

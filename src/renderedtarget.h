@@ -145,6 +145,8 @@ class RenderedTarget : public IRenderedTarget
         static bool maskMatches(QRgb a, QRgb b);
         QRgb sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const;
 
+        void getMatrices(QMatrix4x4 &modelMatrix, QMatrix4x4 &projectionMatrix) const;
+
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
         StageModel *m_stageModel = nullptr;
@@ -168,6 +170,7 @@ class RenderedTarget : public IRenderedTarget
         double m_width = 1;
         double m_height = 1;
         double m_direction = 90;
+        float m_renderAngle = 180.0f;
         libscratchcpp::Sprite::RotationStyle m_rotationStyle = libscratchcpp::Sprite::RotationStyle::AllAround;
         bool m_mirrorHorizontally = false;
         double m_stageScale = 1;
@@ -177,7 +180,10 @@ class RenderedTarget : public IRenderedTarget
         std::vector<QPoint> m_hullPoints;
         mutable bool m_transformedHullDirty = true;
         mutable std::vector<QPointF> m_transformedHullPoints; // NOTE: Use transformedHullPoints();
-        bool m_clicked = false;                               // left mouse button only!
+        mutable bool m_matricesDirty = false;
+        mutable QMatrix4x4 m_modelMatrix;      // NOTE: Use getMatrices()!
+        mutable QMatrix4x4 m_projectionMatrix; // NOTE: Use getMatrices()!
+        bool m_clicked = false;                // left mouse button only!
         double m_dragX = 0;
         double m_dragY = 0;
         double m_dragDeltaX = 0;
