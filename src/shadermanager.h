@@ -33,7 +33,7 @@ class ShaderManager : public QObject
 
         QOpenGLShaderProgram *getShaderProgram(const std::unordered_map<Effect, double> &effectValues);
         static void getUniformValuesForEffects(const std::unordered_map<Effect, double> &effectValues, std::unordered_map<Effect, float> &dst);
-        void setUniforms(QOpenGLShaderProgram *program, int textureUnit, const QSize skinSize, const std::unordered_map<Effect, double> &effectValues);
+        static void setUniforms(QOpenGLShaderProgram *program, int textureUnit, const QSize skinSize, const std::unordered_map<Effect, double> &effectValues);
 
         static const std::unordered_set<Effect> &effects();
         static bool effectShapeChanges(Effect effect);
