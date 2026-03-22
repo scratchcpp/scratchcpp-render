@@ -31,6 +31,9 @@ class PenLayer : public IPenLayer
         libscratchcpp::IEngine *engine() const override;
         void setEngine(libscratchcpp::IEngine *newEngine) override;
 
+        void beginFrame() override;
+        void endFrame() override;
+
         bool hqPen() const;
         void setHqPen(bool newHqPen);
 

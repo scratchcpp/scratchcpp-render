@@ -121,6 +121,18 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
     emit engineChanged();
 }
 
+void PenLayer::beginFrame()
+{
+    m_fbo->bind();
+    m_painter->beginFrame(m_fbo->width(), m_fbo->height());
+}
+
+void PenLayer::endFrame()
+{
+    m_painter->endFrame();
+    m_fbo->release();
+}
+
 bool PenLayer::hqPen() const
 {
     return m_hqPen;
@@ -141,12 +153,11 @@ void scratchcpprender::PenLayer::clear()
     if (!m_fbo)
         return;
 
-    m_fbo->bind();
+    Q_ASSERT(m_fbo->isBound());
     m_glF->glDisable(GL_SCISSOR_TEST);
     m_glF->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     m_glF->glClear(GL_COLOR_BUFFER_BIT);
     m_glF->glEnable(GL_SCISSOR_TEST);
-    m_fbo->release();
 
     m_textureDirty = true;
     m_boundsDirty = true;
@@ -163,10 +174,7 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
     if (!m_fbo || !m_painter || !m_engine)
         return;
 
-    // Begin painting
-    m_fbo->bind();
-
-    m_painter->beginFrame(m_fbo->width(), m_fbo->height());
+    Q_ASSERT(m_fbo->isBound());
 
     // Apply scale (HQ pen)
     x0 *= m_scale;
@@ -205,10 +213,6 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
         m_painter->stroke();
     }
 
-    // End painting
-    m_painter->endFrame();
-    m_fbo->release();
-
     m_textureDirty = true;
     m_boundsDirty = true;
     update();
@@ -218,6 +222,8 @@ void PenLayer::stamp(IRenderedTarget *target)
 {
     if (!target || !m_fbo || !m_texture.isValid() || m_vao == 0 || m_vbo == 0)
         return;
+
+    Q_ASSERT(m_fbo->isBound());
 
     const float stageWidth = m_engine->stageWidth() * m_scale;
     const float stageHeight = m_engine->stageHeight() * m_scale;
@@ -322,7 +328,9 @@ void PenLayer::stamp(IRenderedTarget *target)
     shaderProgram->release();
     m_glF->glBindVertexArray(0);
     m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
-    m_glF->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // The FBO should remain bound until the frame ends
+    // m_glF->glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     m_glF->glEnable(GL_SCISSOR_TEST);
     m_glF->glEnable(GL_DEPTH_TEST);
@@ -395,9 +403,18 @@ QRgb PenLayer::colorAtScratchPoint(double x, double y) const
     if ((x < 0 || x >= width) || (y < 0 || y >= height))
         return qRgba(0, 0, 0, 0);
 
+    bool bound = m_fbo->isBound();
+
+    if (bound)
+        const_cast<PenLayer *>(this)->endFrame();
+
     GLubyte *data = m_textureManager.getTextureData(m_texture);
     const int index = (y * width + x) * 4; // RGBA channels
     Q_ASSERT(index >= 0 && index < width * height * 4);
+
+    if (bound)
+        const_cast<PenLayer *>(this)->beginFrame();
+
     return qRgba(data[index], data[index + 1], data[index + 2], data[index + 3]);
 }
 
@@ -420,7 +437,16 @@ const libscratchcpp::Rect &PenLayer::getBounds() const
         const double width = m_texture.width();
         const double height = m_texture.height();
         std::vector<QPoint> points;
+
+        bool bound = m_fbo->isBound();
+
+        if (bound)
+            const_cast<PenLayer *>(this)->endFrame();
+
         m_textureManager.getTextureConvexHullPoints(m_texture, QSize(), ShaderManager::Effect::NoEffect, {}, points);
+
+        if (bound)
+            const_cast<PenLayer *>(this)->beginFrame();
 
         if (points.empty()) {
             m_bounds = libscratchcpp::Rect();

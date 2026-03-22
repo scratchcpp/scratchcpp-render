@@ -12,6 +12,7 @@
 #include "valuemonitormodel.h"
 #include "listmonitormodel.h"
 #include "renderedtarget.h"
+#include "penlayer.h"
 #include "blocks/penblocks.h"
 
 using namespace scratchcpprender;
@@ -231,7 +232,10 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
 
         m_unpositionedMonitors.clear();
 
+        IPenLayer *penLayer = PenLayer::getProjectPenLayer(m_engine);
+        penLayer->beginFrame();
         m_engine->step();
+        penLayer->endFrame();
 
         if (m_running != m_engine->isRunning()) {
             m_running = !m_running;
