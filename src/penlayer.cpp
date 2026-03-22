@@ -234,8 +234,6 @@ void PenLayer::stamp(IRenderedTarget *target)
     if (!bounds.intersects(libscratchcpp::Rect(-stageWidth / 2, stageHeight / 2, stageWidth / 2, -stageHeight / 2)))
         return;
 
-    float x = 0;
-    float y = 0;
     float angle = 180;
     float scaleX = 1;
     float scaleY = 1;
