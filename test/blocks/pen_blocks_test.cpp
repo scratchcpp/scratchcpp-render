@@ -243,6 +243,32 @@ TEST_F(PenBlocksTest, SetPenColorToColor_ValidHex)
     ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(359, 0, 0)));
 }
 
+TEST_F(PenBlocksTest, SetPenColorToColor_NonConstHex)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("test_const_string");
+    builder.addValueInput("STRING", "#FFGFFF");
+    auto valueBlock = builder.takeBlock();
+
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addObscuredInput("COLOR", valueBlock);
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(359, 0, 0)));
+}
+
 TEST_F(PenBlocksTest, SetPenColorToColor_CaseInsensitiveHex)
 {
     auto sprite = std::make_shared<Sprite>();
@@ -351,6 +377,29 @@ TEST_F(PenBlocksTest, SetPenColorToColor_NumberWithoutAlphaChannel)
     ScriptBuilder builder(m_extension.get(), m_engine, sprite);
     builder.addBlock("pen_setPenColorToColor");
     builder.addValueInput("COLOR", 255);
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(239, 255, 255)));
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor_StringNumber)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", "255");
 
     auto thread = buildScript(builder, sprite.get());
 

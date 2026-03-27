@@ -6,6 +6,8 @@
 #include <scratchcpp/istagehandler.h>
 #include <scratchcpp/value.h>
 #include <scratchcpp/compilerconstant.h>
+#include <scratchcpp/stringptr.h>
+#include <scratchcpp/string_pool.h>
 
 #include "penblocks.h"
 #include "penlayer.h"
@@ -14,6 +16,35 @@
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
+
+inline QColor pen_convert_from_numeric_color(long color)
+{
+    return QColor::fromRgba(static_cast<QRgb>(color));
+}
+
+static void pen_convert_color(const ValueData *color, QColor &dst)
+{
+    StringPtr *str = string_pool_new();
+
+    if (value_isString(color)) {
+        value_toStringPtr(color, str);
+
+        if (str->size > 0 && str->data[0] == u'#') {
+            if (str->size <= 7) // #RRGGBB
+            {
+                dst = QColor::fromString(str->data);
+
+                if (!dst.isValid())
+                    dst = Qt::black;
+            } else
+                dst = Qt::black;
+        } else
+            dst = pen_convert_from_numeric_color(value_toLong(color));
+    } else
+        dst = pen_convert_from_numeric_color(value_toLong(color));
+
+    string_pool_free(str);
+}
 
 std::string PenBlocks::name() const
 {
@@ -42,7 +73,32 @@ void PenBlocks::registerBlocks(IEngine *engine)
 CompilerValue *PenBlocks::compileSetPenColorToColor(Compiler *compiler)
 {
     CompilerValue *color = compiler->addInput("COLOR");
-    compiler->addTargetFunctionCall("pen_setPenColorToColor", Compiler::StaticType::Void, { Compiler::StaticType::Unknown }, { color });
+
+    if (color->isConst()) {
+        // Convert color constant at compile time
+        const ValueData *value = &dynamic_cast<CompilerConstant *>(color)->value().data();
+        QColor converted;
+        pen_convert_color(value, converted);
+
+        QColor hsv = converted.toHsv();
+        CompilerValue *h = compiler->addConstValue((hsv.hue() / 360.0) * 100);
+        CompilerValue *s = compiler->addConstValue(hsv.saturationF() * 100);
+        CompilerValue *b = compiler->addConstValue(hsv.valueF() * 100);
+        CompilerValue *transparency;
+
+        if (converted.alpha() > 0)
+            transparency = compiler->addConstValue(100 * (1 - converted.alpha() / 255.0));
+        else
+            transparency = compiler->addConstValue(0);
+
+        compiler->addTargetFunctionCall(
+            "pen_setPenColorToHsbColor",
+            Compiler::StaticType::Void,
+            { Compiler::StaticType::Number, Compiler::StaticType::Number, Compiler::StaticType::Number, Compiler::StaticType::Number },
+            { h, s, b, transparency });
+    } else
+        compiler->addTargetFunctionCall("pen_setPenColorToColor", Compiler::StaticType::Void, { Compiler::StaticType::Unknown }, { color });
+
     return nullptr;
 }
 
@@ -120,44 +176,37 @@ BLOCK_EXPORT void pen_set_pen_down(Target *target, bool down)
     getTargetModel(target)->setPenDown(down);
 }
 
-BLOCK_EXPORT void pen_setPenColorToColor(Target *target, const ValueData *color)
+BLOCK_EXPORT void pen_setPenColorToHsbColor(Target *target, double h, double s, double b, double transparency)
 {
     TargetModel *model = getTargetModel(target);
 
-    std::string stringValue;
     PenState &penState = model->penState();
-    QColor newColor;
-
-    if (value_isString(color))
-        value_toString(color, &stringValue);
-
-    if (!stringValue.empty() && stringValue[0] == '#') {
-        bool valid = false;
-
-        if (stringValue.size() <= 7) // #RRGGBB
-        {
-            newColor = QColor::fromString(stringValue);
-            valid = newColor.isValid();
-        }
-
-        if (!valid)
-            newColor = Qt::black;
-
-    } else
-        newColor = QColor::fromRgba(static_cast<QRgb>(value_toLong(color)));
-
-    QColor hsv = newColor.toHsv();
-    penState.color = (hsv.hue() / 360.0) * 100;
-    penState.saturation = hsv.saturationF() * 100;
-    penState.brightness = hsv.valueF() * 100;
-
-    if (newColor.alpha() > 0)
-        penState.transparency = 100 * (1 - newColor.alpha() / 255.0);
-    else
-        penState.transparency = 0;
+    penState.color = h;
+    penState.saturation = s;
+    penState.brightness = b;
+    penState.transparency = transparency;
 
     penState.updateColor();
 
     // Set the legacy "shade" value the same way Scratch 2 did.
     penState.shade = penState.brightness / 2;
+}
+
+BLOCK_EXPORT void pen_setPenColorToColor(Target *target, const ValueData *color)
+{
+    QColor converted;
+    pen_convert_color(color, converted);
+
+    QColor hsv = converted.toHsv();
+    double h = (hsv.hue() / 360.0) * 100;
+    double s = hsv.saturationF() * 100;
+    double b = hsv.valueF() * 100;
+    double transparency;
+
+    if (converted.alpha() > 0)
+        transparency = 100 * (1 - converted.alpha() / 255.0);
+    else
+        transparency = 0;
+
+    pen_setPenColorToHsbColor(target, h, s, b, transparency);
 }

@@ -1,3 +1,16 @@
+add_library(
+  block_test_deps SHARED
+  util.cpp
+  util.h
+)
+
+target_link_libraries(
+  block_test_deps
+  GTest::gtest_main
+  scratchcpp
+  scratchcpp-render
+)
+
 # pen_blocks_test
 add_executable(
   pen_blocks_test
@@ -12,6 +25,7 @@ target_link_libraries(
   scratchcpp-render
   scratchcpprender_mocks
   qnanopainter
+  block_test_deps
   ${QT_LIBS}
 )
 
