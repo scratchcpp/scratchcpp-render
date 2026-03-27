@@ -220,3 +220,188 @@ TEST_F(PenBlocksTest, PenUp_Stage)
     thread->run();
     ASSERT_FALSE(model.penDown());
 }
+
+TEST_F(PenBlocksTest, SetPenColorToColor_ValidHex)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", "#FFGFFF");
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(359, 0, 0)));
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor_CaseInsensitiveHex)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", "#AABbCC");
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(210, 42, 204)));
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor_3DigitHex)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", "#03F");
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(228, 255, 255)));
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor_InvalidHex)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", "#AABBCCDD");
+
+    model.penAttributes().color = QNanoColor::fromQColor(QColor::fromHsv(228, 255, 255));
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor(0, 0, 0)));
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor_InvalidString)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", "FFFFFF");
+
+    model.penAttributes().color = QNanoColor::fromQColor(QColor::fromHsv(228, 255, 255));
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor(0, 0, 0)));
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor_NumberWithoutAlphaChannel)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", 255);
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(239, 255, 255)));
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor_NumberWithAlphaChannel)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", 1228097602);
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(162, 74, 72, 73)));
+}
+
+TEST_F(PenBlocksTest, SetPenColorToColor_Stage)
+{
+    auto stage = std::make_shared<Stage>();
+    stage->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    StageModel model;
+    model.init(stage.get());
+    model.setRenderedTarget(&renderedTarget);
+    stage->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, stage);
+    builder.addBlock("pen_setPenColorToColor");
+    builder.addValueInput("COLOR", rgb(128, 255, 26));
+
+    auto thread = buildScript(builder, stage.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(93, 229, 255)));
+}

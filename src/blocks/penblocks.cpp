@@ -36,6 +36,14 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_stamp", &compileStamp);
     engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
     engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
+    engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
+}
+
+CompilerValue *PenBlocks::compileSetPenColorToColor(Compiler *compiler)
+{
+    CompilerValue *color = compiler->addInput("COLOR");
+    compiler->addTargetFunctionCall("pen_setPenColorToColor", Compiler::StaticType::Void, { Compiler::StaticType::Unknown }, { color });
+    return nullptr;
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -110,4 +118,46 @@ BLOCK_EXPORT void pen_stamp(Target *target)
 BLOCK_EXPORT void pen_set_pen_down(Target *target, bool down)
 {
     getTargetModel(target)->setPenDown(down);
+}
+
+BLOCK_EXPORT void pen_setPenColorToColor(Target *target, const ValueData *color)
+{
+    TargetModel *model = getTargetModel(target);
+
+    std::string stringValue;
+    PenState &penState = model->penState();
+    QColor newColor;
+
+    if (value_isString(color))
+        value_toString(color, &stringValue);
+
+    if (!stringValue.empty() && stringValue[0] == '#') {
+        bool valid = false;
+
+        if (stringValue.size() <= 7) // #RRGGBB
+        {
+            newColor = QColor::fromString(stringValue);
+            valid = newColor.isValid();
+        }
+
+        if (!valid)
+            newColor = Qt::black;
+
+    } else
+        newColor = QColor::fromRgba(static_cast<QRgb>(value_toLong(color)));
+
+    QColor hsv = newColor.toHsv();
+    penState.color = (hsv.hue() / 360.0) * 100;
+    penState.saturation = hsv.saturationF() * 100;
+    penState.brightness = hsv.valueF() * 100;
+
+    if (newColor.alpha() > 0)
+        penState.transparency = 100 * (1 - newColor.alpha() / 255.0);
+    else
+        penState.transparency = 0;
+
+    penState.updateColor();
+
+    // Set the legacy "shade" value the same way Scratch 2 did.
+    penState.shade = penState.brightness / 2;
 }
