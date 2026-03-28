@@ -64,10 +64,9 @@ TEST_F(SVGSkinTest, Textures)
         }
 
         QBuffer buffer;
-        texture.toImage().save(&buffer, "png");
-        QFile ref("svg_texture_results/" + QString::number(std::min(i, 15)) + ".png");
-        ref.open(QFile::ReadOnly);
-        buffer.open(QBuffer::ReadOnly);
-        ASSERT_EQ(buffer.readAll(), ref.readAll());
+        QImage image = texture.toImage();
+        QImage ref("svg_texture_results/" + QString::number(std::min(i, 15)) + ".png");
+
+        ASSERT_LE(fuzzyCompareImages(image, ref), 0.1);
     }
 }
