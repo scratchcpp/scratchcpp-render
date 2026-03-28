@@ -19,6 +19,10 @@
 using namespace scratchcpprender;
 using namespace libscratchcpp;
 
+// Pen size range: https://github.com/scratchfoundation/scratch-vm/blob/8dbcc1fc8f8d8c4f1e40629fe8a388149d6dfd1c/src/extensions/scratch3_pen/index.js#L100-L102
+static const double PEN_SIZE_MIN = 1;
+static const double PEN_SIZE_MAX = 1200;
+
 static const double COLOR_PARAM_MIN = 0;
 static const double COLOR_PARAM_MAX = 100;
 
@@ -82,6 +86,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
     engine->addCompileFunction(this, "pen_changePenColorParamBy", &compileChangePenColorParamBy);
     engine->addCompileFunction(this, "pen_setPenColorParamTo", &compileSetPenColorParamTo);
+    engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -175,6 +180,13 @@ CompilerValue *PenBlocks::compileChangePenColorParamBy(Compiler *compiler)
 CompilerValue *PenBlocks::compileSetPenColorParamTo(Compiler *compiler)
 {
     compileSetOrChangePenColorParam(compiler, false);
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compileChangePenSizeBy(Compiler *compiler)
+{
+    CompilerValue *size = compiler->addInput("SIZE");
+    compiler->addTargetFunctionCall("pen_changePenSizeBy", Compiler::StaticType::Void, { Compiler::StaticType::Number }, { size });
     return nullptr;
 }
 
@@ -304,4 +316,10 @@ BLOCK_EXPORT void pen_set_or_change_color_param(Target *target, const StringPtr 
         pen_set_or_change_brightness(target, value, change);
     else if (string_compare_case_sensitive(param, &TRANSPARENCY_PARAM) == 0)
         pen_set_or_change_transparency(target, value, change);
+}
+
+BLOCK_EXPORT void pen_changePenSizeBy(Target *target, double value)
+{
+    PenAttributes &penAttributes = getTargetModel(target)->penAttributes();
+    penAttributes.diameter = std::clamp(penAttributes.diameter + value, PEN_SIZE_MIN, PEN_SIZE_MAX);
 }

@@ -1952,3 +1952,128 @@ TEST_F(PenBlocksTest, SetPenColorParamTo_Stage)
     EXPECT_EQ(model.penAttributes().color.blue(), 149);
     EXPECT_EQ(model.penAttributes().color.alpha(), 255);
 }
+
+TEST_F(PenBlocksTest, ChangePenSizeBy)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenSizeBy");
+    builder.addValueInput("SIZE", 511.5);
+
+    model.penAttributes().diameter = 2.3;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+
+    thread->run();
+    ASSERT_EQ(model.penAttributes().diameter, 513.8);
+}
+
+TEST_F(PenBlocksTest, ChangePenSizeBy_Negative)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenSizeBy");
+    builder.addValueInput("SIZE", -0.5);
+
+    model.penAttributes().diameter = 2.3;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+
+    thread->run();
+    ASSERT_EQ(std::round(model.penAttributes().diameter * 100) / 100, 1.8);
+}
+
+TEST_F(PenBlocksTest, ChangePenSizeBy_AboveMaximum)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenSizeBy");
+    builder.addValueInput("SIZE", 687.2);
+
+    model.penAttributes().diameter = 513.8;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+
+    thread->run();
+    ASSERT_EQ(model.penAttributes().diameter, 1200);
+}
+
+TEST_F(PenBlocksTest, ChangePenSizeBy_BelowMinimum)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenSizeBy");
+    builder.addValueInput("SIZE", -13);
+
+    model.penAttributes().diameter = 12.5;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+
+    thread->run();
+    ASSERT_EQ(model.penAttributes().diameter, 1);
+}
+
+TEST_F(PenBlocksTest, ChangePenSizeBy_Stage)
+{
+    auto stage = std::make_shared<Stage>();
+    stage->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    StageModel model;
+    model.init(stage.get());
+    model.setRenderedTarget(&renderedTarget);
+    stage->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, stage);
+    builder.addBlock("pen_changePenSizeBy");
+    builder.addValueInput("SIZE", 511.5);
+
+    model.penAttributes().diameter = 2.3;
+
+    auto thread = buildScript(builder, stage.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+
+    thread->run();
+    ASSERT_EQ(model.penAttributes().diameter, 513.8);
+}
