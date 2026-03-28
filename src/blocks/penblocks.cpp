@@ -1,5 +1,6 @@
 #include <scratchcpp/iengine.h>
 #include <scratchcpp/compiler.h>
+#include <scratchcpp/input.h>
 #include <scratchcpp/executioncontext.h>
 #include <scratchcpp/target.h>
 #include <scratchcpp/ispritehandler.h>
@@ -142,15 +143,26 @@ CompilerValue *PenBlocks::compileSetPenColorToColor(Compiler *compiler)
 
 CompilerValue *PenBlocks::compileChangePenColorParamBy(Compiler *compiler)
 {
-    CompilerValue *param = compiler->addInput("COLOR_PARAM");
+    Input *paramInput = compiler->input("COLOR_PARAM");
+    CompilerValue *param = compiler->addInput(paramInput);
     CompilerValue *value = compiler->addInput("VALUE");
     CompilerValue *change = compiler->addConstValue(true);
 
-    compiler->addTargetFunctionCall(
-        "pen_set_or_change_color_param",
-        Compiler::StaticType::Void,
-        { Compiler::StaticType::String, Compiler::StaticType::Number, Compiler::StaticType::Bool },
-        { param, value, change });
+    if (paramInput->pointsToDropdownMenu()) {
+        static const std::unordered_set<std::string> options = { "color", "saturation", "brightness", "transparency" };
+        std::string option = paramInput->selectedMenuItem();
+
+        if (options.find(option) != options.cend()) {
+            std::string f = "pen_set_or_change_" + option;
+            compiler->addTargetFunctionCall(f, Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { value, change });
+        }
+    } else {
+        compiler->addTargetFunctionCall(
+            "pen_set_or_change_color_param",
+            Compiler::StaticType::Void,
+            { Compiler::StaticType::String, Compiler::StaticType::Number, Compiler::StaticType::Bool },
+            { param, value, change });
+    }
 
     return nullptr;
 }
