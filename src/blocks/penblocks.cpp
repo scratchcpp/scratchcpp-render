@@ -88,6 +88,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_setPenColorParamTo", &compileSetPenColorParamTo);
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
+    engine->addCompileFunction(this, "pen_changePenShadeBy", &compileChangePenShadeBy);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -195,6 +196,14 @@ CompilerValue *PenBlocks::compileSetPenSizeTo(Compiler *compiler)
 {
     CompilerValue *size = compiler->addInput("SIZE");
     compiler->addTargetFunctionCall("pen_setPenSizeTo", Compiler::StaticType::Void, { Compiler::StaticType::Number }, { size });
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compileChangePenShadeBy(Compiler *compiler)
+{
+    CompilerValue *shade = compiler->addInput("SHADE");
+    CompilerValue *change = compiler->addConstValue(true);
+    compiler->addTargetFunctionCall("pen_set_or_change_pen_shade", Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { shade, change });
     return nullptr;
 }
 
@@ -336,4 +345,63 @@ BLOCK_EXPORT void pen_setPenSizeTo(Target *target, double value)
 {
     PenAttributes &penAttributes = getTargetModel(target)->penAttributes();
     penAttributes.diameter = std::clamp(value, PEN_SIZE_MIN, PEN_SIZE_MAX);
+}
+
+static QRgb mix_rgb(QRgb rgb0, QRgb rgb1, double fraction1)
+{
+    // https://github.com/scratchfoundation/scratch-vm/blob/a4f095db5e03e072ba222fe721eeeb543c9b9c15/src/util/color.js#L192-L201
+    // https://github.com/scratchfoundation/scratch-flash/blob/2e4a402ceb205a042887f54b26eebe1c2e6da6c0/src/util/Color.as#L75-L89
+    if (fraction1 <= 0)
+        return rgb0;
+
+    if (fraction1 >= 1)
+        return rgb1;
+
+    const double fraction0 = 1 - fraction1;
+    const int r = static_cast<int>(((fraction0 * qRed(rgb0)) + (fraction1 * qRed(rgb1)))) & 255;
+    const int g = static_cast<int>(((fraction0 * qGreen(rgb0)) + (fraction1 * qGreen(rgb1)))) & 255;
+    const int b = static_cast<int>(((fraction0 * qBlue(rgb0)) + (fraction1 * qBlue(rgb1)))) & 255;
+    return qRgb(r, g, b);
+}
+
+inline void legacy_update_pen_color(PenState &penState)
+{
+    // https://github.com/scratchfoundation/scratch-vm/blob/8dbcc1fc8f8d8c4f1e40629fe8a388149d6dfd1c/src/extensions/scratch3_pen/index.js#L750-L767
+    // Create the new color in RGB using the scratch 2 "shade" model
+    QRgb rgb = QColor::fromHsvF(penState.color / 100, 1, 1).rgb();
+    const double shade = (penState.shade > 100) ? 200 - penState.shade : penState.shade;
+
+    if (shade < 50)
+        rgb = mix_rgb(0, rgb, (10 + shade) / 60);
+    else
+        rgb = mix_rgb(rgb, 0xFFFFFF, (shade - 50) / 60);
+
+    // Update the pen state according to new color
+    QColor hsv = QColor::fromRgb(rgb).toHsv();
+    penState.color = 100 * hsv.hueF();
+    penState.saturation = 100 * hsv.saturationF();
+    penState.brightness = 100 * hsv.valueF();
+
+    penState.updateColor();
+}
+
+BLOCK_EXPORT void pen_set_or_change_pen_shade(Target *target, double shade, bool change)
+{
+    // https://github.com/scratchfoundation/scratch-vm/blob/8dbcc1fc8f8d8c4f1e40629fe8a388149d6dfd1c/src/extensions/scratch3_pen/index.js#L718-L730
+    PenState &penState = getTargetModel(target)->penState();
+
+    if (change)
+        shade += penState.shade;
+
+    // Wrap clamp the new shade value the way Scratch 2 did
+    const double hi = 200.0;
+    shade = fmod(shade, hi);
+
+    if (shade < 0)
+        shade += hi;
+
+    // And store the shade that was used to compute this new color for later use
+    penState.shade = shade;
+
+    legacy_update_pen_color(penState);
 }
