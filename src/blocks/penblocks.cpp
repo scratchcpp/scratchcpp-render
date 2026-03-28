@@ -8,6 +8,7 @@
 #include <scratchcpp/compilerconstant.h>
 #include <scratchcpp/stringptr.h>
 #include <scratchcpp/string_pool.h>
+#include <scratchcpp/string_functions.h>
 
 #include "penblocks.h"
 #include "penlayer.h"
@@ -16,6 +17,16 @@
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
+
+static const double COLOR_PARAM_MIN = 0;
+static const double COLOR_PARAM_MAX = 100;
+
+inline double wrapClamp(double n, double min, double max)
+{
+    // TODO: Move this to a separate class
+    const double range = max - min /*+ 1*/;
+    return n - (std::floor((n - min) / range) * range);
+}
 
 inline QColor pen_convert_from_numeric_color(long color)
 {
@@ -68,6 +79,33 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_penDown", &compilePenDown);
     engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
     engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
+    engine->addCompileFunction(this, "pen_changePenColorParamBy", &compileChangePenColorParamBy);
+}
+
+CompilerValue *PenBlocks::compileClear(Compiler *compiler)
+{
+    compiler->addFunctionCallWithCtx("pen_clear");
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compileStamp(Compiler *compiler)
+{
+    compiler->addTargetFunctionCall("pen_stamp");
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compilePenDown(Compiler *compiler)
+{
+    CompilerValue *arg = compiler->addConstValue(true);
+    compiler->addTargetFunctionCall("pen_set_pen_down", Compiler::StaticType::Void, { Compiler::StaticType::Bool }, { arg });
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compilePenUp(Compiler *compiler)
+{
+    CompilerValue *arg = compiler->addConstValue(false);
+    compiler->addTargetFunctionCall("pen_set_pen_down", Compiler::StaticType::Void, { Compiler::StaticType::Bool }, { arg });
+    return nullptr;
 }
 
 CompilerValue *PenBlocks::compileSetPenColorToColor(Compiler *compiler)
@@ -102,29 +140,18 @@ CompilerValue *PenBlocks::compileSetPenColorToColor(Compiler *compiler)
     return nullptr;
 }
 
-CompilerValue *PenBlocks::compileClear(Compiler *compiler)
+CompilerValue *PenBlocks::compileChangePenColorParamBy(Compiler *compiler)
 {
-    compiler->addFunctionCallWithCtx("pen_clear");
-    return nullptr;
-}
+    CompilerValue *param = compiler->addInput("COLOR_PARAM");
+    CompilerValue *value = compiler->addInput("VALUE");
+    CompilerValue *change = compiler->addConstValue(true);
 
-CompilerValue *PenBlocks::compileStamp(Compiler *compiler)
-{
-    compiler->addTargetFunctionCall("pen_stamp");
-    return nullptr;
-}
+    compiler->addTargetFunctionCall(
+        "pen_set_or_change_color_param",
+        Compiler::StaticType::Void,
+        { Compiler::StaticType::String, Compiler::StaticType::Number, Compiler::StaticType::Bool },
+        { param, value, change });
 
-CompilerValue *PenBlocks::compilePenDown(Compiler *compiler)
-{
-    CompilerValue *arg = compiler->addConstValue(true);
-    compiler->addTargetFunctionCall("pen_set_pen_down", Compiler::StaticType::Void, { Compiler::StaticType::Bool }, { arg });
-    return nullptr;
-}
-
-CompilerValue *PenBlocks::compilePenUp(Compiler *compiler)
-{
-    CompilerValue *arg = compiler->addConstValue(false);
-    compiler->addTargetFunctionCall("pen_set_pen_down", Compiler::StaticType::Void, { Compiler::StaticType::Bool }, { arg });
     return nullptr;
 }
 
@@ -209,4 +236,49 @@ BLOCK_EXPORT void pen_setPenColorToColor(Target *target, const ValueData *color)
         transparency = 0;
 
     pen_setPenColorToHsbColor(target, h, s, b, transparency);
+}
+
+BLOCK_EXPORT void pen_set_or_change_color(Target *target, double value, bool change)
+{
+    PenState &penState = getTargetModel(target)->penState();
+    penState.color = wrapClamp(value + (change ? penState.color : 0), 0, 100);
+    penState.updateColor();
+}
+
+BLOCK_EXPORT void pen_set_or_change_saturation(Target *target, double value, bool change)
+{
+    PenState &penState = getTargetModel(target)->penState();
+    penState.saturation = std::clamp(value + (change ? penState.saturation : 0), COLOR_PARAM_MIN, COLOR_PARAM_MAX);
+    penState.updateColor();
+}
+
+BLOCK_EXPORT void pen_set_or_change_brightness(Target *target, double value, bool change)
+{
+    PenState &penState = getTargetModel(target)->penState();
+    penState.brightness = std::clamp(value + (change ? penState.brightness : 0), COLOR_PARAM_MIN, COLOR_PARAM_MAX);
+    penState.updateColor();
+}
+
+BLOCK_EXPORT void pen_set_or_change_transparency(Target *target, double value, bool change)
+{
+    PenState &penState = getTargetModel(target)->penState();
+    penState.transparency = std::clamp(value + (change ? penState.transparency : 0), COLOR_PARAM_MIN, COLOR_PARAM_MAX);
+    penState.updateColor();
+}
+
+BLOCK_EXPORT void pen_set_or_change_color_param(Target *target, const StringPtr *param, double value, bool change)
+{
+    static const StringPtr COLOR_PARAM("color");
+    static const StringPtr SATURATION_PARAM("saturation");
+    static const StringPtr BRIGHTNESS_PARAM("brightness");
+    static const StringPtr TRANSPARENCY_PARAM("transparency");
+
+    if (string_compare_case_sensitive(param, &COLOR_PARAM) == 0)
+        pen_set_or_change_color(target, value, change);
+    else if (string_compare_case_sensitive(param, &SATURATION_PARAM) == 0)
+        pen_set_or_change_saturation(target, value, change);
+    else if (string_compare_case_sensitive(param, &BRIGHTNESS_PARAM) == 0)
+        pen_set_or_change_brightness(target, value, change);
+    else if (string_compare_case_sensitive(param, &TRANSPARENCY_PARAM) == 0)
+        pen_set_or_change_transparency(target, value, change);
 }

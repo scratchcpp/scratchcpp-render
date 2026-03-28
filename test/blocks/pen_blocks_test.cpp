@@ -14,6 +14,7 @@
 #include "stagemodel.h"
 #include "renderedtarget.h"
 #include "blocks/penblocks.h"
+#include "util.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -30,6 +31,7 @@ class PenBlocksTest : public testing::Test
             m_extension = std::make_unique<PenBlocks>();
             m_engine = m_project.engine().get();
             m_extension->registerBlocks(m_engine);
+            registerBlocks(m_engine, m_extension.get());
 
             PenLayer::addPenLayer(&m_engineMock, &m_penLayer);
 
@@ -453,4 +455,717 @@ TEST_F(PenBlocksTest, SetPenColorToColor_Stage)
     thread->run();
 
     ASSERT_EQ(model.penAttributes().color, QNanoColor::fromQColor(QColor::fromHsv(93, 229, 255)));
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Color)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "color");
+    builder.addValueInput("VALUE", 53.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 91);
+    EXPECT_EQ(model.penAttributes().color.green(), 94);
+    EXPECT_EQ(model.penAttributes().color.blue(), 149);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Color_OutOfRange)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "color");
+    builder.addValueInput("VALUE", 153.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 91);
+    EXPECT_EQ(model.penAttributes().color.green(), 94);
+    EXPECT_EQ(model.penAttributes().color.blue(), 149);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Color_OutOfRange_Negative)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "color");
+    builder.addValueInput("VALUE", -120.8);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 149);
+    EXPECT_EQ(model.penAttributes().color.green(), 91);
+    EXPECT_EQ(model.penAttributes().color.blue(), 120);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_NonConstParam_Color)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("test_const_string");
+    builder.addValueInput("STRING", "color");
+    auto valueBlock = builder.takeBlock();
+
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addObscuredInput("COLOR_PARAM", valueBlock);
+    builder.addValueInput("VALUE", 53.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 91);
+    EXPECT_EQ(model.penAttributes().color.green(), 94);
+    EXPECT_EQ(model.penAttributes().color.blue(), 149);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_ParamNameCaseSensitive)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "coLor");
+    builder.addValueInput("VALUE", 53.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    // The color shouldn't change
+    ASSERT_EQ(model.penAttributes().color, original);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_NonConstParamNameCaseInsensitive)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("test_const_string");
+    builder.addValueInput("STRING", "coLor");
+    auto valueBlock = builder.takeBlock();
+
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addObscuredInput("COLOR_PARAM", valueBlock);
+    builder.addValueInput("VALUE", 53.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    // The color shouldn't change
+    ASSERT_EQ(model.penAttributes().color, original);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Saturation)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "saturation");
+    builder.addValueInput("VALUE", 23.5);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 149);
+    EXPECT_EQ(model.penAttributes().color.green(), 126);
+    EXPECT_EQ(model.penAttributes().color.blue(), 56);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Saturation_OutOfRange)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "saturation");
+    builder.addValueInput("VALUE", 138.3);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 149);
+    EXPECT_EQ(model.penAttributes().color.green(), 112);
+    EXPECT_EQ(model.penAttributes().color.blue(), 0);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Saturation_OutOfRange_Negative)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "saturation");
+    builder.addValueInput("VALUE", -120.8);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 149);
+    EXPECT_EQ(model.penAttributes().color.green(), 149);
+    EXPECT_EQ(model.penAttributes().color.blue(), 149);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_NonConstParam_Saturation)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("test_const_string");
+    builder.addValueInput("STRING", "saturation");
+    auto valueBlock = builder.takeBlock();
+
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addObscuredInput("COLOR_PARAM", valueBlock);
+    builder.addValueInput("VALUE", 23.5);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 149);
+    EXPECT_EQ(model.penAttributes().color.green(), 126);
+    EXPECT_EQ(model.penAttributes().color.blue(), 56);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Brightness)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "brightness");
+    builder.addValueInput("VALUE", 23.5);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 209);
+    EXPECT_EQ(model.penAttributes().color.green(), 189);
+    EXPECT_EQ(model.penAttributes().color.blue(), 128);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Brightness_OutOfRange)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "brightness");
+    builder.addValueInput("VALUE", 138.3);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 255);
+    EXPECT_EQ(model.penAttributes().color.green(), 230);
+    EXPECT_EQ(model.penAttributes().color.blue(), 156);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Brightness_OutOfRange_Negative)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "brightness");
+    builder.addValueInput("VALUE", -120.8);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 0);
+    EXPECT_EQ(model.penAttributes().color.green(), 0);
+    EXPECT_EQ(model.penAttributes().color.blue(), 0);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_NonConstParam_Brightness)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("test_const_string");
+    builder.addValueInput("STRING", "brightness");
+    auto valueBlock = builder.takeBlock();
+
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addObscuredInput("COLOR_PARAM", valueBlock);
+    builder.addValueInput("VALUE", 23.5);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 209);
+    EXPECT_EQ(model.penAttributes().color.green(), 189);
+    EXPECT_EQ(model.penAttributes().color.blue(), 128);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Transparency)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "transparency");
+    builder.addValueInput("VALUE", 23.5);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 149);
+    EXPECT_EQ(model.penAttributes().color.green(), 135);
+    EXPECT_EQ(model.penAttributes().color.blue(), 91);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 195);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Transparency_OutOfRange)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "transparency");
+    builder.addValueInput("VALUE", 138.3);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.alpha(), 0);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Transparency_OutOfRange_Negative)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "transparency");
+    builder.addValueInput("VALUE", -120.8);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 149);
+    EXPECT_EQ(model.penAttributes().color.green(), 135);
+    EXPECT_EQ(model.penAttributes().color.blue(), 91);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_NonConstParam_Transparency)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("test_const_string");
+    builder.addValueInput("STRING", "transparency");
+    auto valueBlock = builder.takeBlock();
+
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addObscuredInput("COLOR_PARAM", valueBlock);
+    builder.addValueInput("VALUE", 23.5);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 149);
+    EXPECT_EQ(model.penAttributes().color.green(), 135);
+    EXPECT_EQ(model.penAttributes().color.blue(), 91);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 195);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_InvalidParam)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "invalid");
+    builder.addValueInput("VALUE", 53.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    // The color shouldn't change
+    ASSERT_EQ(model.penAttributes().color, original);
+}
+
+TEST_F(PenBlocksTest, ChangePenColorParamBy_NonConstInvalidParam)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("test_const_string");
+    builder.addValueInput("STRING", "test");
+    auto valueBlock = builder.takeBlock();
+
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addObscuredInput("COLOR_PARAM", valueBlock);
+    builder.addValueInput("VALUE", 53.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    // The color shouldn't change
+    ASSERT_EQ(model.penAttributes().color, original);
 }
