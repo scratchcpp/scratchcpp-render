@@ -7,6 +7,7 @@ target_link_libraries(
   renderedtarget_test
   GTest::gtest_main
   GTest::gmock_main
+  scratchcpp
   scratchcpp-render
   scratchcpprender_mocks
   ${QT_LIBS}

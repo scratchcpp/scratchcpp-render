@@ -8,6 +8,7 @@ target_link_libraries(
   targetmodel_test
   GTest::gtest_main
   GTest::gmock_main
+  scratchcpp
   scratchcpp-render
   scratchcpprender_mocks
   qnanopainter
@@ -28,6 +29,7 @@ target_link_libraries(
   stagemodel_test
   GTest::gtest_main
   GTest::gmock_main
+  scratchcpp
   scratchcpp-render
   scratchcpprender_mocks
   qnanopainter
@@ -48,6 +50,7 @@ target_link_libraries(
   spritemodel_test
   GTest::gtest_main
   GTest::gmock_main
+  scratchcpp
   scratchcpp-render
   scratchcpprender_mocks
   qnanopainter

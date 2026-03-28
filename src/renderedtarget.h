@@ -85,6 +85,8 @@ class RenderedTarget : public IRenderedTarget
 
         bool mirrorHorizontally() const override;
 
+        void render(double scale) const override;
+
         Texture texture() const override;
         const Texture &cpuTexture() const override;
         int costumeWidth() const override;
@@ -143,6 +145,8 @@ class RenderedTarget : public IRenderedTarget
         static bool maskMatches(QRgb a, QRgb b);
         QRgb sampleColor3b(double x, double y, const std::vector<IRenderedTarget *> &targets) const;
 
+        void getMatrices(QMatrix4x4 &modelMatrix, QMatrix4x4 &projectionMatrix) const;
+
         libscratchcpp::IEngine *m_engine = nullptr;
         libscratchcpp::Costume *m_costume = nullptr;
         StageModel *m_stageModel = nullptr;
@@ -157,15 +161,17 @@ class RenderedTarget : public IRenderedTarget
         Texture m_oldTexture;
         Texture m_cpuTexture;                                        // without stage scale
         mutable std::shared_ptr<CpuTextureManager> m_textureManager; // NOTE: Use textureManager()!
-        std::unique_ptr<QOpenGLFunctions> m_glF;
+        mutable std::unique_ptr<QOpenGLFunctions> m_glF;
         mutable std::unordered_map<ShaderManager::Effect, double> m_graphicEffects;
         mutable ShaderManager::Effect m_graphicEffectMask = ShaderManager::Effect::NoEffect;
+        mutable QOpenGLShaderProgram *m_shaderProgram = nullptr;
         double m_size = 1;
         double m_x = 0;
         double m_y = 0;
         double m_width = 1;
         double m_height = 1;
         double m_direction = 90;
+        float m_renderAngle = 180.0f;
         libscratchcpp::Sprite::RotationStyle m_rotationStyle = libscratchcpp::Sprite::RotationStyle::AllAround;
         bool m_mirrorHorizontally = false;
         double m_stageScale = 1;
@@ -175,7 +181,10 @@ class RenderedTarget : public IRenderedTarget
         std::vector<QPoint> m_hullPoints;
         mutable bool m_transformedHullDirty = true;
         mutable std::vector<QPointF> m_transformedHullPoints; // NOTE: Use transformedHullPoints();
-        bool m_clicked = false;                               // left mouse button only!
+        mutable bool m_matricesDirty = false;
+        mutable QMatrix4x4 m_modelMatrix;      // NOTE: Use getMatrices()!
+        mutable QMatrix4x4 m_projectionMatrix; // NOTE: Use getMatrices()!
+        bool m_clicked = false;                // left mouse button only!
         double m_dragX = 0;
         double m_dragY = 0;
         double m_dragDeltaX = 0;

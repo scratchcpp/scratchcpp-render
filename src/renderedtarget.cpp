@@ -23,6 +23,13 @@ using namespace libscratchcpp;
 static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions are multiplied by this
 static const double pi = std::acos(-1);    // TODO: Use std::numbers::pi in C++20
 
+// TODO: Move this to a separate class
+template<typename T>
+short sgn(T x)
+{
+    return (T(0) < x) - (x < T(0));
+}
+
 RenderedTarget::RenderedTarget(QQuickItem *parent) :
     IRenderedTarget(parent)
 {
@@ -507,6 +514,62 @@ void RenderedTarget::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
+void RenderedTarget::render(double scale) const
+{
+    if (!m_glF) {
+        m_glF = std::make_unique<QOpenGLFunctions>();
+        m_glF->initializeOpenGLFunctions();
+    }
+
+    if (!m_cpuTexture.isValid())
+        return;
+
+    const float stageWidth = m_engine->stageWidth() * scale;
+    const float stageHeight = m_engine->stageHeight() * scale;
+
+    libscratchcpp::Rect bounds = getFastBounds();
+    bounds.snapToInt();
+
+    if (!bounds.intersects(libscratchcpp::Rect(-stageWidth / 2, stageHeight / 2, stageWidth / 2, -stageHeight / 2)))
+        return;
+
+    QMatrix4x4 modelMatrix, projectionMatrix;
+    getMatrices(modelMatrix, projectionMatrix);
+    modelMatrix.scale(scale);
+    projectionMatrix.scale(1.0f / scale);
+
+    m_glF->glEnable(GL_BLEND);
+    m_glF->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    m_glF->glViewport((stageWidth / 2) + bounds.left() * scale, (stageHeight / 2) + bounds.bottom() * scale, bounds.width() * scale, bounds.height() * scale);
+
+    ShaderManager *shaderManager = ShaderManager::instance();
+
+    if (!m_shaderProgram) {
+        m_shaderProgram = shaderManager->getShaderProgram(this, m_graphicEffects);
+        Q_ASSERT(m_shaderProgram);
+        Q_ASSERT(m_shaderProgram->isLinked());
+
+        m_shaderProgram->bind();
+        ShaderManager::setUniforms(m_shaderProgram, 0, m_cpuTexture.size(), m_graphicEffects);
+    }
+
+    GLint currentProgram = 0;
+    m_glF->glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+
+    if (static_cast<GLuint>(currentProgram) != m_shaderProgram->programId())
+        m_shaderProgram->bind();
+
+    m_glF->glActiveTexture(GL_TEXTURE0);
+    m_glF->glBindTexture(GL_TEXTURE_2D, m_cpuTexture.handle());
+
+    m_shaderProgram->setUniformValue("u_projectionMatrix", projectionMatrix);
+    m_shaderProgram->setUniformValue("u_modelMatrix", modelMatrix);
+    m_glF->glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // NOTE: Keep the shader program bound for future use
+}
+
 Texture RenderedTarget::texture() const
 {
     return m_texture;
@@ -561,6 +624,7 @@ void RenderedTarget::setGraphicEffect(ShaderManager::Effect effect, double value
 
     if (changed) {
         update();
+        m_shaderProgram = nullptr;
 
         if (ShaderManager::effectShapeChanges(effect)) {
             m_convexHullDirty = true;
@@ -584,6 +648,7 @@ void RenderedTarget::clearGraphicEffects()
 
     m_graphicEffects.clear();
     m_graphicEffectMask = ShaderManager::Effect::NoEffect;
+    m_shaderProgram = nullptr;
 }
 
 const std::vector<QPoint> &RenderedTarget::hullPoints() const
@@ -699,16 +764,19 @@ void RenderedTarget::calculatePos()
         setTransformOrigin(QQuickItem::Center);
 
     m_transformedHullDirty = true;
+    m_matricesDirty = true;
 }
 
 void RenderedTarget::calculateRotation()
 {
     // Direction
     bool oldMirrorHorizontally = m_mirrorHorizontally;
+    m_renderAngle = 180.0f;
 
     switch (m_rotationStyle) {
         case Sprite::RotationStyle::AllAround:
             setRotation(m_direction - 90);
+            m_renderAngle = 270.0f - m_direction;
             m_mirrorHorizontally = (false);
 
             break;
@@ -730,6 +798,7 @@ void RenderedTarget::calculateRotation()
         emit mirrorHorizontallyChanged();
 
     m_transformedHullDirty = true;
+    m_matricesDirty = true;
 }
 
 void RenderedTarget::calculateSize()
@@ -747,6 +816,8 @@ void RenderedTarget::calculateSize()
             m_convexHullDirty = true;
 
         m_transformedHullDirty = true;
+        m_matricesDirty = true;
+        m_shaderProgram = nullptr;
     }
 }
 
@@ -1113,6 +1184,35 @@ QRgb RenderedTarget::sampleColor3b(double x, double y, const std::vector<IRender
     g += blendAlpha * 255;
     b += blendAlpha * 255;
     return qRgb(r, g, b);
+}
+
+void RenderedTarget::getMatrices(QMatrix4x4 &modelMatrix, QMatrix4x4 &projectionMatrix) const
+{
+    if (m_matricesDirty) {
+        float scaleY = m_size;
+        float scaleX = scaleY * (m_mirrorHorizontally * (-2) + 1);
+
+        float width = m_cpuTexture.width();
+        float height = m_cpuTexture.height();
+        const float textureScale = width / static_cast<float>(costumeWidth());
+        const float aspectRatio = height / width;
+
+        libscratchcpp::Rect bounds = getFastBounds();
+        bounds.snapToInt();
+
+        m_projectionMatrix = QMatrix4x4();
+        m_projectionMatrix.ortho(1.0f, -1.0f, aspectRatio, -aspectRatio, 0.1f, 0.0f);
+        m_projectionMatrix.scale(width / bounds.width(), height / bounds.height());
+
+        m_modelMatrix = QMatrix4x4();
+        m_modelMatrix.rotate(m_renderAngle, 0, 0, 1);
+        m_modelMatrix.scale(scaleX / textureScale, aspectRatio * scaleY / textureScale);
+
+        m_matricesDirty = false;
+    }
+
+    modelMatrix = m_modelMatrix;
+    projectionMatrix = m_projectionMatrix;
 }
 
 bool RenderedTarget::mirrorHorizontally() const

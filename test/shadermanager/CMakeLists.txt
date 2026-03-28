@@ -6,8 +6,12 @@ add_executable(
 target_link_libraries(
   shadermanager_test
   GTest::gtest_main
+  GTest::gmock_main
+  scratchcpp
   scratchcpp-render
+  scratchcpprender_mocks
   qnanopainter
+  ${QT_LIBS}
 )
 
 add_test(shadermanager_test)

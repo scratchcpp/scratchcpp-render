@@ -7,6 +7,7 @@ target_link_libraries(
   textbubbleshape_test
   GTest::gtest_main
   scratchcpp-render
+  qnanopainter
   ${QT_LIBS}
   Qt6::Test
 )

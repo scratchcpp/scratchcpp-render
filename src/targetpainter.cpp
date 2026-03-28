@@ -62,7 +62,7 @@ void TargetPainter::paint(QNanoPainter *painter)
     ShaderManager *shaderManager = ShaderManager::instance();
 
     const auto &effects = m_target->graphicEffects();
-    QOpenGLShaderProgram *shaderProgram = shaderManager->getShaderProgram(effects);
+    QOpenGLShaderProgram *shaderProgram = shaderManager->getShaderProgram(m_target, effects);
     Q_ASSERT(shaderProgram);
     Q_ASSERT(shaderProgram->isLinked());
 

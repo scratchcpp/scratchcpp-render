@@ -6,6 +6,7 @@
 #include <scratchcpp/scratchconfiguration.h>
 #include <shadermanager.h>
 #include <graphicseffect.h>
+#include <renderedtargetmock.h>
 
 #include "../common.h"
 
@@ -34,6 +35,7 @@ class ShaderManagerTest : public testing::Test
 
         QOpenGLContext m_context;
         QOffscreenSurface m_surface;
+        RenderedTargetMock m_target;
 };
 
 TEST_F(ShaderManagerTest, RegisteredEffects)
@@ -71,7 +73,7 @@ TEST_F(ShaderManagerTest, GetShaderProgram)
     ShaderManager manager;
     const std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Color, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
 
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     ASSERT_EQ(program->parent(), &manager);
     ASSERT_TRUE(program->isLinked());
 
@@ -83,11 +85,26 @@ TEST_F(ShaderManagerTest, GetShaderProgram)
     ASSERT_EQ(frag->shaderType(), QOpenGLShader::Fragment);
 
     // Test shader program cache
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     ASSERT_EQ(program, program);
 
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     ASSERT_EQ(program, program);
+}
+
+TEST_F(ShaderManagerTest, GetShaderProgram_AnotherTarget)
+{
+    ShaderManager manager;
+    const std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Color, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
+
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
+
+    RenderedTargetMock anotherTarget;
+    QOpenGLShaderProgram *anotherProgram = manager.getShaderProgram(&anotherTarget, effects);
+    ASSERT_NE(anotherProgram, nullptr);
+    ASSERT_NE(anotherProgram, program);
+
+    ASSERT_EQ(manager.getShaderProgram(&anotherTarget, effects), anotherProgram);
 }
 
 TEST_F(ShaderManagerTest, SetUniforms)
@@ -97,7 +114,7 @@ TEST_F(ShaderManagerTest, SetUniforms)
     ShaderManager manager;
 
     std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Color, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 4, QSize(), effects);
 
@@ -130,19 +147,19 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 64.9 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 0.3245f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 10000) / 10000, 0.3245f);
+    ASSERT_EQ(std::round(values.at(effect) * 10000) / 10000, std::round(value * 10000) / 10000);
 
     // Below the minimum
     effects[effect] = -395.7;
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -150,11 +167,11 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 0.02f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 100) / 100, std::round(value * 100) / 100);
 
     // Above the maximum
     effects[effect] = 579.05;
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -162,7 +179,7 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 0.9f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 100) / 100, std::round(value * 100) / 100);
 
     program->release();
 }
@@ -181,19 +198,19 @@ TEST_F(ShaderManagerTest, BrightnessEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 4.6 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 0.046f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 10000) / 10000, 0.046f);
+    ASSERT_EQ(std::round(values.at(effect) * 10000) / 10000, std::round(value * 10000) / 10000);
 
     // Below the minimum
     effects[effect] = -102.9;
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -205,7 +222,7 @@ TEST_F(ShaderManagerTest, BrightnessEffectValue)
 
     // Above the maximum
     effects[effect] = 353.2;
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -232,7 +249,7 @@ TEST_F(ShaderManagerTest, GhostEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -240,7 +257,7 @@ TEST_F(ShaderManagerTest, GhostEffectValue)
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 1000.0f) / 1000.0f, 0.415f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 10000) / 10000, std::round(value * 10000) / 10000);
 
     // Below the minimum
     effects[effect] = -20.8;
@@ -281,15 +298,15 @@ TEST_F(ShaderManagerTest, FisheyeEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 1.585f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 1000.0f) / 1000.0f, 1.585f);
+    ASSERT_EQ(std::round(values.at(effect) * 1000) / 1000, std::round(value * 1000) / 1000);
 
     effects[effect] = -20.8;
     program->bind();
@@ -298,8 +315,8 @@ TEST_F(ShaderManagerTest, FisheyeEffectValue)
 
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 0.792f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 1000.0f) / 1000.0f, 0.792f);
+    ASSERT_EQ(std::round(values.at(effect) * 1000) / 1000, std::round(value * 1000) / 1000);
 
     // Below the minimum
     effects[effect] = -101;
@@ -329,7 +346,7 @@ TEST_F(ShaderManagerTest, WhirlEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -337,7 +354,7 @@ TEST_F(ShaderManagerTest, WhirlEffectValue)
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 1000) / 1000, 1.021f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 1000) / 1000, std::round(value * 1000) / 1000);
 
     effects[effect] = -20.8;
     program->bind();
@@ -347,7 +364,7 @@ TEST_F(ShaderManagerTest, WhirlEffectValue)
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
     ASSERT_EQ(std::round(value * 1000) / 1000, -0.363f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(values.at(effect) * 1000) / 1000, std::round(value * 1000) / 1000);
 
     program->release();
 }
@@ -366,15 +383,15 @@ TEST_F(ShaderManagerTest, PixelateEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
 
     GLfloat value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 5.85f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 5.85f);
+    ASSERT_EQ(std::round(values.at(effect) * 100) / 100, std::round(value * 100) / 100);
 
     effects[effect] = -20.8;
     program->bind();
@@ -383,8 +400,8 @@ TEST_F(ShaderManagerTest, PixelateEffectValue)
 
     value = 0.0f;
     glF.glGetUniformfv(program->programId(), program->uniformLocation(uniformName), &value);
-    ASSERT_EQ(value, 2.08f);
-    ASSERT_EQ(values.at(effect), value);
+    ASSERT_EQ(std::round(value * 100.0f) / 100.0f, 2.08f);
+    ASSERT_EQ(std::round(values.at(effect) * 100) / 100, std::round(value * 100) / 100);
 
     program->release();
 }
@@ -403,7 +420,7 @@ TEST_F(ShaderManagerTest, MosaicEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);

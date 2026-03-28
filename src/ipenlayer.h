@@ -34,6 +34,9 @@ class IPenLayer : public QNanoQuickItem
         virtual libscratchcpp::IEngine *engine() const = 0;
         virtual void setEngine(libscratchcpp::IEngine *newEngine) = 0;
 
+        virtual void beginFrame() = 0;
+        virtual void endFrame() = 0;
+
         virtual void clear() = 0;
         virtual void drawPoint(const PenAttributes &penAttributes, double x, double y) = 0;
         virtual void drawLine(const PenAttributes &penAttributes, double x0, double y0, double x1, double y1) = 0;

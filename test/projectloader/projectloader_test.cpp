@@ -4,9 +4,11 @@
 #include <spritemodel.h>
 #include <valuemonitormodel.h>
 #include <listmonitormodel.h>
+#include <penlayer.h>
 // #include <blocks/penblocks.h>
 #include <enginemock.h>
 #include <renderedtargetmock.h>
+#include <penlayermock.h>
 
 #include "../common.h"
 
@@ -190,34 +192,49 @@ TEST_F(ProjectLoaderTest, TimerEvent)
 {
     ProjectLoader loader;
     ASSERT_FALSE(loader.running());
+
     EngineMock engine;
     loader.setEngine(&engine);
+
+    PenLayerMock penLayer;
+    PenLayer::addPenLayer(&engine, &penLayer);
+
     QTimerEvent event(0);
 
     QSignalSpy runningSpy(&loader, &ProjectLoader::runningChanged);
+    EXPECT_CALL(penLayer, beginFrame());
     EXPECT_CALL(engine, step());
+    EXPECT_CALL(penLayer, endFrame());
     EXPECT_CALL(engine, isRunning()).WillOnce(Return(false));
     QCoreApplication::sendEvent(&loader, &event);
     ASSERT_FALSE(loader.running());
     ASSERT_TRUE(runningSpy.empty());
 
+    EXPECT_CALL(penLayer, beginFrame());
     EXPECT_CALL(engine, step());
+    EXPECT_CALL(penLayer, endFrame());
     EXPECT_CALL(engine, isRunning()).WillOnce(Return(true));
     QCoreApplication::sendEvent(&loader, &event);
     ASSERT_TRUE(loader.running());
     ASSERT_EQ(runningSpy.size(), 1);
 
+    EXPECT_CALL(penLayer, beginFrame());
     EXPECT_CALL(engine, step());
+    EXPECT_CALL(penLayer, endFrame());
     EXPECT_CALL(engine, isRunning()).WillOnce(Return(true));
     QCoreApplication::sendEvent(&loader, &event);
     ASSERT_TRUE(loader.running());
     ASSERT_EQ(runningSpy.size(), 1);
 
+    EXPECT_CALL(penLayer, beginFrame());
     EXPECT_CALL(engine, step());
+    EXPECT_CALL(penLayer, endFrame());
     EXPECT_CALL(engine, isRunning()).WillOnce(Return(false));
     QCoreApplication::sendEvent(&loader, &event);
     ASSERT_FALSE(loader.running());
     ASSERT_EQ(runningSpy.size(), 2);
+
+    PenLayer::removePenLayer(&engine);
 }
 
 TEST_F(ProjectLoaderTest, QuestionAsked)

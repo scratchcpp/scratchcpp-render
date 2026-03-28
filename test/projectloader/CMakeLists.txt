@@ -7,8 +7,10 @@ target_link_libraries(
   projectloader_test
   GTest::gtest_main
   GTest::gmock_main
+  scratchcpp
   scratchcpp-render
   scratchcpprender_mocks
+  qnanopainter
   ${QT_LIBS}
   Qt6::Test
 )

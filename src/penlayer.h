@@ -31,6 +31,9 @@ class PenLayer : public IPenLayer
         libscratchcpp::IEngine *engine() const override;
         void setEngine(libscratchcpp::IEngine *newEngine) override;
 
+        void beginFrame() override;
+        void endFrame() override;
+
         bool hqPen() const;
         void setHqPen(bool newHqPen);
 
@@ -47,7 +50,10 @@ class PenLayer : public IPenLayer
         const libscratchcpp::Rect &getBounds() const override;
 
         static IPenLayer *getProjectPenLayer(libscratchcpp::IEngine *engine);
-        static void addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer); // for tests
+
+        // For tests
+        static void addPenLayer(libscratchcpp::IEngine *engine, IPenLayer *penLayer);
+        static void removePenLayer(libscratchcpp::IEngine *engine);
 
     signals:
         void engineChanged();
@@ -61,7 +67,6 @@ class PenLayer : public IPenLayer
         void updateTexture();
 
         static std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> m_projectPenLayers;
-        static inline GLuint m_stampFbo = 0;
         bool m_antialiasingEnabled = true;
         libscratchcpp::IEngine *m_engine = nullptr;
         bool m_hqPen = false;

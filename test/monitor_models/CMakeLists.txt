@@ -8,6 +8,7 @@ target_link_libraries(
   monitormodel_test
   GTest::gtest_main
   GTest::gmock_main
+  scratchcpp
   scratchcpp-render
   scratchcpprender_mocks
   ${QT_LIBS}
@@ -26,6 +27,7 @@ add_executable(
 target_link_libraries(
   valuemonitormodel_test
   GTest::gtest_main
+  scratchcpp
   scratchcpp-render
   ${QT_LIBS}
   Qt6::Test
@@ -43,6 +45,7 @@ add_executable(
 target_link_libraries(
   listmonitorlistmodel_test
   GTest::gtest_main
+  scratchcpp
   scratchcpp-render
   ${QT_LIBS}
   Qt6::Test
@@ -60,6 +63,7 @@ add_executable(
 target_link_libraries(
   listmonitormodel_test
   GTest::gtest_main
+  scratchcpp
   scratchcpp-render
   ${QT_LIBS}
   Qt6::Test

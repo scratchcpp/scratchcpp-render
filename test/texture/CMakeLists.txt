@@ -23,7 +23,9 @@ add_executable(
 target_link_libraries(
   cputexturemanager_test
   GTest::gtest_main
+  scratchcpp
   scratchcpp-render
+  qnanopainter
   ${QT_LIBS}
 )
 

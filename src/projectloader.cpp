@@ -12,7 +12,8 @@
 #include "valuemonitormodel.h"
 #include "listmonitormodel.h"
 #include "renderedtarget.h"
-// #include "blocks/penblocks.h"
+#include "penlayer.h"
+#include "blocks/penblocks.h"
 
 using namespace scratchcpprender;
 using namespace libscratchcpp;
@@ -37,8 +38,8 @@ ProjectLoader::ProjectLoader(QObject *parent) :
     initTimer();
     m_renderTimer.start();
 
-    // TODO: Register pen blocks
-    // ScratchConfiguration::registerExtension(std::make_shared<PenBlocks>());
+    // Register pen blocks
+    ScratchConfiguration::registerExtension(std::make_shared<PenBlocks>());
 }
 
 ProjectLoader::~ProjectLoader()
@@ -231,7 +232,15 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
 
         m_unpositionedMonitors.clear();
 
+        IPenLayer *penLayer = PenLayer::getProjectPenLayer(m_engine);
+
+        if (penLayer)
+            penLayer->beginFrame();
+
         m_engine->step();
+
+        if (penLayer)
+            penLayer->endFrame();
 
         if (m_running != m_engine->isRunning()) {
             m_running = !m_running;

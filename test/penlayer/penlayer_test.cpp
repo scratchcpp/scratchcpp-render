@@ -231,7 +231,10 @@ TEST_F(PenLayerTest, Clear)
     painter.endFrame();
     fbo->release();
 
+    penLayer.beginFrame();
     penLayer.clear();
+    penLayer.endFrame();
+
     QImage image2 = fbo->toImage();
 
     // The image must contain only fully transparent pixels
@@ -275,7 +278,9 @@ TEST_F(PenLayerTest, DrawPoint)
         penLayer.drawPoint(attr, -54, 21);
     };
 
+    penLayer.beginFrame();
     draw();
+    penLayer.endFrame();
 
     {
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
@@ -302,8 +307,10 @@ TEST_F(PenLayerTest, DrawPoint)
     }
 
     // Test HQ pen - draw
+    penLayer.beginFrame();
     penLayer.clear();
     draw();
+    penLayer.endFrame();
 
     {
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
@@ -324,7 +331,8 @@ TEST_F(PenLayerTest, DrawLine)
     penLayer.setWidth(480);
     penLayer.setHeight(360);
     EngineMock engine;
-    EXPECT_CALL(engine, stageWidth()).WillOnce(Return(480));
+    EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
     penLayer.setEngine(&engine);
 
     auto draw = [&penLayer]() {
@@ -350,7 +358,9 @@ TEST_F(PenLayerTest, DrawLine)
         penLayer.drawLine(attr, -54, 21, 88, -6);
     };
 
+    penLayer.beginFrame();
     draw();
+    penLayer.endFrame();
 
     {
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
@@ -364,12 +374,13 @@ TEST_F(PenLayerTest, DrawLine)
     }
 
     // Test HQ pen
-    penLayer.clear();
-    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
     penLayer.setHqPen(true);
     penLayer.setWidth(720);
     penLayer.setHeight(540);
+    penLayer.beginFrame();
+    penLayer.clear();
     draw();
+    penLayer.endFrame();
 
     {
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
@@ -429,8 +440,12 @@ TEST_F(PenLayerTest, Stamp)
         i++;
     }
 
+    penLayer.beginFrame();
+
     for (const auto &target : targets)
         penLayer.stamp(target.get());
+
+    penLayer.endFrame();
 
     {
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
@@ -440,13 +455,16 @@ TEST_F(PenLayerTest, Stamp)
     }
 
     // Test HQ pen
-    penLayer.clear();
     penLayer.setHqPen(true);
     penLayer.setWidth(720);
     penLayer.setHeight(540);
+    penLayer.beginFrame();
+    penLayer.clear();
 
     for (const auto &target : targets)
         penLayer.stamp(target.get());
+
+    penLayer.endFrame();
 
     {
         QOpenGLFramebufferObject *fbo = penLayer.framebufferObject();
@@ -464,7 +482,10 @@ TEST_F(PenLayerTest, TextureData)
     penLayer.setAntialiasingEnabled(false);
     EngineMock engine;
     EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(6));
+    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(4));
     penLayer.setEngine(&engine);
+
+    penLayer.beginFrame();
 
     PenAttributes attr;
     attr.color = QNanoColor(255, 0, 0);
@@ -529,12 +550,17 @@ TEST_F(PenLayerTest, TextureData)
     ASSERT_EQ(bounds.right(), 2);
     ASSERT_EQ(bounds.bottom(), -2);
 
+    penLayer.endFrame();
+
     // Test HQ pen
-    penLayer.clear();
-    EXPECT_CALL(engine, stageWidth()).Times(3).WillRepeatedly(Return(480));
     penLayer.setHqPen(true);
     penLayer.setWidth(720);
     penLayer.setHeight(540);
+
+    penLayer.beginFrame();
+    penLayer.clear();
+    EXPECT_CALL(engine, stageWidth()).WillRepeatedly(Return(480));
+    EXPECT_CALL(engine, stageHeight()).WillRepeatedly(Return(360));
 
     attr = PenAttributes();
     attr.color = QNanoColor(255, 0, 0);
@@ -545,10 +571,10 @@ TEST_F(PenLayerTest, TextureData)
     ASSERT_EQ(penLayer.colorAtScratchPoint(-1, 1), qRgb(255, 0, 0));
 
     bounds = penLayer.getBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -3.33);
-    ASSERT_EQ(bounds.top(), 2);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 3.67);
-    ASSERT_EQ(bounds.bottom(), -3);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -3);
+    ASSERT_EQ(bounds.top(), 2.25);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 3.99);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -3.24);
 
     attr.color = QNanoColor(0, 128, 0, 128);
     attr.diameter = 2;
@@ -558,10 +584,10 @@ TEST_F(PenLayerTest, TextureData)
     ASSERT_EQ(penLayer.colorAtScratchPoint(-1, 1), qRgb(255, 0, 0));
 
     bounds = penLayer.getBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -3.33);
-    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 2.67);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 4.33);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -3.67);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -3);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 2.25);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 3.99);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -3.24);
 
     penLayer.clear();
     ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 2), 0);
@@ -582,10 +608,10 @@ TEST_F(PenLayerTest, TextureData)
     ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 1), qRgba(0, 0, 0, 0));
 
     bounds = penLayer.getBounds();
-    ASSERT_EQ(bounds.left(), 0);
-    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1.33);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 1.67);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -1.67);
+    ASSERT_EQ(bounds.left(), -0.5);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1.5);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 2.49);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -2.49);
 
     attr.diameter = 2;
     penLayer.drawPoint(attr, -2, 0);
@@ -594,8 +620,10 @@ TEST_F(PenLayerTest, TextureData)
     ASSERT_EQ(penLayer.colorAtScratchPoint(-3, 1), 0);
 
     bounds = penLayer.getBounds();
-    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -2.67);
-    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1.33);
-    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 1.67);
-    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -1.67);
+    ASSERT_EQ(std::round(bounds.left() * 100) / 100, -3);
+    ASSERT_EQ(std::round(bounds.top() * 100) / 100, 1.5);
+    ASSERT_EQ(std::round(bounds.right() * 100) / 100, 2.49);
+    ASSERT_EQ(std::round(bounds.bottom() * 100) / 100, -2.49);
+
+    penLayer.endFrame();
 }
