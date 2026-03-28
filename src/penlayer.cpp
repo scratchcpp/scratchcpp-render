@@ -102,7 +102,9 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
             m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 
+        beginFrame();
         clear();
+        endFrame();
     }
 
     emit engineChanged();
