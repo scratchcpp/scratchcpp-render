@@ -25,6 +25,7 @@ class PenBlocks : public libscratchcpp::IExtension
         static libscratchcpp::CompilerValue *compileSetPenSizeTo(libscratchcpp::Compiler *compiler);
         static libscratchcpp::CompilerValue *compileChangePenShadeBy(libscratchcpp::Compiler *compiler);
         static libscratchcpp::CompilerValue *compileSetPenShadeToNumber(libscratchcpp::Compiler *compiler);
+        static libscratchcpp::CompilerValue *compileChangePenHueBy(libscratchcpp::Compiler *compiler);
 };
 
 } // namespace scratchcpprender

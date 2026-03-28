@@ -90,6 +90,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
     engine->addCompileFunction(this, "pen_changePenShadeBy", &compileChangePenShadeBy);
     engine->addCompileFunction(this, "pen_setPenShadeToNumber", &compileSetPenShadeToNumber);
+    engine->addCompileFunction(this, "pen_changePenHueBy", &compileChangePenHueBy);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -213,6 +214,14 @@ CompilerValue *PenBlocks::compileSetPenShadeToNumber(Compiler *compiler)
     CompilerValue *shade = compiler->addInput("SHADE");
     CompilerValue *change = compiler->addConstValue(false);
     compiler->addTargetFunctionCall("pen_set_or_change_pen_shade", Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { shade, change });
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compileChangePenHueBy(Compiler *compiler)
+{
+    CompilerValue *hue = compiler->addInput("HUE");
+    CompilerValue *change = compiler->addConstValue(true);
+    compiler->addTargetFunctionCall("pen_set_or_change_pen_hue", Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { hue, change });
     return nullptr;
 }
 
@@ -413,4 +422,10 @@ BLOCK_EXPORT void pen_set_or_change_pen_shade(Target *target, double shade, bool
     penState.shade = shade;
 
     legacy_update_pen_color(penState);
+}
+
+BLOCK_EXPORT void pen_set_or_change_pen_hue(Target *target, double hue, bool change)
+{
+    pen_set_or_change_color(target, hue / 2.0, change);
+    legacy_update_pen_color(getTargetModel(target)->penState());
 }
