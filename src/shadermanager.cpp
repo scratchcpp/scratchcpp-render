@@ -97,7 +97,7 @@ ShaderManager *ShaderManager::instance()
     return globalInstance;
 }
 
-QOpenGLShaderProgram *ShaderManager::getShaderProgram(const std::unordered_map<Effect, double> &effectValues)
+QOpenGLShaderProgram *ShaderManager::getShaderProgram(const IRenderedTarget *target, const std::unordered_map<Effect, double> &effectValues)
 {
     int effectBits = 0;
     bool firstSet = false;
@@ -115,11 +115,24 @@ QOpenGLShaderProgram *ShaderManager::getShaderProgram(const std::unordered_map<E
         QOpenGLShaderProgram *program = createShaderProgram(effectValues);
 
         if (program)
-            m_shaderPrograms[effectBits] = program;
+            m_shaderPrograms[effectBits] = { { target, program } };
 
         return program;
-    } else
-        return it->second;
+    } else {
+        const auto &map = it->second;
+        auto it = map.find(target);
+
+        if (it == map.cend()) {
+            // Create a new shader program if this combination doesn't exist for the given target
+            QOpenGLShaderProgram *program = createShaderProgram(effectValues);
+
+            if (program)
+                m_shaderPrograms[effectBits][target] = program;
+
+            return program;
+        } else
+            return it->second;
+    }
 }
 
 void ShaderManager::getUniformValuesForEffects(const std::unordered_map<Effect, double> &effectValues, std::unordered_map<Effect, float> &dst)

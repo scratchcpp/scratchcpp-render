@@ -6,6 +6,7 @@
 #include <scratchcpp/scratchconfiguration.h>
 #include <shadermanager.h>
 #include <graphicseffect.h>
+#include <renderedtargetmock.h>
 
 #include "../common.h"
 
@@ -34,6 +35,7 @@ class ShaderManagerTest : public testing::Test
 
         QOpenGLContext m_context;
         QOffscreenSurface m_surface;
+        RenderedTargetMock m_target;
 };
 
 TEST_F(ShaderManagerTest, RegisteredEffects)
@@ -71,7 +73,7 @@ TEST_F(ShaderManagerTest, GetShaderProgram)
     ShaderManager manager;
     const std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Color, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
 
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     ASSERT_EQ(program->parent(), &manager);
     ASSERT_TRUE(program->isLinked());
 
@@ -83,11 +85,26 @@ TEST_F(ShaderManagerTest, GetShaderProgram)
     ASSERT_EQ(frag->shaderType(), QOpenGLShader::Fragment);
 
     // Test shader program cache
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     ASSERT_EQ(program, program);
 
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     ASSERT_EQ(program, program);
+}
+
+TEST_F(ShaderManagerTest, GetShaderProgram_AnotherTarget)
+{
+    ShaderManager manager;
+    const std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Color, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
+
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
+
+    RenderedTargetMock anotherTarget;
+    QOpenGLShaderProgram *anotherProgram = manager.getShaderProgram(&anotherTarget, effects);
+    ASSERT_NE(anotherProgram, nullptr);
+    ASSERT_NE(anotherProgram, program);
+
+    ASSERT_EQ(manager.getShaderProgram(&anotherTarget, effects), anotherProgram);
 }
 
 TEST_F(ShaderManagerTest, SetUniforms)
@@ -97,7 +114,7 @@ TEST_F(ShaderManagerTest, SetUniforms)
     ShaderManager manager;
 
     std::unordered_map<ShaderManager::Effect, double> effects = { { ShaderManager::Effect::Color, 64.9 }, { ShaderManager::Effect::Ghost, 12.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 4, QSize(), effects);
 
@@ -130,7 +147,7 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 64.9 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -142,7 +159,7 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
 
     // Below the minimum
     effects[effect] = -395.7;
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -154,7 +171,7 @@ TEST_F(ShaderManagerTest, ColorEffectValue)
 
     // Above the maximum
     effects[effect] = 579.05;
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -181,7 +198,7 @@ TEST_F(ShaderManagerTest, BrightnessEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 4.6 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -193,7 +210,7 @@ TEST_F(ShaderManagerTest, BrightnessEffectValue)
 
     // Below the minimum
     effects[effect] = -102.9;
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -205,7 +222,7 @@ TEST_F(ShaderManagerTest, BrightnessEffectValue)
 
     // Above the maximum
     effects[effect] = 353.2;
-    program = manager.getShaderProgram(effects);
+    program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -232,7 +249,7 @@ TEST_F(ShaderManagerTest, GhostEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -281,7 +298,7 @@ TEST_F(ShaderManagerTest, FisheyeEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -329,7 +346,7 @@ TEST_F(ShaderManagerTest, WhirlEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -366,7 +383,7 @@ TEST_F(ShaderManagerTest, PixelateEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);
@@ -403,7 +420,7 @@ TEST_F(ShaderManagerTest, MosaicEffectValue)
 
     // In range
     std::unordered_map<ShaderManager::Effect, double> effects = { { effect, 58.5 } };
-    QOpenGLShaderProgram *program = manager.getShaderProgram(effects);
+    QOpenGLShaderProgram *program = manager.getShaderProgram(&m_target, effects);
     program->bind();
     manager.setUniforms(program, 0, QSize(), effects);
     manager.getUniformValuesForEffects(effects, values);

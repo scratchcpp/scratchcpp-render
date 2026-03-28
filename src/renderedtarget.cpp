@@ -546,7 +546,7 @@ void RenderedTarget::render(double scale) const
     ShaderManager *shaderManager = ShaderManager::instance();
 
     if (!m_shaderProgram) {
-        m_shaderProgram = shaderManager->getShaderProgram(m_graphicEffects);
+        m_shaderProgram = shaderManager->getShaderProgram(this, m_graphicEffects);
         Q_ASSERT(m_shaderProgram);
         Q_ASSERT(m_shaderProgram->isLinked());
 

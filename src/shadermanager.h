@@ -12,6 +12,8 @@ class QOpenGLShader;
 namespace scratchcpprender
 {
 
+class IRenderedTarget;
+
 class ShaderManager : public QObject
 {
     public:
@@ -31,7 +33,7 @@ class ShaderManager : public QObject
 
         static ShaderManager *instance();
 
-        QOpenGLShaderProgram *getShaderProgram(const std::unordered_map<Effect, double> &effectValues);
+        QOpenGLShaderProgram *getShaderProgram(const IRenderedTarget *target, const std::unordered_map<Effect, double> &effectValues);
         static void getUniformValuesForEffects(const std::unordered_map<Effect, double> &effectValues, std::unordered_map<Effect, float> &dst);
         static void setUniforms(QOpenGLShaderProgram *program, int textureUnit, const QSize skinSize, const std::unordered_map<Effect, double> &effectValues);
 
@@ -52,7 +54,7 @@ class ShaderManager : public QObject
         static std::unordered_set<Effect> m_effects;
 
         QOpenGLShader *m_vertexShader = nullptr;
-        std::unordered_map<int, QOpenGLShaderProgram *> m_shaderPrograms;
+        std::unordered_map<int, std::unordered_map<const IRenderedTarget *, QOpenGLShaderProgram *>> m_shaderPrograms;
         QByteArray m_fragmentShaderSource;
 };
 
