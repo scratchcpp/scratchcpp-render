@@ -233,9 +233,14 @@ void ProjectLoader::timerEvent(QTimerEvent *event)
         m_unpositionedMonitors.clear();
 
         IPenLayer *penLayer = PenLayer::getProjectPenLayer(m_engine);
-        penLayer->beginFrame();
+
+        if (penLayer)
+            penLayer->beginFrame();
+
         m_engine->step();
-        penLayer->endFrame();
+
+        if (penLayer)
+            penLayer->endFrame();
 
         if (m_running != m_engine->isRunning()) {
             m_running = !m_running;
