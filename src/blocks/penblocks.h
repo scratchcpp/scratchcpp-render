@@ -18,7 +18,9 @@ class PenBlocks : public libscratchcpp::IExtension
         static libscratchcpp::CompilerValue *compilePenDown(libscratchcpp::Compiler *compiler);
         static libscratchcpp::CompilerValue *compilePenUp(libscratchcpp::Compiler *compiler);
         static libscratchcpp::CompilerValue *compileSetPenColorToColor(libscratchcpp::Compiler *compiler);
+        static void compileSetOrChangePenColorParam(libscratchcpp::Compiler *compiler, bool change);
         static libscratchcpp::CompilerValue *compileChangePenColorParamBy(libscratchcpp::Compiler *compiler);
+        static libscratchcpp::CompilerValue *compileSetPenColorParamTo(libscratchcpp::Compiler *compiler);
 };
 
 } // namespace scratchcpprender

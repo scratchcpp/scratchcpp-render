@@ -81,6 +81,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_penUp", &compilePenUp);
     engine->addCompileFunction(this, "pen_setPenColorToColor", &compileSetPenColorToColor);
     engine->addCompileFunction(this, "pen_changePenColorParamBy", &compileChangePenColorParamBy);
+    engine->addCompileFunction(this, "pen_setPenColorParamTo", &compileSetPenColorParamTo);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -141,12 +142,12 @@ CompilerValue *PenBlocks::compileSetPenColorToColor(Compiler *compiler)
     return nullptr;
 }
 
-CompilerValue *PenBlocks::compileChangePenColorParamBy(Compiler *compiler)
+void PenBlocks::compileSetOrChangePenColorParam(Compiler *compiler, bool change)
 {
     Input *paramInput = compiler->input("COLOR_PARAM");
     CompilerValue *param = compiler->addInput(paramInput);
     CompilerValue *value = compiler->addInput("VALUE");
-    CompilerValue *change = compiler->addConstValue(true);
+    CompilerValue *changeValue = compiler->addConstValue(change);
 
     if (paramInput->pointsToDropdownMenu()) {
         static const std::unordered_set<std::string> options = { "color", "saturation", "brightness", "transparency" };
@@ -154,16 +155,26 @@ CompilerValue *PenBlocks::compileChangePenColorParamBy(Compiler *compiler)
 
         if (options.find(option) != options.cend()) {
             std::string f = "pen_set_or_change_" + option;
-            compiler->addTargetFunctionCall(f, Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { value, change });
+            compiler->addTargetFunctionCall(f, Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { value, changeValue });
         }
     } else {
         compiler->addTargetFunctionCall(
             "pen_set_or_change_color_param",
             Compiler::StaticType::Void,
             { Compiler::StaticType::String, Compiler::StaticType::Number, Compiler::StaticType::Bool },
-            { param, value, change });
+            { param, value, changeValue });
     }
+}
 
+CompilerValue *PenBlocks::compileChangePenColorParamBy(Compiler *compiler)
+{
+    compileSetOrChangePenColorParam(compiler, true);
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compileSetPenColorParamTo(Compiler *compiler)
+{
+    compileSetOrChangePenColorParam(compiler, false);
     return nullptr;
 }
 
