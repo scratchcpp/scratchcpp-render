@@ -87,6 +87,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_changePenColorParamBy", &compileChangePenColorParamBy);
     engine->addCompileFunction(this, "pen_setPenColorParamTo", &compileSetPenColorParamTo);
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
+    engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -187,6 +188,13 @@ CompilerValue *PenBlocks::compileChangePenSizeBy(Compiler *compiler)
 {
     CompilerValue *size = compiler->addInput("SIZE");
     compiler->addTargetFunctionCall("pen_changePenSizeBy", Compiler::StaticType::Void, { Compiler::StaticType::Number }, { size });
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compileSetPenSizeTo(Compiler *compiler)
+{
+    CompilerValue *size = compiler->addInput("SIZE");
+    compiler->addTargetFunctionCall("pen_setPenSizeTo", Compiler::StaticType::Void, { Compiler::StaticType::Number }, { size });
     return nullptr;
 }
 
@@ -322,4 +330,10 @@ BLOCK_EXPORT void pen_changePenSizeBy(Target *target, double value)
 {
     PenAttributes &penAttributes = getTargetModel(target)->penAttributes();
     penAttributes.diameter = std::clamp(penAttributes.diameter + value, PEN_SIZE_MIN, PEN_SIZE_MAX);
+}
+
+BLOCK_EXPORT void pen_setPenSizeTo(Target *target, double value)
+{
+    PenAttributes &penAttributes = getTargetModel(target)->penAttributes();
+    penAttributes.diameter = std::clamp(value, PEN_SIZE_MIN, PEN_SIZE_MAX);
 }
