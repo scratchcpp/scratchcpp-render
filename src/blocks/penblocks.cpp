@@ -91,6 +91,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_changePenShadeBy", &compileChangePenShadeBy);
     engine->addCompileFunction(this, "pen_setPenShadeToNumber", &compileSetPenShadeToNumber);
     engine->addCompileFunction(this, "pen_changePenHueBy", &compileChangePenHueBy);
+    engine->addCompileFunction(this, "pen_setPenHueToNumber", &compileSetPenHueToNumber);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -222,6 +223,17 @@ CompilerValue *PenBlocks::compileChangePenHueBy(Compiler *compiler)
     CompilerValue *hue = compiler->addInput("HUE");
     CompilerValue *change = compiler->addConstValue(true);
     compiler->addTargetFunctionCall("pen_set_or_change_pen_hue", Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { hue, change });
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compileSetPenHueToNumber(Compiler *compiler)
+{
+    CompilerValue *hue = compiler->addInput("HUE");
+    CompilerValue *transparency = compiler->addConstValue(0);
+    CompilerValue *change = compiler->addConstValue(false);
+
+    compiler->addTargetFunctionCall("pen_set_or_change_pen_hue", Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { hue, change });
+    compiler->addTargetFunctionCall("pen_set_or_change_transparency", Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { transparency, change });
     return nullptr;
 }
 
