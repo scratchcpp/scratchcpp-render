@@ -1,3 +1,5 @@
+#pragma once
+
 #include <scratchcpp/iextension.h>
 
 namespace scratchcpprender
