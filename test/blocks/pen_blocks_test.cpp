@@ -1170,6 +1170,41 @@ TEST_F(PenBlocksTest, ChangePenColorParamBy_NonConstInvalidParam)
     ASSERT_EQ(model.penAttributes().color, original);
 }
 
+TEST_F(PenBlocksTest, ChangePenColorParamBy_Stage)
+{
+    auto stage = std::make_shared<Stage>();
+    stage->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    StageModel model;
+    model.init(stage.get());
+    model.setRenderedTarget(&renderedTarget);
+    stage->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, stage);
+    builder.addBlock("pen_changePenColorParamBy");
+    builder.addDropdownInput("COLOR_PARAM", "color");
+    builder.addValueInput("VALUE", 53.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, stage.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 91);
+    EXPECT_EQ(model.penAttributes().color.green(), 94);
+    EXPECT_EQ(model.penAttributes().color.blue(), 149);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+}
+
 TEST_F(PenBlocksTest, SetPenColorParamTo_Color)
 {
     auto sprite = std::make_shared<Sprite>();
@@ -1881,4 +1916,39 @@ TEST_F(PenBlocksTest, SetPenColorParamTo_NonConstInvalidParam)
 
     // The color shouldn't change
     ASSERT_EQ(model.penAttributes().color, original);
+}
+
+TEST_F(PenBlocksTest, SetPenColorParamTo_Stage)
+{
+    auto stage = std::make_shared<Stage>();
+    stage->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    StageModel model;
+    model.init(stage.get());
+    model.setRenderedTarget(&renderedTarget);
+    stage->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, stage);
+    builder.addBlock("pen_setPenColorParamTo");
+    builder.addDropdownInput("COLOR_PARAM", "color");
+    builder.addValueInput("VALUE", 53.2);
+
+    PenState &penState = model.penState();
+    penState.color = 12.67;
+    penState.saturation = 39.21;
+    penState.brightness = 58.82;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, stage.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 91);
+    EXPECT_EQ(model.penAttributes().color.green(), 138);
+    EXPECT_EQ(model.penAttributes().color.blue(), 149);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
 }
