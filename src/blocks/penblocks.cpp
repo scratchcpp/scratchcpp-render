@@ -89,6 +89,7 @@ void PenBlocks::registerBlocks(IEngine *engine)
     engine->addCompileFunction(this, "pen_changePenSizeBy", &compileChangePenSizeBy);
     engine->addCompileFunction(this, "pen_setPenSizeTo", &compileSetPenSizeTo);
     engine->addCompileFunction(this, "pen_changePenShadeBy", &compileChangePenShadeBy);
+    engine->addCompileFunction(this, "pen_setPenShadeToNumber", &compileSetPenShadeToNumber);
 }
 
 CompilerValue *PenBlocks::compileClear(Compiler *compiler)
@@ -203,6 +204,14 @@ CompilerValue *PenBlocks::compileChangePenShadeBy(Compiler *compiler)
 {
     CompilerValue *shade = compiler->addInput("SHADE");
     CompilerValue *change = compiler->addConstValue(true);
+    compiler->addTargetFunctionCall("pen_set_or_change_pen_shade", Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { shade, change });
+    return nullptr;
+}
+
+CompilerValue *PenBlocks::compileSetPenShadeToNumber(Compiler *compiler)
+{
+    CompilerValue *shade = compiler->addInput("SHADE");
+    CompilerValue *change = compiler->addConstValue(false);
     compiler->addTargetFunctionCall("pen_set_or_change_pen_shade", Compiler::StaticType::Void, { Compiler::StaticType::Number, Compiler::StaticType::Bool }, { shade, change });
     return nullptr;
 }

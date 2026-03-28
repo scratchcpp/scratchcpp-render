@@ -2346,3 +2346,147 @@ TEST_F(PenBlocksTest, ChangePenShadeBy_Stage)
     EXPECT_EQ(model.penAttributes().color.alpha(), 255);
     EXPECT_EQ(model.penState().shade, 63);
 }
+
+TEST_F(PenBlocksTest, SetPenShadeTo)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenShadeToNumber");
+    builder.addValueInput("SHADE", 49.2);
+
+    PenState &penState = model.penState();
+    penState.color = 60;
+    penState.saturation = 90;
+    penState.brightness = 75;
+    penState.shade = 13.8;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 0);
+    EXPECT_EQ(model.penAttributes().color.green(), 100);
+    EXPECT_EQ(model.penAttributes().color.blue(), 251);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+    EXPECT_EQ(model.penState().shade, 49.2);
+}
+
+TEST_F(PenBlocksTest, SetPenShadeTo_OutOfRange)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenShadeToNumber");
+    builder.addValueInput("SHADE", 201.4);
+
+    PenState &penState = model.penState();
+    penState.color = 60;
+    penState.saturation = 90;
+    penState.brightness = 75;
+    penState.shade = 13.8;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 0);
+    EXPECT_EQ(model.penAttributes().color.green(), 19);
+    EXPECT_EQ(model.penAttributes().color.blue(), 48);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+    EXPECT_EQ(std::round(model.penState().shade * 100) / 100, 1.4);
+}
+
+TEST_F(PenBlocksTest, SetPenShadeTo_OutOfRange_Negative)
+{
+    auto sprite = std::make_shared<Sprite>();
+    sprite->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    SpriteModel model;
+    model.init(sprite.get());
+    model.setRenderedTarget(&renderedTarget);
+    sprite->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, sprite);
+    builder.addBlock("pen_setPenShadeToNumber");
+    builder.addValueInput("SHADE", -25.3);
+
+    PenState &penState = model.penState();
+    penState.color = 60;
+    penState.saturation = 90;
+    penState.brightness = 75;
+    penState.shade = 13.8;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, sprite.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 0);
+    EXPECT_EQ(model.penAttributes().color.green(), 60);
+    EXPECT_EQ(model.penAttributes().color.blue(), 150);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+    EXPECT_EQ(model.penState().shade, 174.7);
+}
+
+TEST_F(PenBlocksTest, SetPenShadeTo_Stage)
+{
+    auto stage = std::make_shared<Stage>();
+    stage->setEngine(&m_engineMock);
+
+    RenderedTarget renderedTarget;
+    StageModel model;
+    model.init(stage.get());
+    model.setRenderedTarget(&renderedTarget);
+    stage->setInterface(&model);
+
+    ScriptBuilder builder(m_extension.get(), m_engine, stage);
+    builder.addBlock("pen_setPenShadeToNumber");
+    builder.addValueInput("SHADE", 49.2);
+
+    PenState &penState = model.penState();
+    penState.color = 60;
+    penState.saturation = 90;
+    penState.brightness = 75;
+    penState.shade = 13.8;
+    penState.updateColor();
+
+    auto original = model.penAttributes().color;
+
+    auto thread = buildScript(builder, stage.get());
+
+    EXPECT_CALL(m_engineMock, requestRedraw).Times(0);
+    thread->run();
+
+    EXPECT_EQ(model.penAttributes().color.red(), 0);
+    EXPECT_EQ(model.penAttributes().color.green(), 100);
+    EXPECT_EQ(model.penAttributes().color.blue(), 251);
+    EXPECT_EQ(model.penAttributes().color.alpha(), 255);
+    EXPECT_EQ(model.penState().shade, 49.2);
+}
