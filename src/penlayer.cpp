@@ -119,12 +119,13 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 void PenLayer::beginFrame()
 {
     m_fbo->bind();
-    m_painter->beginFrame(m_fbo->width(), m_fbo->height());
+    beginPainterFrame();
+    m_frameChanged = false;
 }
 
 void PenLayer::endFrame()
 {
-    m_painter->endFrame();
+    endPainterFrame();
     m_fbo->release();
 }
 
@@ -149,6 +150,13 @@ void scratchcpprender::PenLayer::clear()
         return;
 
     Q_ASSERT(m_fbo->isBound());
+
+    if (m_frameChanged) {
+        endPainterFrame();
+        beginPainterFrame();
+        m_frameChanged = false;
+    }
+
     m_glF->glDisable(GL_SCISSOR_TEST);
     m_glF->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     m_glF->glClear(GL_COLOR_BUFFER_BIT);
@@ -210,6 +218,7 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
 
     m_textureDirty = true;
     m_boundsDirty = true;
+    m_frameChanged = true;
     update();
 }
 
@@ -219,6 +228,9 @@ void PenLayer::stamp(IRenderedTarget *target)
         return;
 
     Q_ASSERT(m_fbo->isBound());
+
+    if (m_frameChanged)
+        endPainterFrame();
 
     m_glF->glDisable(GL_SCISSOR_TEST);
     m_glF->glDisable(GL_DEPTH_TEST);
@@ -233,6 +245,11 @@ void PenLayer::stamp(IRenderedTarget *target)
 
     m_glF->glEnable(GL_SCISSOR_TEST);
     m_glF->glEnable(GL_DEPTH_TEST);
+
+    if (m_frameChanged) {
+        beginPainterFrame();
+        m_frameChanged = false;
+    }
 
     m_textureDirty = true;
     m_boundsDirty = true;
@@ -413,6 +430,17 @@ void PenLayer::geometryChange(const QRectF &newGeometry, const QRectF &oldGeomet
         refresh();
 
     QNanoQuickItem::geometryChange(newGeometry, oldGeometry);
+}
+
+void PenLayer::beginPainterFrame()
+{
+    m_painter->beginFrame(m_fbo->width(), m_fbo->height());
+}
+
+void PenLayer::endPainterFrame()
+{
+    m_glF->glViewport(0, 0, m_fbo->width(), m_fbo->height());
+    m_painter->endFrame();
 }
 
 void PenLayer::updateTexture()

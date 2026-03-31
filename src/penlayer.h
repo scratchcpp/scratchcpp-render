@@ -64,6 +64,8 @@ class PenLayer : public IPenLayer
         void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
     private:
+        void beginPainterFrame();
+        void endPainterFrame();
         void updateTexture();
 
         static std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> m_projectPenLayers;
@@ -83,6 +85,7 @@ class PenLayer : public IPenLayer
         mutable libscratchcpp::Rect m_bounds;
         GLuint m_vbo = 0;
         GLuint m_vao = 0;
+        bool m_frameChanged = false;
 };
 
 } // namespace scratchcpprender
