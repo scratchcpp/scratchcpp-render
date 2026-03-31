@@ -184,6 +184,8 @@ bool CpuTextureManager::readTexture(
     }
 
     // Bind the texture to the global FBO
+    GLint oldFbo;
+    glF.glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &oldFbo);
     glF.glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     glF.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, handle, 0);
 
@@ -326,7 +328,7 @@ bool CpuTextureManager::readTexture(
         delete[] pixels;
 
     // Cleanup
-    glF.glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glF.glBindFramebuffer(GL_FRAMEBUFFER, oldFbo);
 
     return true;
 }
