@@ -102,9 +102,15 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
             m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 
-        beginFrame();
+        bool wasBound = m_fbo->isBound();
+
+        if (wasBound)
+            beginFrame();
+
         clear();
-        endFrame();
+
+        if (wasBound)
+            endFrame();
     }
 
     emit engineChanged();
