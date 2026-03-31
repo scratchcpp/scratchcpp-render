@@ -4,7 +4,6 @@
 
 #include "penlayer.h"
 #include "penlayerpainter.h"
-#include "penattributes.h"
 #include "irenderedtarget.h"
 #include "spritemodel.h"
 #include "stagemodel.h"
@@ -12,6 +11,7 @@
 using namespace scratchcpprender;
 
 static const double pi = std::acos(-1); // TODO: Use std::numbers::pi in C++20
+static const int PEN_LINES_RESERVE = 10240;
 
 std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> PenLayer::m_projectPenLayers;
 
@@ -19,6 +19,13 @@ PenLayer::PenLayer(QNanoQuickItem *parent) :
     IPenLayer(parent)
 {
     setSmooth(false);
+
+    // Reserve space for pen lines
+    m_penLines.reserve(PEN_LINES_RESERVE);
+
+    for (int i = 0; i < PEN_LINES_RESERVE; i++) {
+        m_penLines.push_back(PenLine());
+    }
 }
 
 PenLayer::~PenLayer()
@@ -119,14 +126,34 @@ void PenLayer::setEngine(libscratchcpp::IEngine *newEngine)
 void PenLayer::beginFrame()
 {
     m_fbo->bind();
-    beginPainterFrame();
-    m_frameChanged = false;
+    m_glF->glDisable(GL_SCISSOR_TEST);
+    m_glF->glDisable(GL_DEPTH_TEST);
+
+    m_glF->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    m_glF->glBindVertexArray(m_vao);
+
+    m_penLineAdded = false;
+    m_stampAdded = false;
 }
 
 void PenLayer::endFrame()
 {
+    m_glF->glBindVertexArray(0);
+    m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    beginPainterFrame();
+    renderLines();
     endPainterFrame();
+
     m_fbo->release();
+    m_glF->glEnable(GL_SCISSOR_TEST);
+    m_glF->glEnable(GL_DEPTH_TEST);
+
+    if (m_penLineAdded || m_stampAdded) {
+        update();
+        m_penLineAdded = false;
+        m_stampAdded = false;
+    }
 }
 
 bool PenLayer::hqPen() const
@@ -151,16 +178,12 @@ void scratchcpprender::PenLayer::clear()
 
     Q_ASSERT(m_fbo->isBound());
 
-    if (m_frameChanged) {
-        endPainterFrame();
-        beginPainterFrame();
-        m_frameChanged = false;
-    }
+    m_penLineCount = 0;
+    m_penLineAdded = false;
+    m_stampAdded = false;
 
-    m_glF->glDisable(GL_SCISSOR_TEST);
     m_glF->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     m_glF->glClear(GL_COLOR_BUFFER_BIT);
-    m_glF->glEnable(GL_SCISSOR_TEST);
 
     m_textureDirty = true;
     m_boundsDirty = true;
@@ -193,33 +216,25 @@ void scratchcpprender::PenLayer::drawLine(const PenAttributes &penAttributes, do
     x1 += stageWidthHalf;
     y1 = stageHeightHalf - y1;
 
-    // Set pen attributes
-    const double diameter = penAttributes.diameter * m_scale;
-    m_painter->setLineWidth(diameter);
-    m_painter->setStrokeStyle(penAttributes.color);
-    m_painter->setFillStyle(penAttributes.color);
-    m_painter->setLineJoin(QNanoPainter::JOIN_ROUND);
-    m_painter->setLineCap(QNanoPainter::CAP_ROUND);
-    m_painter->setAntialias(m_antialiasingEnabled ? 1.0f : 0.0f);
-    m_painter->beginPath();
+    // Render the line later
+    if (m_penLineCount == m_penLines.size()) {
+        m_penLines.reserve(m_penLineCount * 2);
 
-    // Width 1 and 3 lines need to be offset by 0.5
-    const double offset = (std::fmod(std::max(4 - diameter, 0.0), 2)) / 2;
-
-    // If the start and end coordinates are the same, draw a point, otherwise draw a line
-    if (x0 == x1 && y0 == y1) {
-        m_painter->circle(x0 + offset, y0 + offset, diameter / 2);
-        m_painter->fill();
-    } else {
-        m_painter->moveTo(x0 + offset, y0 + offset);
-        m_painter->lineTo(x1 + offset, y1 + offset);
-        m_painter->stroke();
+        for (size_t i = m_penLineCount; i < m_penLineCount * 2; i++) {
+            m_penLines.push_back(PenLine());
+        }
     }
+
+    PenLine &line = m_penLines[m_penLineCount++];
+    line.x0 = x0;
+    line.y0 = y0;
+    line.x1 = x1;
+    line.y1 = y1;
+    line.attributes = penAttributes;
 
     m_textureDirty = true;
     m_boundsDirty = true;
-    m_frameChanged = true;
-    update();
+    m_penLineAdded = true;
 }
 
 void PenLayer::stamp(IRenderedTarget *target)
@@ -229,31 +244,24 @@ void PenLayer::stamp(IRenderedTarget *target)
 
     Q_ASSERT(m_fbo->isBound());
 
-    if (m_frameChanged)
+    if (m_penLineAdded) {
+        m_glF->glBindVertexArray(0);
+        m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        beginPainterFrame();
+        renderLines();
         endPainterFrame();
+        m_penLineAdded = false;
 
-    m_glF->glDisable(GL_SCISSOR_TEST);
-    m_glF->glDisable(GL_DEPTH_TEST);
-
-    m_glF->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    m_glF->glBindVertexArray(m_vao);
+        m_glF->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        m_glF->glBindVertexArray(m_vao);
+    }
 
     target->render(m_scale);
 
-    m_glF->glBindVertexArray(0);
-    m_glF->glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    m_glF->glEnable(GL_SCISSOR_TEST);
-    m_glF->glEnable(GL_DEPTH_TEST);
-
-    if (m_frameChanged) {
-        beginPainterFrame();
-        m_frameChanged = false;
-    }
-
     m_textureDirty = true;
     m_boundsDirty = true;
-    update();
+    m_stampAdded = true;
 }
 
 void PenLayer::refresh()
@@ -450,4 +458,39 @@ void PenLayer::updateTexture()
 
     m_textureDirty = false;
     m_textureManager.removeTexture(m_texture);
+}
+
+void PenLayer::renderLines()
+{
+    for (size_t i = 0; i < m_penLineCount; i++) {
+        renderLine(m_penLines[i]);
+    }
+
+    m_penLineCount = 0;
+}
+
+void PenLayer::renderLine(const PenLine &line)
+{
+    // Set pen attributes
+    const double diameter = line.attributes.diameter * m_scale;
+    m_painter->setLineWidth(diameter);
+    m_painter->setStrokeStyle(line.attributes.color);
+    m_painter->setFillStyle(line.attributes.color);
+    m_painter->setLineJoin(QNanoPainter::JOIN_ROUND);
+    m_painter->setLineCap(QNanoPainter::CAP_ROUND);
+    m_painter->setAntialias(m_antialiasingEnabled ? 1.0f : 0.0f);
+    m_painter->beginPath();
+
+    // Width 1 and 3 lines need to be offset by 0.5
+    const double offset = (std::fmod(std::max(4 - diameter, 0.0), 2)) / 2;
+
+    // If the start and end coordinates are the same, draw a point, otherwise draw a line
+    if (line.x0 == line.x1 && line.y0 == line.y1) {
+        m_painter->circle(line.x0 + offset, line.y0 + offset, diameter / 2);
+        m_painter->fill();
+    } else {
+        m_painter->moveTo(line.x0 + offset, line.y0 + offset);
+        m_painter->lineTo(line.x1 + offset, line.y1 + offset);
+        m_painter->stroke();
+    }
 }

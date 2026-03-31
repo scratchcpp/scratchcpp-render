@@ -10,6 +10,7 @@
 #include "ipenlayer.h"
 #include "texture.h"
 #include "cputexturemanager.h"
+#include "penattributes.h"
 
 namespace scratchcpprender
 {
@@ -64,9 +65,21 @@ class PenLayer : public IPenLayer
         void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
     private:
+        struct PenLine
+        {
+                double x0;
+                double y0;
+                double x1;
+                double y1;
+                PenAttributes attributes;
+        };
+
         void beginPainterFrame();
         void endPainterFrame();
         void updateTexture();
+
+        void renderLines();
+        void renderLine(const PenLine &line);
 
         static std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> m_projectPenLayers;
         bool m_antialiasingEnabled = true;
@@ -85,7 +98,11 @@ class PenLayer : public IPenLayer
         mutable libscratchcpp::Rect m_bounds;
         GLuint m_vbo = 0;
         GLuint m_vao = 0;
-        bool m_frameChanged = false;
+
+        bool m_penLineAdded = false;
+        bool m_stampAdded = false;
+        std::vector<PenLine> m_penLines;
+        size_t m_penLineCount = 0;
 };
 
 } // namespace scratchcpprender
