@@ -23,18 +23,18 @@ namespace scratchcpprender
 {
 
 /*! Initializes the library. Call this from main before constructing your Q(Gui)Application object. */
-void init();
+SCRATCHCPPRENDER_EXPORT void init();
 
 /*! Returns the version string of the library. */
-const std::string &version();
+SCRATCHCPPRENDER_EXPORT const std::string &version();
 
 /*! Returns the major version of the library. */
-int majorVersion();
+SCRATCHCPPRENDER_EXPORT int majorVersion();
 
 /*! Returns the minor version of the library. */
-int minorVersion();
+SCRATCHCPPRENDER_EXPORT int minorVersion();
 
 /*! Returns the patch version of the library. */
-int patchVersion();
+SCRATCHCPPRENDER_EXPORT int patchVersion();
 
 } // namespace scratchcpprender
