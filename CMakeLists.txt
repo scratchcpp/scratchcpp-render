@@ -21,11 +21,11 @@ include(build/FindQt.cmake)
 qt_standard_project_setup(REQUIRES 6.6)
 add_subdirectory(src)
 
-target_compile_definitions(scratchcpp-render PRIVATE SCRATCHCPPRENDER_LIBRARY)
-target_compile_definitions(scratchcpp-render PRIVATE SCRATCHCPPRENDER_VERSION="${PROJECT_VERSION}")
-target_compile_definitions(scratchcpp-render PRIVATE SCRATCHCPPRENDER_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
-target_compile_definitions(scratchcpp-render PRIVATE SCRATCHCPPRENDER_VERSION_MINOR=${PROJECT_VERSION_MINOR})
-target_compile_definitions(scratchcpp-render PRIVATE SCRATCHCPPRENDER_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+target_compile_definitions(scratchcpp-render PUBLIC SCRATCHCPPRENDER_LIBRARY)
+target_compile_definitions(scratchcpp-render PUBLIC SCRATCHCPPRENDER_VERSION="${PROJECT_VERSION}")
+target_compile_definitions(scratchcpp-render PUBLIC SCRATCHCPPRENDER_VERSION_MAJOR=${PROJECT_VERSION_MAJOR})
+target_compile_definitions(scratchcpp-render PUBLIC SCRATCHCPPRENDER_VERSION_MINOR=${PROJECT_VERSION_MINOR})
+target_compile_definitions(scratchcpp-render PUBLIC SCRATCHCPPRENDER_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
 linkQt(scratchcpp-render)
 
