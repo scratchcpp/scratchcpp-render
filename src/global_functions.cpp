@@ -2,6 +2,7 @@
 
 #include <QQuickWindow>
 #include <scratchcpp-render/scratchcpp-render.h>
+#include <scratchcpp/scratchconfiguration.h>
 
 void scratchcpprender::init()
 {
@@ -36,4 +37,24 @@ int scratchcpprender::minorVersion()
 int scratchcpprender::patchVersion()
 {
     return SCRATCHCPPRENDER_VERSION_PATCH;
+}
+
+const std::string &scratchcpprender::libscratchcppVersion()
+{
+    return libscratchcpp::ScratchConfiguration::version();
+}
+
+int scratchcpprender::libscratchcppMajorVersion()
+{
+    return libscratchcpp::ScratchConfiguration::majorVersion();
+}
+
+int scratchcpprender::libscratchcppMinorVersion()
+{
+    return libscratchcpp::ScratchConfiguration::minorVersion();
+}
+
+int scratchcpprender::libscratchcppPatchVersion()
+{
+    return libscratchcpp::ScratchConfiguration::patchVersion();
 }

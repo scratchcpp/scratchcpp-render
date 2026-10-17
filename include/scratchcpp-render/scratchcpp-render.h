@@ -37,4 +37,16 @@ SCRATCHCPPRENDER_EXPORT int minorVersion();
 /*! Returns the patch version of the library. */
 SCRATCHCPPRENDER_EXPORT int patchVersion();
 
+/*! Returns the version string of libscratchcpp. */
+SCRATCHCPPRENDER_EXPORT const std::string &libscratchcppVersion();
+
+/*! Returns the major version of libscratchcpp. */
+SCRATCHCPPRENDER_EXPORT int libscratchcppMajorVersion();
+
+/*! Returns the minor version of libscratchcpp. */
+SCRATCHCPPRENDER_EXPORT int libscratchcppMinorVersion();
+
+/*! Returns the patch version of libscratchcpp. */
+SCRATCHCPPRENDER_EXPORT int libscratchcppPatchVersion();
+
 } // namespace scratchcpprender
