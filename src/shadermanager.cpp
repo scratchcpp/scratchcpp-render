@@ -12,8 +12,6 @@ using namespace scratchcpprender;
 
 using ConverterFunc = float (*)(float);
 
-static const double pi = std::acos(-1); // TODO: Use std::numbers::pi in C++20
-
 static float wrapClamp(float n, float min, float max)
 {
     // TODO: Move this to a separate class
@@ -48,7 +46,7 @@ static const std::unordered_map<ShaderManager::Effect, ConverterFunc> EFFECT_CON
     { ShaderManager::Effect::Brightness, [](float x) { return std::clamp(x, -100.0f, 100.0f) / 100.0f; } },
     { ShaderManager::Effect::Ghost, [](float x) { return 1 - std::clamp(x, 0.0f, 100.0f) / 100.0f; } },
     { ShaderManager::Effect::Fisheye, [](float x) { return std::max(0.0f, (x + 100.0f) / 100.0f); } },
-    { ShaderManager::Effect::Whirl, [](float x) { return x * (float)pi / 180.0f; } },
+    { ShaderManager::Effect::Whirl, [](float x) { return x * std::numbers::pi_v<float> / 180.0f; } },
     { ShaderManager::Effect::Pixelate, [](float x) { return std::abs(x) / 10.0f; } },
     { ShaderManager::Effect::Mosaic, [](float x) { return std::max(1.0f, std::min(std::round((std::abs(x) + 10.0f) / 10.0f), 512.0f)); } }
 };

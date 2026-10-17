@@ -21,7 +21,6 @@ using namespace scratchcpprender;
 using namespace libscratchcpp;
 
 static const double SVG_SCALE_LIMIT = 0.1; // the maximum viewport dimensions are multiplied by this
-static const double pi = std::acos(-1);    // TODO: Use std::numbers::pi in C++20
 
 // TODO: Move this to a separate class
 template<typename T>
@@ -436,7 +435,7 @@ Rect RenderedTarget::getFastBounds() const
     const double height = m_cpuTexture.height() * m_size / textureScale / bitmapRes;
     const double originX = m_costume->rotationCenterX() * m_size / bitmapRes - width / 2;
     const double originY = -m_costume->rotationCenterY() * m_size / bitmapRes + height / 2;
-    const double rot = -rotation() * pi / 180;
+    const double rot = -rotation() * std::numbers::pi / 180;
     const double sinRot = std::sin(rot);
     const double cosRot = std::cos(rot);
 
@@ -866,7 +865,7 @@ const std::vector<QPointF> &RenderedTarget::transformedHullPoints() const
     const double height = m_cpuTexture.height() * m_size / textureScale;
     const double originX = m_costume->rotationCenterX() * m_size / bitmapRes - width / 2;
     const double originY = -m_costume->rotationCenterY() * m_size / bitmapRes + height / 2;
-    const double rot = -rotation() * pi / 180;
+    const double rot = -rotation() * std::numbers::pi / 180;
     const double sinRot = std::sin(rot);
     const double cosRot = std::cos(rot);
 
