@@ -12,8 +12,6 @@ static const int TAIL_HEIGHT = 12;
 static const QNanoColor BUBBLE_FILL_COLOR = QNanoColor(255, 255, 255);
 static const QNanoColor BUBBLE_STROKE_COLOR = QNanoColor(0, 0, 0, 38);
 
-static const double pi = std::acos(-1); // TODO: Use std::numbers::pi in C++20
-
 void TextBubblePainter::paint(QNanoPainter *painter)
 {
     // https://github.com/scratchfoundation/scratch-render/blob/ac935423afe3ba79235750eecb1e443474c6eb09/src/TextBubbleSkin.js#L149-L242
@@ -58,16 +56,16 @@ void TextBubblePainter::paint(QNanoPainter *painter)
         painter->closePath();
     } else {
         // For a thinking bubble, draw a partial circle attached to the bubble...
-        painter->arc(-16, 0, 4, 0, pi);
+        painter->arc(-16, 0, 4, 0, std::numbers::pi);
 
         painter->closePath();
 
         // and two circles detached from it
         painter->moveTo(-7, 7.25);
-        painter->arc(-9.25, 7.25, 2.25, 0, pi * 2);
+        painter->arc(-9.25, 7.25, 2.25, 0, std::numbers::pi * 2);
 
         painter->moveTo(0, 9.5);
-        painter->arc(-1.5, 9.5, 1.5, 0, pi * 2);
+        painter->arc(-1.5, 9.5, 1.5, 0, std::numbers::pi * 2);
     }
 
     // Un-translate the canvas and fill + stroke the text bubble

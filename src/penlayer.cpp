@@ -10,7 +10,6 @@
 
 using namespace scratchcpprender;
 
-static const double pi = std::acos(-1); // TODO: Use std::numbers::pi in C++20
 static const int PEN_LINES_RESERVE = 10240;
 
 std::unordered_map<libscratchcpp::IEngine *, IPenLayer *> PenLayer::m_projectPenLayers;
